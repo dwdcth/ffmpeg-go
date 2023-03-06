@@ -1,6 +1,6 @@
 package libavcodec
 
-import "github.com/moonfdd/ffmpeg-go/ffcommon"
+import "github.com/dwdcth/ffmpeg-go/ffcommon"
 
 /*
  * Codec IDs

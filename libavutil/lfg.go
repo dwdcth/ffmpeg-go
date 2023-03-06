@@ -3,7 +3,7 @@ package libavutil
 import (
 	"unsafe"
 
-	"github.com/moonfdd/ffmpeg-go/ffcommon"
+	"github.com/dwdcth/ffmpeg-go/ffcommon"
 )
 
 /*
@@ -43,7 +43,7 @@ type AVLFG struct {
 	Index ffcommon.FInt
 }
 
-//void av_lfg_init(AVLFG *c, unsigned int seed);
+// void av_lfg_init(AVLFG *c, unsigned int seed);
 func (c *AVLFG) AvLfgInit(seed ffcommon.FUnsignedInt) {
 	ffcommon.GetAvutilDll().NewProc("av_lfg_init").Call(
 		uintptr(unsafe.Pointer(c)),

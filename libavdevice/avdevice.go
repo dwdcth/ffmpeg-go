@@ -3,10 +3,10 @@ package libavdevice
 import (
 	"unsafe"
 
-	"github.com/moonfdd/ffmpeg-go/ffcommon"
-	"github.com/moonfdd/ffmpeg-go/libavcodec"
-	"github.com/moonfdd/ffmpeg-go/libavformat"
-	"github.com/moonfdd/ffmpeg-go/libavutil"
+	"github.com/dwdcth/ffmpeg-go/ffcommon"
+	"github.com/dwdcth/ffmpeg-go/libavcodec"
+	"github.com/dwdcth/ffmpeg-go/libavformat"
+	"github.com/dwdcth/ffmpeg-go/libavutil"
 )
 
 /*
@@ -650,8 +650,8 @@ func AvdeviceListInputSources(device *AVInputFormat, device_name ffcommon.FConst
 	return
 }
 
-//int avdevice_list_output_sinks(struct AVOutputFormat *device, const char *device_name,
-//AVDictionary *device_options, AVDeviceInfoList **device_list);
+// int avdevice_list_output_sinks(struct AVOutputFormat *device, const char *device_name,
+// AVDictionary *device_options, AVDeviceInfoList **device_list);
 func AvdeviceListOutputSinks(device *AVOutputFormat, device_name ffcommon.FConstCharP,
 	device_options *AVDictionary, device_list **AVDeviceInfoList) (res ffcommon.FInt) {
 	t, _, _ := ffcommon.GetAvdeviceDll().NewProc("avdevice_list_output_sinks").Call(

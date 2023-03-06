@@ -3,7 +3,7 @@ package libavutil
 import (
 	"unsafe"
 
-	"github.com/moonfdd/ffmpeg-go/ffcommon"
+	"github.com/dwdcth/ffmpeg-go/ffcommon"
 )
 
 /*
@@ -48,7 +48,7 @@ const (
 	AV_HMAC_SHA512
 )
 
-//typedef struct AVHMAC AVHMAC;
+// typedef struct AVHMAC AVHMAC;
 type AVHMAC struct {
 }
 

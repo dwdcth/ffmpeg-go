@@ -3,7 +3,7 @@ package libavutil
 import (
 	"unsafe"
 
-	"github.com/moonfdd/ffmpeg-go/ffcommon"
+	"github.com/dwdcth/ffmpeg-go/ffcommon"
 )
 
 /*
@@ -91,7 +91,7 @@ type AVDictionaryEntry struct {
 	Value ffcommon.FCharPStruct
 }
 
-//typedef struct AVDictionary AVDictionary;
+// typedef struct AVDictionary AVDictionary;
 type AVDictionary struct {
 }
 

@@ -4,7 +4,7 @@ import (
 	"math"
 	"unsafe"
 
-	"github.com/moonfdd/ffmpeg-go/ffcommon"
+	"github.com/dwdcth/ffmpeg-go/ffcommon"
 )
 
 /*

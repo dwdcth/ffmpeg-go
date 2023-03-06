@@ -6,10 +6,10 @@ import (
 	"os/exec"
 	"unsafe"
 
-	"github.com/moonfdd/ffmpeg-go/ffcommon"
-	"github.com/moonfdd/ffmpeg-go/libavcodec"
-	"github.com/moonfdd/ffmpeg-go/libavformat"
-	"github.com/moonfdd/ffmpeg-go/libavutil"
+	"github.com/dwdcth/ffmpeg-go/ffcommon"
+	"github.com/dwdcth/ffmpeg-go/libavcodec"
+	"github.com/dwdcth/ffmpeg-go/libavformat"
+	"github.com/dwdcth/ffmpeg-go/libavutil"
 )
 
 func main() {
@@ -237,7 +237,7 @@ func main() {
 	}
 }
 
-//刷新编码器
+// 刷新编码器
 func flush_encoder(fmtCtx *libavformat.AVFormatContext, codecCtx *libavcodec.AVCodecContext, vStreamIndex int32) int32 {
 	var ret int32
 	enc_pkt := libavcodec.AvPacketAlloc()

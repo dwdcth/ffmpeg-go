@@ -3,8 +3,8 @@ package libavcodec
 import (
 	"unsafe"
 
-	"github.com/moonfdd/ffmpeg-go/ffcommon"
-	"github.com/moonfdd/ffmpeg-go/libavutil"
+	"github.com/dwdcth/ffmpeg-go/ffcommon"
+	"github.com/dwdcth/ffmpeg-go/libavutil"
 )
 
 /*
@@ -414,8 +414,8 @@ type AVPacket struct {
 	//#endif
 }
 
-//#if FF_API_INIT_PACKET
-//attribute_deprecated
+// #if FF_API_INIT_PACKET
+// attribute_deprecated
 type AVPacketList struct {
 	Pkt  AVPacket
 	Next *AVPacketList
@@ -774,9 +774,9 @@ func (pkt *AVPacket) AvPacketGetSideData(type0 AVPacketSideDataType, data *ffcom
 
 //#endif
 
-//#if FF_API_MERGE_SD_API
-//attribute_deprecated
-//int av_packet_merge_side_data(AVPacket *pkt);
+// #if FF_API_MERGE_SD_API
+// attribute_deprecated
+// int av_packet_merge_side_data(AVPacket *pkt);
 func (pkt *AVPacket) AvPacketMergeSideData() (res ffcommon.FInt) {
 	t, _, _ := ffcommon.GetAvcodecDll().NewProc("av_packet_merge_side_data").Call(
 		uintptr(unsafe.Pointer(pkt)),
@@ -785,8 +785,8 @@ func (pkt *AVPacket) AvPacketMergeSideData() (res ffcommon.FInt) {
 	return
 }
 
-//attribute_deprecated
-//int av_packet_split_side_data(AVPacket *pkt);
+// attribute_deprecated
+// int av_packet_split_side_data(AVPacket *pkt);
 func (pkt *AVPacket) AvPacketSplitSideData() (res ffcommon.FInt) {
 	t, _, _ := ffcommon.GetAvcodecDll().NewProc("av_packet_split_side_data").Call(
 		uintptr(unsafe.Pointer(pkt)),
@@ -797,7 +797,7 @@ func (pkt *AVPacket) AvPacketSplitSideData() (res ffcommon.FInt) {
 
 //#endif
 
-//const char *av_packet_side_data_name(enum AVPacketSideDataType type);
+// const char *av_packet_side_data_name(enum AVPacketSideDataType type);
 func AvPacketSideDataName(type0 AVPacketSideDataType) (res ffcommon.FCharP) {
 	t, _, _ := ffcommon.GetAvcodecDll().NewProc("av_packet_side_data_name").Call(
 		uintptr(type0),

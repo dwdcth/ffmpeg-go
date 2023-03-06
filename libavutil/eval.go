@@ -3,7 +3,7 @@ package libavutil
 import (
 	"unsafe"
 
-	"github.com/moonfdd/ffmpeg-go/ffcommon"
+	"github.com/dwdcth/ffmpeg-go/ffcommon"
 )
 
 /*
@@ -36,7 +36,7 @@ import (
 //
 //#include "avutil.h"
 
-//typedef struct AVExpr AVExpr;
+// typedef struct AVExpr AVExpr;
 type AVExpr struct {
 }
 

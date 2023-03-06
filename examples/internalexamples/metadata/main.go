@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/moonfdd/ffmpeg-go/ffcommon"
-	"github.com/moonfdd/ffmpeg-go/libavformat"
-	"github.com/moonfdd/ffmpeg-go/libavutil"
+	"github.com/dwdcth/ffmpeg-go/ffcommon"
+	"github.com/dwdcth/ffmpeg-go/libavformat"
+	"github.com/dwdcth/ffmpeg-go/libavutil"
 )
 
 func main() {

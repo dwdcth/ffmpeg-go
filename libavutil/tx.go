@@ -3,7 +3,7 @@ package libavutil
 import (
 	"unsafe"
 
-	"github.com/moonfdd/ffmpeg-go/ffcommon"
+	"github.com/dwdcth/ffmpeg-go/ffcommon"
 )
 
 /*
@@ -30,7 +30,7 @@ import (
 //#include <stdint.h>
 //#include <stddef.h>
 
-//typedef struct AVTXContext AVTXContext;
+// typedef struct AVTXContext AVTXContext;
 type AVTXContext struct {
 }
 type AVComplexFloat struct {

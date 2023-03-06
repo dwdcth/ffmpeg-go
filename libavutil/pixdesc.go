@@ -3,7 +3,7 @@ package libavutil
 import (
 	"unsafe"
 
-	"github.com/moonfdd/ffmpeg-go/ffcommon"
+	"github.com/dwdcth/ffmpeg-go/ffcommon"
 )
 
 /*
@@ -530,9 +530,9 @@ func AvReadImageLine2(dst ffcommon.FVoidP, data [4]*ffcommon.FUint8T,
 	)
 }
 
-//void av_read_image_line(uint16_t *dst, const uint8_t *data[4],
-//const int linesize[4], const AVPixFmtDescriptor *desc,
-//int x, int y, int c, int w, int read_pal_component);
+// void av_read_image_line(uint16_t *dst, const uint8_t *data[4],
+// const int linesize[4], const AVPixFmtDescriptor *desc,
+// int x, int y, int c, int w, int read_pal_component);
 func AvReadImageLine(dst *ffcommon.FUint16T, data [4]*ffcommon.FUint8T,
 	linesize [4]*ffcommon.FInt, desc *AVPixFmtDescriptor,
 	x, y, c, w, read_pal_component ffcommon.FInt) {
@@ -583,9 +583,9 @@ func AvWriteImageLine2(src ffcommon.FConstVoidP, data [4]*ffcommon.FUint8T,
 	)
 }
 
-//void av_write_image_line(const uint16_t *src, uint8_t *data[4],
-//const int linesize[4], const AVPixFmtDescriptor *desc,
-//int x, int y, int c, int w);
+// void av_write_image_line(const uint16_t *src, uint8_t *data[4],
+// const int linesize[4], const AVPixFmtDescriptor *desc,
+// int x, int y, int c, int w);
 func AvWriteImageLine(src *ffcommon.FUint16T, data [4]*ffcommon.FUint8T,
 	linesize [4]ffcommon.FInt, desc *AVPixFmtDescriptor,
 	x, y, c, w ffcommon.FInt) {

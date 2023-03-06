@@ -3,7 +3,7 @@ package libavutil
 import (
 	"unsafe"
 
-	"github.com/moonfdd/ffmpeg-go/ffcommon"
+	"github.com/dwdcth/ffmpeg-go/ffcommon"
 )
 
 /*
@@ -27,7 +27,7 @@ import (
 //#ifndef AVUTIL_THREADMESSAGE_H
 //#define AVUTIL_THREADMESSAGE_H
 
-//typedef struct AVThreadMessageQueue AVThreadMessageQueue;
+// typedef struct AVThreadMessageQueue AVThreadMessageQueue;
 type AVThreadMessageQueue struct {
 }
 type AVThreadMessageFlags int32

@@ -1,7 +1,7 @@
 package libavutil
 
 import (
-	"github.com/moonfdd/ffmpeg-go/ffcommon"
+	"github.com/dwdcth/ffmpeg-go/ffcommon"
 )
 
 /*
@@ -85,13 +85,13 @@ import (
  * such as the current paragraph.
  */
 
-//FF_PAD_STRUCTURE(AVBPrint, 1024,
-//char *str;         /**< string so far */
-//unsigned len;      /**< length so far */
-//unsigned size;     /**< allocated memory */
-//unsigned size_max; /**< maximum allocated memory */
-//char reserved_internal_buffer[1];
-//)
+// FF_PAD_STRUCTURE(AVBPrint, 1024,
+// char *str;         /**< string so far */
+// unsigned len;      /**< length so far */
+// unsigned size;     /**< allocated memory */
+// unsigned size_max; /**< maximum allocated memory */
+// char reserved_internal_buffer[1];
+// )
 type AVBPrint struct {
 	_ [128]uintptr
 }
@@ -208,7 +208,7 @@ func av_bprint_append_data() (res ffcommon.FCharP) {
 	return
 }
 
-//struct tm;
+// struct tm;
 type Tm struct {
 }
 

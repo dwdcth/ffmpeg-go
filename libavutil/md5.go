@@ -3,7 +3,7 @@ package libavutil
 import (
 	"unsafe"
 
-	"github.com/moonfdd/ffmpeg-go/ffcommon"
+	"github.com/dwdcth/ffmpeg-go/ffcommon"
 )
 
 /*
@@ -49,9 +49,9 @@ import (
  * @{
  */
 
-//extern const int av_md5_size;
+// struct AVMD5;
 //
-//struct AVMD5;
+//extern const int av_md5_size;
 type AVMD5 struct {
 }
 

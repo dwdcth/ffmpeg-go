@@ -3,7 +3,7 @@ package libavutil
 import (
 	"unsafe"
 
-	"github.com/moonfdd/ffmpeg-go/ffcommon"
+	"github.com/dwdcth/ffmpeg-go/ffcommon"
 )
 
 /*
@@ -38,22 +38,23 @@ import (
 //#include <stddef.h>
 
 /*
-   * DOVI configuration
-   * ref: dolby-vision-bitstreams-within-the-iso-base-media-file-format-v2.1.2
-          dolby-vision-bitstreams-in-mpeg-2-transport-stream-multiplex-v1.2
-   * @code
-   * uint8_t  dv_version_major, the major version number that the stream complies with
-   * uint8_t  dv_version_minor, the minor version number that the stream complies with
-   * uint8_t  dv_profile, the Dolby Vision profile
-   * uint8_t  dv_level, the Dolby Vision level
-   * uint8_t  rpu_present_flag
-   * uint8_t  el_present_flag
-   * uint8_t  bl_present_flag
-   * uint8_t  dv_bl_signal_compatibility_id
-   * @endcode
-   *
-   * @note The struct must be allocated with av_dovi_alloc() and
-   *       its size is not a part of the public ABI.
+  - DOVI configuration
+  - ref: dolby-vision-bitstreams-within-the-iso-base-media-file-format-v2.1.2
+    dolby-vision-bitstreams-in-mpeg-2-transport-stream-multiplex-v1.2
+  - @code
+  - uint8_t  dv_version_major, the major version number that the stream complies with
+  - uint8_t  dv_version_minor, the minor version number that the stream complies with
+  - uint8_t  dv_profile, the Dolby Vision profile
+  - uint8_t  dv_level, the Dolby Vision level
+  - uint8_t  rpu_present_flag
+  - uint8_t  el_present_flag
+  - uint8_t  bl_present_flag
+  - uint8_t  dv_bl_signal_compatibility_id
+  - @endcode
+
+*
+* @note The struct must be allocated with av_dovi_alloc() and
+*       its size is not a part of the public ABI.
 */
 type AVDOVIDecoderConfigurationRecord struct {
 	DvVersionMajor            ffcommon.FUint8T

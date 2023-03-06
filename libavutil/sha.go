@@ -3,7 +3,7 @@ package libavutil
 import (
 	"unsafe"
 
-	"github.com/moonfdd/ffmpeg-go/ffcommon"
+	"github.com/dwdcth/ffmpeg-go/ffcommon"
 )
 
 /*
@@ -59,7 +59,7 @@ import (
 
 //extern const int av_sha_size;
 
-//struct AVSHA;
+// struct AVSHA;
 type AVSHA struct {
 }
 

@@ -3,7 +3,7 @@ package libavcodec
 import (
 	"unsafe"
 
-	"github.com/moonfdd/ffmpeg-go/ffcommon"
+	"github.com/dwdcth/ffmpeg-go/ffcommon"
 )
 
 /*
@@ -36,7 +36,7 @@ import (
 //
 //#include <stdint.h>
 
-//typedef struct AVVorbisParseContext AVVorbisParseContext;
+// typedef struct AVVorbisParseContext AVVorbisParseContext;
 type AVVorbisParseContext struct {
 }
 
@@ -111,7 +111,7 @@ func (s *AVVorbisParseContext) AvVorbisParseFrame(buf *ffcommon.FUint8T, buf_siz
 	return
 }
 
-//void av_vorbis_parse_reset(AVVorbisParseContext *s);
+// void av_vorbis_parse_reset(AVVorbisParseContext *s);
 func (s *AVVorbisParseContext) AvVorbisParseReset() {
 	ffcommon.GetAvcodecDll().NewProc("av_vorbis_parse_reset").Call(
 		uintptr(unsafe.Pointer(s)),

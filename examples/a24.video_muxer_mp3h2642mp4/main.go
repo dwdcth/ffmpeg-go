@@ -6,10 +6,10 @@ import (
 	"os/exec"
 	"unsafe"
 
-	"github.com/moonfdd/ffmpeg-go/ffcommon"
-	"github.com/moonfdd/ffmpeg-go/libavcodec"
-	"github.com/moonfdd/ffmpeg-go/libavformat"
-	"github.com/moonfdd/ffmpeg-go/libavutil"
+	"github.com/dwdcth/ffmpeg-go/ffcommon"
+	"github.com/dwdcth/ffmpeg-go/libavcodec"
+	"github.com/dwdcth/ffmpeg-go/libavformat"
+	"github.com/dwdcth/ffmpeg-go/libavutil"
 )
 
 /*

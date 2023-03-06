@@ -3,8 +3,8 @@ package libswscale
 import (
 	"unsafe"
 
-	"github.com/moonfdd/ffmpeg-go/ffcommon"
-	"github.com/moonfdd/ffmpeg-go/libavutil"
+	"github.com/dwdcth/ffmpeg-go/ffcommon"
+	"github.com/dwdcth/ffmpeg-go/libavutil"
 )
 
 /*
@@ -108,11 +108,11 @@ const SWS_PARAM_DEFAULT = 123456
 
 const SWS_PRINT_INFO = 0x1000
 
-//the following 3 flags are not completely implemented
-//internal chrominance subsampling info
+// the following 3 flags are not completely implemented
+// internal chrominance subsampling info
 const SWS_FULL_CHR_H_INT = 0x2000
 
-//input subsampling info
+// input subsampling info
 const SWS_FULL_CHR_H_INP = 0x4000
 const SWS_DIRECT_BGR = 0x8000
 const SWS_ACCURATE_RND = 0x40000
@@ -164,7 +164,7 @@ type SwsFilter struct {
 	ChrV *SwsVector
 }
 
-//struct SwsContext;
+// struct SwsContext;
 type SwsContext struct {
 }
 
@@ -461,8 +461,8 @@ func (a *SwsVector) SwsNormalizeVec(height ffcommon.FDouble) {
 	)
 }
 
-//#if FF_API_SWS_VECTOR
-//attribute_deprecated SwsVector *sws_getConstVec(double c, int length);
+// #if FF_API_SWS_VECTOR
+// attribute_deprecated SwsVector *sws_getConstVec(double c, int length);
 func SwsGetConstVec(c ffcommon.FDouble, length ffcommon.FInt) (res *SwsVector) {
 	t, _, _ := ffcommon.GetAvswscaleDll().NewProc("sws_getConstVec").Call(
 		uintptr(unsafe.Pointer(&c)),
@@ -472,14 +472,14 @@ func SwsGetConstVec(c ffcommon.FDouble, length ffcommon.FInt) (res *SwsVector) {
 	return
 }
 
-//attribute_deprecated SwsVector *sws_getIdentityVec(void);
+// attribute_deprecated SwsVector *sws_getIdentityVec(void);
 func SwsGetIdentityVec() (res *SwsVector) {
 	t, _, _ := ffcommon.GetAvswscaleDll().NewProc("sws_getIdentityVec").Call()
 	res = (*SwsVector)(unsafe.Pointer(t))
 	return
 }
 
-//attribute_deprecated void sws_convVec(SwsVector *a, SwsVector *b);
+// attribute_deprecated void sws_convVec(SwsVector *a, SwsVector *b);
 func (a *SwsVector) SwsConvVec(b *SwsVector) {
 	ffcommon.GetAvswscaleDll().NewProc("sws_convVec").Call(
 		uintptr(unsafe.Pointer(a)),
@@ -487,7 +487,7 @@ func (a *SwsVector) SwsConvVec(b *SwsVector) {
 	)
 }
 
-//attribute_deprecated void sws_addVec(SwsVector *a, SwsVector *b);
+// attribute_deprecated void sws_addVec(SwsVector *a, SwsVector *b);
 func (a *SwsVector) SwsAddVec(b *SwsVector) {
 	ffcommon.GetAvswscaleDll().NewProc("sws_addVec").Call(
 		uintptr(unsafe.Pointer(a)),
@@ -495,7 +495,7 @@ func (a *SwsVector) SwsAddVec(b *SwsVector) {
 	)
 }
 
-//attribute_deprecated void sws_subVec(SwsVector *a, SwsVector *b);
+// attribute_deprecated void sws_subVec(SwsVector *a, SwsVector *b);
 func (a *SwsVector) SwsSubVec(b *SwsVector) {
 	ffcommon.GetAvswscaleDll().NewProc("sws_subVec").Call(
 		uintptr(unsafe.Pointer(a)),
@@ -503,7 +503,7 @@ func (a *SwsVector) SwsSubVec(b *SwsVector) {
 	)
 }
 
-//attribute_deprecated void sws_shiftVec(SwsVector *a, int shift);
+// attribute_deprecated void sws_shiftVec(SwsVector *a, int shift);
 func (a *SwsVector) SwsShiftVec(shift ffcommon.FInt) {
 	ffcommon.GetAvswscaleDll().NewProc("sws_shiftVec").Call(
 		uintptr(unsafe.Pointer(a)),
@@ -511,7 +511,7 @@ func (a *SwsVector) SwsShiftVec(shift ffcommon.FInt) {
 	)
 }
 
-//attribute_deprecated SwsVector *sws_cloneVec(SwsVector *a);
+// attribute_deprecated SwsVector *sws_cloneVec(SwsVector *a);
 func (a *SwsVector) SwsCloneVec() (res *SwsVector) {
 	t, _, _ := ffcommon.GetAvswscaleDll().NewProc("sws_cloneVec").Call(
 		uintptr(unsafe.Pointer(a)),
@@ -520,7 +520,7 @@ func (a *SwsVector) SwsCloneVec() (res *SwsVector) {
 	return
 }
 
-//attribute_deprecated void sws_printVec2(SwsVector *a, AVClass *log_ctx, int log_level);
+// attribute_deprecated void sws_printVec2(SwsVector *a, AVClass *log_ctx, int log_level);
 func (a *SwsVector) SwsPrintVec2(log_ctx *AVClass, log_level ffcommon.FInt) {
 	ffcommon.GetAvswscaleDll().NewProc("sws_printVec2").Call(
 		uintptr(unsafe.Pointer(a)),
@@ -531,17 +531,17 @@ func (a *SwsVector) SwsPrintVec2(log_ctx *AVClass, log_level ffcommon.FInt) {
 
 //#endif
 
-//void sws_freeVec(SwsVector *a);
+// void sws_freeVec(SwsVector *a);
 func (a *SwsVector) SwsFreeVec() {
 	ffcommon.GetAvswscaleDll().NewProc("sws_freeVec").Call(
 		uintptr(unsafe.Pointer(a)),
 	)
 }
 
-//SwsFilter *sws_getDefaultFilter(float lumaGBlur, float chromaGBlur,
-//float lumaSharpen, float chromaSharpen,
-//float chromaHShift, float chromaVShift,
-//int verbose);
+// SwsFilter *sws_getDefaultFilter(float lumaGBlur, float chromaGBlur,
+// float lumaSharpen, float chromaSharpen,
+// float chromaHShift, float chromaVShift,
+// int verbose);
 func SwsGetDefaultFilter(lumaGBlur, chromaGBlur,
 	lumaSharpen, chromaSharpen,
 	chromaHShift, chromaVShift ffcommon.FFloat,
@@ -559,7 +559,7 @@ func SwsGetDefaultFilter(lumaGBlur, chromaGBlur,
 	return
 }
 
-//void sws_freeFilter(SwsFilter *filter);
+// void sws_freeFilter(SwsFilter *filter);
 func (filter *SwsFilter) SwsFreeFilter() {
 	ffcommon.GetAvswscaleDll().NewProc("sws_freeFilter").Call(
 		uintptr(unsafe.Pointer(filter)),

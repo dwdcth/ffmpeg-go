@@ -3,7 +3,7 @@ package libavutil
 import (
 	"unsafe"
 
-	"github.com/moonfdd/ffmpeg-go/ffcommon"
+	"github.com/dwdcth/ffmpeg-go/ffcommon"
 )
 
 /*
@@ -69,8 +69,8 @@ func (q *AVRational) AvParseRatio(str ffcommon.FConstCharP, max,
 	return
 }
 
-//#define av_parse_ratio_quiet(rate, str, max) \
-//av_parse_ratio(rate, str, max, AV_LOG_MAX_OFFSET, NULL)
+// #define av_parse_ratio_quiet(rate, str, max) \
+// av_parse_ratio(rate, str, max, AV_LOG_MAX_OFFSET, NULL)
 func (q *AVRational) AvParseRatioQuiet(str ffcommon.FConstCharP, max ffcommon.FInt) (res ffcommon.FInt) {
 	res = q.AvParseRatio(str, max, AV_LOG_MAX_OFFSET, 0)
 	return

@@ -3,7 +3,7 @@ package libavutil
 import (
 	"unsafe"
 
-	"github.com/moonfdd/ffmpeg-go/ffcommon"
+	"github.com/dwdcth/ffmpeg-go/ffcommon"
 )
 
 /*
@@ -85,9 +85,11 @@ const AV_CH_BOTTOM_FRONT_CENTER = 0x0000004000000000
 const AV_CH_BOTTOM_FRONT_LEFT = 0x0000008000000000
 const AV_CH_BOTTOM_FRONT_RIGHT = 0x0000010000000000
 
-/** Channel mask value used for AVCodecContext.request_channel_layout
-  to indicate that the user requests the channel order of the decoder output
-  to be the native codec channel order. */
+/*
+  - Channel mask value used for AVCodecContext.request_channel_layout
+    to indicate that the user requests the channel order of the decoder output
+    to be the native codec channel order.
+*/
 const AV_CH_LAYOUT_NATIVE = 0x8000000000000000
 
 /**

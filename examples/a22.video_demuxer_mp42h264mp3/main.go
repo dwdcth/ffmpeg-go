@@ -5,11 +5,11 @@ import (
 	"os"
 	"os/exec"
 
-	"github.com/moonfdd/ffmpeg-go/ffcommon"
-	"github.com/moonfdd/ffmpeg-go/libavcodec"
-	"github.com/moonfdd/ffmpeg-go/libavdevice"
-	"github.com/moonfdd/ffmpeg-go/libavformat"
-	"github.com/moonfdd/ffmpeg-go/libavutil"
+	"github.com/dwdcth/ffmpeg-go/ffcommon"
+	"github.com/dwdcth/ffmpeg-go/libavcodec"
+	"github.com/dwdcth/ffmpeg-go/libavdevice"
+	"github.com/dwdcth/ffmpeg-go/libavformat"
+	"github.com/dwdcth/ffmpeg-go/libavutil"
 )
 
 func open_codec_context(streamIndex *ffcommon.FInt, ofmtCtx **libavformat.AVFormatContext, ifmtCtx *libavformat.AVFormatContext, type0 libavutil.AVMediaType) ffcommon.FInt {

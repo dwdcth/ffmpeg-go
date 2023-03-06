@@ -3,7 +3,7 @@ package libavutil
 import (
 	"unsafe"
 
-	"github.com/moonfdd/ffmpeg-go/ffcommon"
+	"github.com/dwdcth/ffmpeg-go/ffcommon"
 )
 
 /*
@@ -49,7 +49,7 @@ import (
  * @{
  */
 
-//struct AVTreeNode;
+// struct AVTreeNode;
 type AVTreeNode struct {
 }
 
@@ -150,7 +150,7 @@ func AvTreeInsert(rootp **AVTreeNode, key ffcommon.FVoidP, cmp func(key ffcommon
 	return
 }
 
-//void av_tree_destroy(struct AVTreeNode *t);
+// void av_tree_destroy(struct AVTreeNode *t);
 func (tt *AVTreeNode) AvTreeDestroy() (res ffcommon.FVoidP) {
 	t, _, _ := ffcommon.GetAvutilDll().NewProc("av_tree_destroy").Call(
 		uintptr(unsafe.Pointer(tt)),

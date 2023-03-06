@@ -3,7 +3,7 @@ package libavutil
 import (
 	"unsafe"
 
-	"github.com/moonfdd/ffmpeg-go/ffcommon"
+	"github.com/dwdcth/ffmpeg-go/ffcommon"
 )
 
 /*
@@ -49,7 +49,7 @@ const (
 	AV_HWDEVICE_TYPE_VULKAN
 )
 
-//typedef struct AVHWDeviceInternal AVHWDeviceInternal;
+// typedef struct AVHWDeviceInternal AVHWDeviceInternal;
 type AVHWDeviceInternal struct {
 }
 
@@ -122,7 +122,7 @@ type AVHWDeviceContext struct {
 	UserOpaque ffcommon.FVoidP
 }
 
-//typedef struct AVHWFramesInternal AVHWFramesInternal;
+// typedef struct AVHWFramesInternal AVHWFramesInternal;
 type AVHWFramesInternal struct {
 }
 

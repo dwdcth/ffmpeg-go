@@ -3,8 +3,8 @@ package libavcodec
 import (
 	"unsafe"
 
-	"github.com/moonfdd/ffmpeg-go/ffcommon"
-	"github.com/moonfdd/ffmpeg-go/libavutil"
+	"github.com/dwdcth/ffmpeg-go/ffcommon"
+	"github.com/dwdcth/ffmpeg-go/libavutil"
 )
 
 /*
@@ -97,7 +97,7 @@ func AvcodecDctAlloc() (res *AVDCT) {
 	return
 }
 
-//int avcodec_dct_init(AVDCT *);
+// int avcodec_dct_init(AVDCT *);
 func (a *AVDCT) AvcodecDctInit() (res ffcommon.FInt) {
 	t, _, _ := ffcommon.GetAvcodecDll().NewProc("avcodec_dct_init").Call(
 		uintptr(unsafe.Pointer(a)),
@@ -106,7 +106,7 @@ func (a *AVDCT) AvcodecDctInit() (res ffcommon.FInt) {
 	return
 }
 
-//const AVClass *avcodec_dct_get_class(void);
+// const AVClass *avcodec_dct_get_class(void);
 func AvcodecDctGetClass() (res *AVClass) {
 	t, _, _ := ffcommon.GetAvcodecDll().NewProc("avcodec_dct_get_class").Call()
 	res = (*AVClass)(unsafe.Pointer(t))

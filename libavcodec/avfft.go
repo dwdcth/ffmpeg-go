@@ -3,7 +3,7 @@ package libavcodec
 import (
 	"unsafe"
 
-	"github.com/moonfdd/ffmpeg-go/ffcommon"
+	"github.com/dwdcth/ffmpeg-go/ffcommon"
 )
 
 /*
@@ -46,7 +46,7 @@ type FFTComplex struct {
 	Re, Im ffcommon.FFloat
 }
 
-//typedef struct FFTContext FFTContext;
+// typedef struct FFTContext FFTContext;
 type FFTContext struct {
 }
 
@@ -88,14 +88,14 @@ func (s *FFTContext) AvFftCalc(z *FFTComplex) {
 	)
 }
 
-//void av_fft_end(FFTContext *s);
+// void av_fft_end(FFTContext *s);
 func (s *FFTContext) AvFftEnd() {
 	ffcommon.GetAvcodecDll().NewProc("av_fft_end").Call(
 		uintptr(unsafe.Pointer(s)),
 	)
 }
 
-//FFTContext *av_mdct_init(int nbits, int inverse, double scale);
+// FFTContext *av_mdct_init(int nbits, int inverse, double scale);
 func AvMdctInit(nbits, inverse ffcommon.FInt, scale ffcommon.FDouble) (res *FFTContext) {
 	t, _, _ := ffcommon.GetAvcodecDll().NewProc("av_mdct_init").Call(
 		uintptr(nbits),
@@ -106,7 +106,7 @@ func AvMdctInit(nbits, inverse ffcommon.FInt, scale ffcommon.FDouble) (res *FFTC
 	return
 }
 
-//void av_imdct_calc(FFTContext *s, FFTSample *output, const FFTSample *input);
+// void av_imdct_calc(FFTContext *s, FFTSample *output, const FFTSample *input);
 func (s *FFTContext) AvImdctCalc(output, input *ffcommon.FFTSample) {
 	ffcommon.GetAvcodecDll().NewProc("av_imdct_calc").Call(
 		uintptr(unsafe.Pointer(s)),
@@ -115,7 +115,7 @@ func (s *FFTContext) AvImdctCalc(output, input *ffcommon.FFTSample) {
 	)
 }
 
-//void av_imdct_half(FFTContext *s, FFTSample *output, const FFTSample *input);
+// void av_imdct_half(FFTContext *s, FFTSample *output, const FFTSample *input);
 func (s *FFTContext) AvImdctHalf(output, input *ffcommon.FFTSample) {
 	ffcommon.GetAvcodecDll().NewProc("av_imdct_half").Call(
 		uintptr(unsafe.Pointer(s)),
@@ -124,7 +124,7 @@ func (s *FFTContext) AvImdctHalf(output, input *ffcommon.FFTSample) {
 	)
 }
 
-//void av_mdct_calc(FFTContext *s, FFTSample *output, const FFTSample *input);
+// void av_mdct_calc(FFTContext *s, FFTSample *output, const FFTSample *input);
 func (s *FFTContext) AvMdctCalc(output, input *ffcommon.FFTSample) {
 	ffcommon.GetAvcodecDll().NewProc("av_mdct_calc").Call(
 		uintptr(unsafe.Pointer(s)),
@@ -133,7 +133,7 @@ func (s *FFTContext) AvMdctCalc(output, input *ffcommon.FFTSample) {
 	)
 }
 
-//void av_mdct_end(FFTContext *s);
+// void av_mdct_end(FFTContext *s);
 func (s *FFTContext) AvMdctEnd(output, input *ffcommon.FFTSample) {
 	ffcommon.GetAvcodecDll().NewProc("av_mdct_end").Call(
 		uintptr(unsafe.Pointer(s)),
@@ -150,7 +150,7 @@ const (
 	DFT_C2R
 )
 
-//typedef struct RDFTContext RDFTContext;
+// typedef struct RDFTContext RDFTContext;
 type RDFTContext struct {
 }
 
@@ -169,7 +169,7 @@ func AvRdftInit(nbits ffcommon.FInt, trans RDFTransformType) (res *RDFTContext) 
 	return
 }
 
-//void av_rdft_calc(RDFTContext *s, FFTSample *data);
+// void av_rdft_calc(RDFTContext *s, FFTSample *data);
 func (s *RDFTContext) AvRdftCalc(data *ffcommon.FFTSample) {
 	ffcommon.GetAvcodecDll().NewProc("av_rdft_calc").Call(
 		uintptr(unsafe.Pointer(s)),
@@ -177,7 +177,7 @@ func (s *RDFTContext) AvRdftCalc(data *ffcommon.FFTSample) {
 	)
 }
 
-//void av_rdft_end(RDFTContext *s);
+// void av_rdft_end(RDFTContext *s);
 func (s *RDFTContext) AvRdftEnd() {
 	ffcommon.GetAvcodecDll().NewProc("av_rdft_end").Call(
 		uintptr(unsafe.Pointer(s)),
@@ -186,7 +186,7 @@ func (s *RDFTContext) AvRdftEnd() {
 
 /* Discrete Cosine Transform */
 
-//typedef struct DCTContext DCTContext;
+// typedef struct DCTContext DCTContext;
 type DCTContext struct {
 }
 type DCTTransformType = int32
@@ -218,7 +218,7 @@ func AvDctInit(nbits ffcommon.FInt, type0 DCTTransformType) (res *DCTContext) {
 	return
 }
 
-//void av_dct_calc(DCTContext *s, FFTSample *data);
+// void av_dct_calc(DCTContext *s, FFTSample *data);
 func (s *DCTContext) AvDctCalc(data *ffcommon.FFTSample) {
 	ffcommon.GetAvcodecDll().NewProc("av_dct_calc").Call(
 		uintptr(unsafe.Pointer(s)),
@@ -226,7 +226,7 @@ func (s *DCTContext) AvDctCalc(data *ffcommon.FFTSample) {
 	)
 }
 
-//void av_dct_end (DCTContext *s);
+// void av_dct_end (DCTContext *s);
 func (s *DCTContext) AvDctEnd() {
 	ffcommon.GetAvcodecDll().NewProc("av_dct_end").Call(
 		uintptr(unsafe.Pointer(s)),

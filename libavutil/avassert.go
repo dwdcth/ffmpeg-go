@@ -1,6 +1,6 @@
 package libavutil
 
-import "github.com/moonfdd/ffmpeg-go/ffcommon"
+import "github.com/dwdcth/ffmpeg-go/ffcommon"
 
 /*
  * copyright (c) 2010 Michael Niedermayer <michaelni@gmx.at>

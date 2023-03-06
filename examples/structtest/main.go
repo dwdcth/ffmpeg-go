@@ -3,17 +3,17 @@ package main
 import "C"
 import (
 	"fmt"
-	"github.com/moonfdd/ffmpeg-go/libavcodec"
-	"github.com/moonfdd/ffmpeg-go/libavdevice"
-	"github.com/moonfdd/ffmpeg-go/libavfilter"
-	"github.com/moonfdd/ffmpeg-go/libavformat"
-	"github.com/moonfdd/ffmpeg-go/libavutil"
-	"github.com/moonfdd/ffmpeg-go/libswscale"
+	"github.com/dwdcth/ffmpeg-go/libavcodec"
+	"github.com/dwdcth/ffmpeg-go/libavdevice"
+	"github.com/dwdcth/ffmpeg-go/libavfilter"
+	"github.com/dwdcth/ffmpeg-go/libavformat"
+	"github.com/dwdcth/ffmpeg-go/libavutil"
+	"github.com/dwdcth/ffmpeg-go/libswscale"
 	"reflect"
 	"unsafe"
 )
 
-//https://blog.csdn.net/u010824081/article/details/79427676
+// https://blog.csdn.net/u010824081/article/details/79427676
 func main() {
 	if true {
 		var a [2]libavformat.AVIODirEntry

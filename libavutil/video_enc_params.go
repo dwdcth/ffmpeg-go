@@ -3,7 +3,7 @@ package libavutil
 import (
 	"unsafe"
 
-	"github.com/moonfdd/ffmpeg-go/ffcommon"
+	"github.com/dwdcth/ffmpeg-go/ffcommon"
 )
 
 /*
@@ -24,14 +24,14 @@ import (
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-//#ifndef AVUTIL_VIDEO_ENC_PARAMS_H
-//#define AVUTIL_VIDEO_ENC_PARAMS_H
+// #ifndef AVUTIL_VIDEO_ENC_PARAMS_H
+// #define AVUTIL_VIDEO_ENC_PARAMS_H
 //
-//#include <stddef.h>
-//#include <stdint.h>
+// #include <stddef.h>
+// #include <stdint.h>
 //
-//#include "../libavutil/avassert.h"
-//#include "../libavutil/frame.h"
+// #include "../libavutil/avassert.h"
+// #include "../libavutil/frame.h"
 type AVVideoEncParamsType int32
 
 const (

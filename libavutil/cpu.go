@@ -3,7 +3,7 @@ package libavutil
 import (
 	"unsafe"
 
-	"github.com/moonfdd/ffmpeg-go/ffcommon"
+	"github.com/dwdcth/ffmpeg-go/ffcommon"
 )
 
 /*
@@ -43,11 +43,11 @@ const AV_CPU_FLAG_3DNOW = 0x0004        ///< AMD 3DNOW
 const AV_CPU_FLAG_SSE = 0x0008          ///< SSE functions
 const AV_CPU_FLAG_SSE2 = 0x0010         ///< PIV SSE2 functions
 const AV_CPU_FLAG_SSE2SLOW = 0x40000000 ///< SSE2 supported, but usually not faster
-///< than regular MMX/SSE (e.g. Core1)
+// /< than regular MMX/SSE (e.g. Core1)
 const AV_CPU_FLAG_3DNOWEXT = 0x0020     ///< AMD 3DNowExt
 const AV_CPU_FLAG_SSE3 = 0x0040         ///< Prescott SSE3 functions
 const AV_CPU_FLAG_SSE3SLOW = 0x20000000 ///< SSE3 supported, but usually not faster
-///< than regular MMX/SSE (e.g. Core1)
+// /< than regular MMX/SSE (e.g. Core1)
 const AV_CPU_FLAG_SSSE3 = 0x0080        ///< Conroe SSSE3 functions
 const AV_CPU_FLAG_SSSE3SLOW = 0x4000000 ///< SSSE3 supported, but usually not faster
 const AV_CPU_FLAG_ATOM = 0x10000000     ///< Atom processor, some SSSE3 instructions are slower

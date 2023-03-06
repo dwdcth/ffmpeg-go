@@ -3,7 +3,7 @@ package libavutil
 import (
 	"unsafe"
 
-	"github.com/moonfdd/ffmpeg-go/ffcommon"
+	"github.com/dwdcth/ffmpeg-go/ffcommon"
 )
 
 /*
@@ -52,7 +52,7 @@ import (
  * @{
  */
 
-//typedef uint32_t AVCRC;
+// typedef uint32_t AVCRC;
 type AVCRC ffcommon.FUint32T
 type AVCRCId int32
 

@@ -3,8 +3,8 @@ package libavcodec
 import (
 	"unsafe"
 
-	"github.com/moonfdd/ffmpeg-go/ffcommon"
-	"github.com/moonfdd/ffmpeg-go/libavutil"
+	"github.com/dwdcth/ffmpeg-go/ffcommon"
+	"github.com/dwdcth/ffmpeg-go/libavutil"
 )
 
 /*
@@ -65,8 +65,8 @@ import (
 //#include "avcodec.h"
 //#include "version.h"
 
-//struct AVCodecContext;
-//struct AVFrame;
+// struct AVCodecContext;
+// struct AVFrame;
 type AVFrame = libavutil.AVFrame
 
 //typedef int (*AVVDPAU_Render2)(struct AVCodecContext *, struct AVFrame *,
@@ -121,7 +121,7 @@ func AvAllocVdpaucontext() (res *AVVDPAUContext) {
 	return
 }
 
-//AVVDPAU_Render2 av_vdpau_hwaccel_get_render2(const AVVDPAUContext *);
+// AVVDPAU_Render2 av_vdpau_hwaccel_get_render2(const AVVDPAUContext *);
 func (c *AVVDPAUContext) AvVdpauHwaccelGetRender2() (res uintptr) {
 	t, _, _ := ffcommon.GetAvcodecDll().NewProc("av_vdpau_hwaccel_get_render2").Call(
 		uintptr(unsafe.Pointer(c)),
@@ -130,7 +130,7 @@ func (c *AVVDPAUContext) AvVdpauHwaccelGetRender2() (res uintptr) {
 	return
 }
 
-//void av_vdpau_hwaccel_set_render2(AVVDPAUContext *, AVVDPAU_Render2);
+// void av_vdpau_hwaccel_set_render2(AVVDPAUContext *, AVVDPAU_Render2);
 func (c *AVVDPAUContext) AvVdpauHwaccelSetRender2(r2 uintptr) {
 	ffcommon.GetAvcodecDll().NewProc("av_vdpau_hwaccel_set_render2").Call(
 		uintptr(unsafe.Pointer(c)),

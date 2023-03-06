@@ -1,6 +1,6 @@
 package libpostproc
 
-import "github.com/moonfdd/ffmpeg-go/ffcommon"
+import "github.com/dwdcth/ffmpeg-go/ffcommon"
 
 /*
  * Copyright (C) 2001-2003 Michael Niedermayer (michaelni@gmx.at)
@@ -107,14 +107,14 @@ func PpGetModeByNameAndQuality(name ffcommon.FConstCharP, quality ffcommon.FInt)
 	return
 }
 
-//void pp_free_mode(pp_mode *mode);
+// void pp_free_mode(pp_mode *mode);
 func PpFreeMode(mode ffcommon.FVoidP) {
 	ffcommon.GetAvpostprocDll().NewProc("pp_free_mode").Call(
 		mode,
 	)
 }
 
-//pp_context *pp_get_context(int width, int height, int flags);
+// pp_context *pp_get_context(int width, int height, int flags);
 func PpGetContext(width, height, flags ffcommon.FInt) (res ffcommon.FVoidP) {
 	t, _, _ := ffcommon.GetAvpostprocDll().NewProc("pp_get_context").Call(
 		uintptr(width),
@@ -125,7 +125,7 @@ func PpGetContext(width, height, flags ffcommon.FInt) (res ffcommon.FVoidP) {
 	return
 }
 
-//void pp_free_context(pp_context *ppContext);
+// void pp_free_context(pp_context *ppContext);
 func PpFreeContext(ppContext ffcommon.FVoidP) {
 	ffcommon.GetAvpostprocDll().NewProc("pp_free_context").Call(
 		ppContext,

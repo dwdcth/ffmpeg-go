@@ -6,11 +6,11 @@ import (
 	"os/exec"
 	"unsafe"
 
-	"github.com/moonfdd/ffmpeg-go/ffcommon"
-	"github.com/moonfdd/ffmpeg-go/libavcodec"
-	"github.com/moonfdd/ffmpeg-go/libavformat"
-	"github.com/moonfdd/ffmpeg-go/libavutil"
-	"github.com/moonfdd/ffmpeg-go/libswscale"
+	"github.com/dwdcth/ffmpeg-go/ffcommon"
+	"github.com/dwdcth/ffmpeg-go/libavcodec"
+	"github.com/dwdcth/ffmpeg-go/libavformat"
+	"github.com/dwdcth/ffmpeg-go/libavutil"
+	"github.com/dwdcth/ffmpeg-go/libswscale"
 )
 
 func main() {
@@ -152,7 +152,7 @@ func main() {
 	exec.Command("./lib/ffplay", "-top", "500", "./out/frame1.ppm").Output()
 }
 
-//将FFmpeg解码后的数据保存到本地文件
+// 将FFmpeg解码后的数据保存到本地文件
 func saveFrame(pFrame *libavutil.AVFrame, width, height, iFrame int) {
 	genDir := "./out"
 	_, err := os.Stat(genDir)

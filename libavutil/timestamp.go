@@ -3,7 +3,7 @@ package libavutil
 import (
 	"fmt"
 
-	"github.com/moonfdd/ffmpeg-go/ffcommon"
+	"github.com/dwdcth/ffmpeg-go/ffcommon"
 )
 
 /*

@@ -3,7 +3,7 @@ package libavutil
 import (
 	"unsafe"
 
-	"github.com/moonfdd/ffmpeg-go/ffcommon"
+	"github.com/dwdcth/ffmpeg-go/ffcommon"
 )
 
 /*
@@ -26,13 +26,13 @@ import (
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-//#ifndef AVUTIL_LOG_H
-//#define AVUTIL_LOG_H
+// #ifndef AVUTIL_LOG_H
+// #define AVUTIL_LOG_H
 //
-//#include <stdarg.h>
-//#include "avutil.h"
-//#include "attributes.h"
-//#include "version.h"
+// #include <stdarg.h>
+// #include "avutil.h"
+// #include "attributes.h"
+// #include "version.h"
 type AVClassCategory int32
 
 const (
@@ -422,7 +422,7 @@ func AvDefaultItemName(ctx ffcommon.FVoidP) (res ffcommon.FCharP) {
 	return
 }
 
-//AVClassCategory av_default_get_category(void *ptr);
+// AVClassCategory av_default_get_category(void *ptr);
 func AvDefaultGetCategory(ptr ffcommon.FVoidP) (res AVClassCategory) {
 	t, _, _ := ffcommon.GetAvutilDll().NewProc("av_default_get_category").Call(
 		ptr,
@@ -502,7 +502,7 @@ const AV_LOG_SKIP_REPEATED = 1
  */
 const AV_LOG_PRINT_LEVEL = 2
 
-//void av_log_set_flags(int arg);
+// void av_log_set_flags(int arg);
 func AvLogSetFlags(arg ffcommon.FInt) (res ffcommon.FCharP) {
 	t, _, _ := ffcommon.GetAvutilDll().NewProc("av_log_set_flags").Call(
 		uintptr(arg),
@@ -511,7 +511,7 @@ func AvLogSetFlags(arg ffcommon.FInt) (res ffcommon.FCharP) {
 	return
 }
 
-//int av_log_get_flags(void);
+// int av_log_get_flags(void);
 func AvLogGetFlags() (res ffcommon.FInt) {
 	t, _, _ := ffcommon.GetAvutilDll().NewProc("av_log_get_flags").Call()
 	res = ffcommon.FInt(t)

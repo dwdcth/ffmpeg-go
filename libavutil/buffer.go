@@ -3,7 +3,7 @@ package libavutil
 import (
 	"unsafe"
 
-	"github.com/moonfdd/ffmpeg-go/ffcommon"
+	"github.com/dwdcth/ffmpeg-go/ffcommon"
 )
 
 /*
@@ -254,7 +254,7 @@ func (buf *AVBufferRef) AvBufferGetOpaque() (res ffcommon.FVoidP) {
 	return
 }
 
-//int av_buffer_get_ref_count(const AVBufferRef *buf);
+// int av_buffer_get_ref_count(const AVBufferRef *buf);
 func (buf *AVBufferRef) AvBufferGetRefCount() (res ffcommon.FInt) {
 	t, _, _ := ffcommon.GetAvutilDll().NewProc("av_buffer_get_ref_count").Call(
 		uintptr(unsafe.Pointer(buf)),

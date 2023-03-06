@@ -3,7 +3,7 @@ package libavutil
 import (
 	"unsafe"
 
-	"github.com/moonfdd/ffmpeg-go/ffcommon"
+	"github.com/dwdcth/ffmpeg-go/ffcommon"
 )
 
 /*
@@ -38,7 +38,7 @@ import (
 const AES_CTR_KEY_SIZE = (16)
 const AES_CTR_IV_SIZE = (8)
 
-//struct AVAESCTR;
+// struct AVAESCTR;
 type AVAESCTR struct {
 }
 
