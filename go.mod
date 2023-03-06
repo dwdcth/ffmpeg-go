@@ -1,4 +1,4 @@
-module github.com/moonfdd/ffmpeg-go
+module github.com/dwdcth/ffmpeg-go
 
 go 1.16
 
