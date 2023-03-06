@@ -3,6 +3,8 @@ package ffcommon
 import (
 	"syscall"
 	"unsafe"
+
+	"github.com/ebitengine/purego"
 )
 
 func BytePtrFromString(str string) (res *byte) {
@@ -47,7 +49,7 @@ func CBool(val bool) uintptr {
 	return 0
 }
 func NewCallback(fn interface{}) uintptr {
-	u := syscall.NewCallback(fn)
+	u := purego.NewCallback(fn)
 	return u
 }
 
