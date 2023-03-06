@@ -3,8 +3,6 @@ package ffcommon
 import (
 	"syscall"
 	"unsafe"
-
-	"github.com/ebitengine/purego"
 )
 
 func BytePtrFromString(str string) (res *byte) {
@@ -50,10 +48,6 @@ func CBool(val bool) uintptr {
 		return 1
 	}
 	return 0
-}
-func NewCallback(fn interface{}) uintptr {
-	u := purego.NewCallback(fn)
-	return u
 }
 
 func ByteSliceFromByteP(data *byte, len0 int) []byte {
