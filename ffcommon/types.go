@@ -14,7 +14,7 @@ type FConstDouble = float64
 type FDoubleP = *float64
 type FDouble = float64
 type FUint8T = byte
-type FInt8T = byte
+type FInt8T = int8
 type FConstInt = int32
 type FFloat = float32
 type FInt64T = int64
@@ -26,6 +26,7 @@ type FUnsignedCharP = string
 type FUnsignedInt = uint32
 type FSizeT = uint64
 type FUnsignedLong = uint32
+type FLong = int32
 
 type FAVAdler = uint32
 type FFileP = uintptr
@@ -42,8 +43,11 @@ type FFTSample = float32
 type FIntOrSizeT = int32
 
 type FCharPStruct = uintptr
+type FConstCharPStruct = uintptr
 type FChar = byte
 type FUnsignedCharPStruct = uintptr
 type FIntOrInt64 = int32
 
 type FUnsignedIntOrSizeT = int32
+
+type FEnum = int32
