@@ -499,7 +499,7 @@ type AVRational = libavcodec.AVRational
 type AVDeviceCapabilitiesQuery struct {
 	AvClass       *AVClass
 	DeviceContext uintptr //*AVFormatContext //todo
-	codec         AVCodecID
+	Codec         AVCodecID
 	SampleFormat  AVSampleFormat
 	PixelFormat   AVPixelFormat
 	SampleRate    ffcommon.FInt

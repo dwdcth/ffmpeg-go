@@ -3905,7 +3905,7 @@ const (
 	//#if FF_API_R_FRAME_RATE
 	AVFMT_TBCF_R_FRAMERATE
 
-	//#endif
+// #endif
 )
 
 /**
