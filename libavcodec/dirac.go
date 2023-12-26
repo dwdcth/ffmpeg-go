@@ -1,9 +1,10 @@
 package libavcodec
 
 import (
-	"unsafe"
+	"sync"
 
 	"github.com/dwdcth/ffmpeg-go/ffcommon"
+	"github.com/ebitengine/purego"
 )
 
 /*
@@ -136,16 +137,14 @@ type AVDiracSeqHeader struct {
 //int av_dirac_parse_sequence_header(AVDiracSeqHeader **dsh,
 //const uint8_t *buf, size_t buf_size,
 //void *log_ctx);
-func AvDiracParseSequenceHeader(dsh **AVDiracSeqHeader,
-	buf *ffcommon.FUint8T, buf_size ffcommon.FSizeT,
-	log_ctx ffcommon.FVoidP) (res ffcommon.FInt) {
-	t, _, _ := ffcommon.GetAvcodecDll().NewProc("av_dirac_parse_sequence_header").Call(
-		uintptr(unsafe.Pointer(dsh)),
-		uintptr(unsafe.Pointer(buf)),
-		uintptr(buf_size),
-		log_ctx,
-	)
-	res = ffcommon.FInt(t)
+var av_dirac_parse_sequence_header func(dsh **AVDiracSeqHeader, buf *ffcommon.FUint8T, buf_size ffcommon.FSizeT, log_ctx ffcommon.FVoidP) ffcommon.FInt
+var av_dirac_parse_sequence_header_once sync.Once
+
+func AvDiracParseSequenceHeader(dsh **AVDiracSeqHeader, buf *ffcommon.FUint8T, buf_size ffcommon.FSizeT, log_ctx ffcommon.FVoidP) (res ffcommon.FInt) {
+	av_dirac_parse_sequence_header_once.Do(func() {
+		purego.RegisterLibFunc(&av_dirac_parse_sequence_header, ffcommon.GetAvcodecDll(), "av_dirac_parse_sequence_header")
+	})
+	res = av_dirac_parse_sequence_header(dsh, buf, buf_size, log_ctx)
 	return
 }
 

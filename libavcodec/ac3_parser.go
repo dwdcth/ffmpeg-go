@@ -1,9 +1,10 @@
 package libavcodec
 
 import (
-	"unsafe"
+	"sync"
 
 	"github.com/dwdcth/ffmpeg-go/ffcommon"
+	"github.com/ebitengine/purego"
 )
 
 /*
@@ -39,15 +40,14 @@ import (
  */
 //int av_ac3_parse_header(const uint8_t *buf, size_t size,
 //uint8_t *bitstream_id, uint16_t *frame_size);
-func AvAc3ParseHeader(buf *ffcommon.FUint8T, size ffcommon.FSizeT,
-	bitstream_id *ffcommon.FUint8T, frame_size *ffcommon.FUint16T) (res ffcommon.FInt) {
-	t, _, _ := ffcommon.GetAvcodecDll().NewProc("av_ac3_parse_header").Call(
-		uintptr(unsafe.Pointer(buf)),
-		uintptr(size),
-		uintptr(unsafe.Pointer(bitstream_id)),
-		uintptr(unsafe.Pointer(frame_size)),
-	)
-	res = ffcommon.FInt(t)
+var av_ac3_parse_header func(buf *ffcommon.FUint8T, size ffcommon.FSizeT, bitstream_id *ffcommon.FUint8T, frame_size *ffcommon.FUint16T) ffcommon.FInt
+var av_ac3_parse_header_once sync.Once
+
+func AvAc3ParseHeader(buf *ffcommon.FUint8T, size ffcommon.FSizeT, bitstream_id *ffcommon.FUint8T, frame_size *ffcommon.FUint16T) (res ffcommon.FInt) {
+	av_ac3_parse_header_once.Do(func() {
+		purego.RegisterLibFunc(&av_ac3_parse_header, ffcommon.GetAvcodecDll(), "av_ac3_parse_header")
+	})
+	res = av_ac3_parse_header(buf, size, bitstream_id, frame_size)
 	return
 }
 
