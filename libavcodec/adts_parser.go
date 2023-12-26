@@ -1,9 +1,10 @@
 package libavcodec
 
 import (
-	"unsafe"
+	"sync"
 
 	"github.com/dwdcth/ffmpeg-go/ffcommon"
+	"github.com/ebitengine/purego"
 )
 
 /*
@@ -41,14 +42,14 @@ const AV_AAC_ADTS_HEADER_SIZE = 7
  */
 //int av_adts_header_parse(const uint8_t *buf, uint32_t *samples,
 //uint8_t *frames);
-func AvAdtsHeaderParse(buf *ffcommon.FUint8T, samples *ffcommon.FUint32T,
-	frames *ffcommon.FUint8T) (res ffcommon.FInt) {
-	t, _, _ := ffcommon.GetAvcodecDll().NewProc("av_adts_header_parse").Call(
-		uintptr(unsafe.Pointer(buf)),
-		uintptr(unsafe.Pointer(samples)),
-		uintptr(unsafe.Pointer(frames)),
-	)
-	res = ffcommon.FInt(t)
+var av_adts_header_parse func(buf *ffcommon.FUint8T, samples *ffcommon.FUint32T, frames *ffcommon.FUint8T) ffcommon.FInt
+var av_adts_header_parse_once sync.Once
+
+func AvAdtsHeaderParse(buf *ffcommon.FUint8T, samples *ffcommon.FUint32T, frames *ffcommon.FUint8T) (res ffcommon.FInt) {
+	av_adts_header_parse_once.Do(func() {
+		purego.RegisterLibFunc(&av_adts_header_parse, ffcommon.GetAvcodecDll(), "av_adts_header_parse")
+	})
+	res = av_adts_header_parse(buf, samples, frames)
 	return
 }
 
