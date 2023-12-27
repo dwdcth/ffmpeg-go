@@ -1,10 +1,12 @@
 package libavfilter
 
 import (
+	"sync"
 	"unsafe"
 
 	"github.com/dwdcth/ffmpeg-go/ffcommon"
 	"github.com/dwdcth/ffmpeg-go/libavutil"
+	"github.com/ebitengine/purego"
 )
 
 /*
@@ -62,30 +64,51 @@ import (
  * Return the LIBAVFILTER_VERSION_INT constant.
  */
 //unsigned avfilter_version(void);
-func AvfilterVersion() (res ffcommon.FUnsigned) {
-	t, _, _ := ffcommon.GetAvfilterDll().NewProc("avfilter_version").Call()
-	res = ffcommon.FUnsigned(t)
-	return
+var avfilterVersion func() ffcommon.FUnsigned
+var avfilterVersionOnce sync.Once
+
+func AvfilterVersion() ffcommon.FUnsigned {
+	avfilterVersionOnce.Do(func() {
+		purego.RegisterLibFunc(&avfilterVersion, ffcommon.GetAvfilterDll(), "avfilter_version")
+	})
+	if avfilterVersion != nil {
+		return avfilterVersion()
+	}
+	return 0
 }
 
 /**
  * Return the libavfilter build-time configuration.
  */
 //const char *avfilter_configuration(void);
-func AvfilterConfiguration() (res ffcommon.FConstCharP) {
-	t, _, _ := ffcommon.GetAvfilterDll().NewProc("avfilter_configuration").Call()
-	res = ffcommon.StringFromPtr(t)
-	return
+var avfilterConfiguration func() ffcommon.FConstCharP
+var avfilterConfigurationOnce sync.Once
+
+func AvfilterConfiguration() ffcommon.FConstCharP {
+	avfilterConfigurationOnce.Do(func() {
+		purego.RegisterLibFunc(&avfilterConfiguration, ffcommon.GetAvfilterDll(), "avfilter_configuration")
+	})
+	if avfilterConfiguration != nil {
+		return avfilterConfiguration()
+	}
+	return ""
 }
 
 /**
  * Return the libavfilter license.
  */
 //const char *avfilter_license(void);
-func AvfilterLicense() (res ffcommon.FConstCharP) {
-	t, _, _ := ffcommon.GetAvfilterDll().NewProc("avfilter_license").Call()
-	res = ffcommon.StringFromPtr(t)
-	return
+var avfilterLicense func() ffcommon.FConstCharP
+var avfilterLicenseOnce sync.Once
+
+func AvfilterLicense() ffcommon.FConstCharP {
+	avfilterLicenseOnce.Do(func() {
+		purego.RegisterLibFunc(&avfilterLicense, ffcommon.GetAvfilterDll(), "avfilter_license")
+	})
+	if avfilterLicense != nil {
+		return avfilterLicense()
+	}
+	return ""
 }
 
 // typedef struct AVFilterContext AVFilterContext;
@@ -109,12 +132,17 @@ type AVFilterChannelLayouts struct {
  * AVFilter.inputs/outputs).
  */
 //int avfilter_pad_count(const AVFilterPad *pads);
-func (pads *AVFilterPad) AvfilterPadCount() (res ffcommon.FInt) {
-	t, _, _ := ffcommon.GetAvfilterDll().NewProc("avfilter_pad_count").Call(
-		uintptr(unsafe.Pointer(pads)),
-	)
-	res = ffcommon.FInt(t)
-	return
+var avfilterPadCount func(pads *AVFilterPad) ffcommon.FInt
+var avfilterPadCountOnce sync.Once
+
+func (pads *AVFilterPad) AvfilterPadCount() ffcommon.FInt {
+	avfilterPadCountOnce.Do(func() {
+		purego.RegisterLibFunc(&avfilterPadCount, ffcommon.GetAvfilterDll(), "avfilter_pad_count")
+	})
+	if avfilterPadCount != nil {
+		return avfilterPadCount(pads)
+	}
+	return 0
 }
 
 /**
@@ -127,13 +155,14 @@ func (pads *AVFilterPad) AvfilterPadCount() (res ffcommon.FInt) {
  * @return name of the pad_idx'th pad in pads
  */
 //const char *avfilter_pad_get_name(const AVFilterPad *pads, int pad_idx);
-func (pads *AVFilterPad) AvfilterPadGetName(pad_idx ffcommon.FInt) (res ffcommon.FConstCharP) {
-	t, _, _ := ffcommon.GetAvfilterDll().NewProc("avfilter_pad_get_name").Call(
-		uintptr(unsafe.Pointer(pads)),
-		uintptr(pad_idx),
-	)
-	res = ffcommon.StringFromPtr(t)
-	return
+var avfilterPadGetName func(pads *AVFilterPad, pad_idx ffcommon.FInt) ffcommon.FConstCharP
+var avfilterPadGetNameOnce sync.Once
+
+func (pads *AVFilterPad) AvfilterPadGetName(pad_idx ffcommon.FInt) ffcommon.FConstCharP {
+	avfilterPadGetNameOnce.Do(func() {
+		purego.RegisterLibFunc(&avfilterPadGetName, ffcommon.GetAvfilterDll(), "avfilter_pad_get_name")
+	})
+	return avfilterPadGetName(pads, pad_idx)
 }
 
 /**
@@ -146,13 +175,14 @@ func (pads *AVFilterPad) AvfilterPadGetName(pad_idx ffcommon.FInt) (res ffcommon
  * @return type of the pad_idx'th pad in pads
  */
 //enum AVMediaType avfilter_pad_get_type(const AVFilterPad *pads, int pad_idx);
-func (pads *AVFilterPad) AvfilterPadGetType(pad_idx ffcommon.FInt) (res AVMediaType) {
-	t, _, _ := ffcommon.GetAvfilterDll().NewProc("avfilter_pad_get_type").Call(
-		uintptr(unsafe.Pointer(pads)),
-		uintptr(pad_idx),
-	)
-	res = AVMediaType(t)
-	return
+var avfilterPadGetType func(pads *AVFilterPad, pad_idx ffcommon.FInt) AVMediaType
+var avfilterPadGetTypeOnce sync.Once
+
+func (pads *AVFilterPad) AvfilterPadGetType(pad_idx ffcommon.FInt) AVMediaType {
+	avfilterPadGetTypeOnce.Do(func() {
+		purego.RegisterLibFunc(&avfilterPadGetType, ffcommon.GetAvfilterDll(), "avfilter_pad_get_type")
+	})
+	return avfilterPadGetType(pads, pad_idx)
 }
 
 /**
@@ -753,25 +783,35 @@ type AVFilterLink struct {
  */
 //int avfilter_link(AVFilterContext *src, unsigned srcpad,
 //AVFilterContext *dst, unsigned dstpad);
-func (src *AVFilterContext) AvfilterLink(srcpad ffcommon.FUnsigned, dst *AVFilterContext, dstpad ffcommon.FUnsigned) (res ffcommon.FInt) {
-	t, _, _ := ffcommon.GetAvfilterDll().NewProc("avfilter_link").Call(
-		uintptr(unsafe.Pointer(src)),
-		uintptr(srcpad),
-		uintptr(unsafe.Pointer(dst)),
-		uintptr(dstpad),
-	)
-	res = ffcommon.FInt(t)
-	return
+var avfilterLink func(src *AVFilterContext, srcpad ffcommon.FUnsigned, dst *AVFilterContext, dstpad ffcommon.FUnsigned) ffcommon.FInt
+var avfilterLinkOnce sync.Once
+
+func (src *AVFilterContext) AvfilterLink(srcpad ffcommon.FUnsigned, dst *AVFilterContext, dstpad ffcommon.FUnsigned) ffcommon.FInt {
+	avfilterLinkOnce.Do(func() {
+		purego.RegisterLibFunc(&avfilterLink, ffcommon.GetAvfilterDll(), "avfilter_link")
+	})
+	if avfilterLink != nil {
+		return avfilterLink(src, srcpad, dst, dstpad)
+	}
+	return 0 // Return a default value or handle the error accordingly
 }
 
 /**
  * Free the link in *link, and set its pointer to NULL.
  */
 //void avfilter_link_free(AVFilterLink **link);
+var avfilterLinkFree func(link **AVFilterLink)
+var avfilterLinkFreeOnce sync.Once
+
 func AvfilterLinkFree(link **AVFilterLink) {
-	ffcommon.GetAvfilterDll().NewProc("avfilter_link_free").Call(
-		uintptr(unsafe.Pointer(link)),
-	)
+	avfilterLinkFreeOnce.Do(func() {
+		purego.RegisterLibFunc(&avfilterLinkFree, ffcommon.GetAvfilterDll(), "avfilter_link_free")
+	})
+	if avfilterLinkFree != nil {
+		avfilterLinkFree(link)
+	} else {
+		// Handle the error or return a default value
+	}
 }
 
 //#if FF_API_FILTER_GET_SET
@@ -781,12 +821,19 @@ func AvfilterLinkFree(link **AVFilterLink) {
  */
 //attribute_deprecated
 //int avfilter_link_get_channels(AVFilterLink *link);
-func (link *AVFilterLink) AvfilterLinkGetChannels() (res ffcommon.FInt) {
-	t, _, _ := ffcommon.GetAvfilterDll().NewProc("avfilter_link_get_channels").Call(
-		uintptr(unsafe.Pointer(link)),
-	)
-	res = ffcommon.FInt(t)
-	return
+var avfilterLinkGetChannels func(link *AVFilterLink) ffcommon.FInt
+var avfilterLinkGetChannelsOnce sync.Once
+
+func (link *AVFilterLink) AvfilterLinkGetChannels() ffcommon.FInt {
+	avfilterLinkGetChannelsOnce.Do(func() {
+		purego.RegisterLibFunc(&avfilterLinkGetChannels, ffcommon.GetAvfilterDll(), "avfilter_link_get_channels")
+	})
+	if avfilterLinkGetChannels != nil {
+		return avfilterLinkGetChannels(link)
+	} else {
+		// Handle the error or return a default value
+		return 0 // Default value
+	}
 }
 
 //#endif
@@ -798,11 +845,18 @@ func (link *AVFilterLink) AvfilterLinkGetChannels() (res ffcommon.FInt) {
  */
 //attribute_deprecated
 //void avfilter_link_set_closed(AVFilterLink *link, int closed);
+var avfilterLinkSetClosed func(link *AVFilterLink, closed ffcommon.FInt)
+var avfilterLinkSetClosedOnce sync.Once
+
 func (link *AVFilterLink) AvfilterLinkSetClosed(closed ffcommon.FInt) {
-	ffcommon.GetAvfilterDll().NewProc("avfilter_link_set_closed").Call(
-		uintptr(unsafe.Pointer(link)),
-		uintptr(closed),
-	)
+	avfilterLinkSetClosedOnce.Do(func() {
+		purego.RegisterLibFunc(&avfilterLinkSetClosed, ffcommon.GetAvfilterDll(), "avfilter_link_set_closed")
+	})
+	if avfilterLinkSetClosed != nil {
+		avfilterLinkSetClosed(link, closed)
+	} else {
+		// Handle the error
+	}
 }
 
 //#endif
@@ -813,12 +867,19 @@ func (link *AVFilterLink) AvfilterLinkSetClosed(closed ffcommon.FInt) {
  * @return       zero on successful negotiation
  */
 //int avfilter_config_links(AVFilterContext *filter);
-func (filter *AVFilterContext) AvfilterConfigLinks() (res ffcommon.FInt) {
-	t, _, _ := ffcommon.GetAvfilterDll().NewProc("avfilter_config_links").Call(
-		uintptr(unsafe.Pointer(filter)),
-	)
-	res = ffcommon.FInt(t)
-	return
+var avfilterConfigLinks func(filter *AVFilterContext) ffcommon.FInt
+var avfilterConfigLinksOnce sync.Once
+
+func (filter *AVFilterContext) AvfilterConfigLinks() ffcommon.FInt {
+	avfilterConfigLinksOnce.Do(func() {
+		purego.RegisterLibFunc(&avfilterConfigLinks, ffcommon.GetAvfilterDll(), "avfilter_config_links")
+	})
+	if avfilterConfigLinks != nil {
+		return avfilterConfigLinks(filter)
+	} else {
+		// Handle the error
+		return ffcommon.FInt(0) // or return an appropriate error value
+	}
 }
 
 const AVFILTER_CMD_FLAG_ONE = 1  ///< Stop once a filter understood the command (for target=all for example), fast filters are favored automatically
@@ -829,17 +890,19 @@ const AVFILTER_CMD_FLAG_FAST = 2 ///< Only execute command when its fast (like a
  * It is recommended to use avfilter_graph_send_command().
  */
 //int avfilter_process_command(AVFilterContext *filter, const char *cmd, const char *arg, char *res, int res_len, int flags);
-func (filter *AVFilterContext) AvfilterProcessCommand(cmd, arg, res0 ffcommon.FConstCharP, res_len, flags ffcommon.FInt) (res ffcommon.FInt) {
-	t, _, _ := ffcommon.GetAvfilterDll().NewProc("avfilter_process_command").Call(
-		uintptr(unsafe.Pointer(filter)),
-		ffcommon.UintPtrFromString(cmd),
-		ffcommon.UintPtrFromString(arg),
-		ffcommon.UintPtrFromString(res0),
-		uintptr(res_len),
-		uintptr(flags),
-	)
-	res = ffcommon.FInt(t)
-	return
+var avfilterProcessCommand func(filter *AVFilterContext, cmd, arg, res0 ffcommon.FConstCharP, res_len, flags ffcommon.FInt) ffcommon.FInt
+var avfilterProcessCommandOnce sync.Once
+
+func (filter *AVFilterContext) AvfilterProcessCommand(cmd, arg, res0 ffcommon.FConstCharP, res_len, flags ffcommon.FInt) ffcommon.FInt {
+	avfilterProcessCommandOnce.Do(func() {
+		purego.RegisterLibFunc(&avfilterProcessCommand, ffcommon.GetAvfilterDll(), "avfilter_process_command")
+	})
+	if avfilterProcessCommand != nil {
+		return avfilterProcessCommand(filter, cmd, arg, res0, res_len, flags)
+	} else {
+		// Handle the error
+		return ffcommon.FInt(0) // or return an appropriate error value
+	}
 }
 
 /**
@@ -852,20 +915,37 @@ func (filter *AVFilterContext) AvfilterProcessCommand(cmd, arg, res0 ffcommon.FC
  *         finished
  */
 //const AVFilter *av_filter_iterate(void **opaque);
-func AvFilterIterate(opaque *ffcommon.FVoidP) (res *AVFilter) {
-	t, _, _ := ffcommon.GetAvfilterDll().NewProc("av_filter_iterate").Call(
-		uintptr(unsafe.Pointer(opaque)),
-	)
-	res = (*AVFilter)(unsafe.Pointer(t))
-	return
+var avFilterIterate func(opaque *ffcommon.FVoidP) *AVFilter
+var avFilterIterateOnce sync.Once
+
+func AvFilterIterate(opaque *ffcommon.FVoidP) *AVFilter {
+	avFilterIterateOnce.Do(func() {
+		purego.RegisterLibFunc(&avFilterIterate, ffcommon.GetAvfilterDll(), "av_filter_iterate")
+	})
+	if avFilterIterate != nil {
+		return avFilterIterate(opaque)
+	} else {
+		// Handle the error
+		return nil // or return an appropriate error value
+	}
 }
 
 //#if FF_API_NEXT
 /** Initialize the filter system. Register all builtin filters. */
 //attribute_deprecated
 //void avfilter_register_all(void);
+var avfilterRegisterAll func()
+var avfilterRegisterAllOnce sync.Once
+
 func AvfilterRegisterAll() {
-	ffcommon.GetAvfilterDll().NewProc("avfilter_register_all").Call()
+	avfilterRegisterAllOnce.Do(func() {
+		purego.RegisterLibFunc(&avfilterRegisterAll, ffcommon.GetAvfilterDll(), "avfilter_register_all")
+	})
+	if avfilterRegisterAll != nil {
+		avfilterRegisterAll()
+	} else {
+		// Handle the error
+	}
 }
 
 /**
@@ -880,12 +960,19 @@ func AvfilterRegisterAll() {
  */
 //attribute_deprecated
 //int avfilter_register(AVFilter *filter);
-func (filter *AVFilter) AvfilterRegister() (res ffcommon.FInt) {
-	t, _, _ := ffcommon.GetAvfilterDll().NewProc("avfilter_register").Call(
-		uintptr(unsafe.Pointer(filter)),
-	)
-	res = ffcommon.FInt(t)
-	return
+var avfilterRegister func(filter *AVFilter) ffcommon.FInt
+var avfilterRegisterOnce sync.Once
+
+func AvfilterRegister(filter *AVFilter) ffcommon.FInt {
+	avfilterRegisterOnce.Do(func() {
+		purego.RegisterLibFunc(&avfilterRegister, ffcommon.GetAvfilterDll(), "avfilter_register")
+	})
+	if avfilterRegister != nil {
+		return avfilterRegister(filter)
+	} else {
+		// Handle the error
+		return ffcommon.FInt(-1) // or return an appropriate error value
+	}
 }
 
 /**
@@ -895,12 +982,19 @@ func (filter *AVFilter) AvfilterRegister() (res ffcommon.FInt) {
  */
 //attribute_deprecated
 //const AVFilter *avfilter_next(const AVFilter *prev);
-func (prev *AVFilter) AvfilterNext() (res *AVFilter) {
-	t, _, _ := ffcommon.GetAvfilterDll().NewProc("avfilter_next").Call(
-		uintptr(unsafe.Pointer(prev)),
-	)
-	res = (*AVFilter)(unsafe.Pointer(t))
-	return
+var avfilterNext func(*AVFilter) *AVFilter
+var avfilterNextOnce sync.Once
+
+func AvfilterNext(prev *AVFilter) *AVFilter {
+	avfilterNextOnce.Do(func() {
+		purego.RegisterLibFunc(&avfilterNext, ffcommon.GetAvfilterDll(), "avfilter_next")
+	})
+	if avfilterNext != nil {
+		return avfilterNext(prev)
+	} else {
+		// Handle the error
+		return nil
+	}
 }
 
 //#endif
@@ -913,12 +1007,19 @@ func (prev *AVFilter) AvfilterNext() (res *AVFilter) {
  *             NULL if none found.
  */
 //const AVFilter *avfilter_get_by_name(const char *name);
-func AvfilterGetByName(name ffcommon.FConstCharP) (res *AVFilter) {
-	t, _, _ := ffcommon.GetAvfilterDll().NewProc("avfilter_get_by_name").Call(
-		ffcommon.UintPtrFromString(name),
-	)
-	res = (*AVFilter)(unsafe.Pointer(t))
-	return
+var avfilterGetByName func(ffcommon.FConstCharP) *AVFilter
+var avfilterGetByNameOnce sync.Once
+
+func AvfilterGetByName(name ffcommon.FConstCharP) *AVFilter {
+	avfilterGetByNameOnce.Do(func() {
+		purego.RegisterLibFunc(&avfilterGetByName, ffcommon.GetAvfilterDll(), "avfilter_get_by_name")
+	})
+	if avfilterGetByName != nil {
+		return avfilterGetByName(name)
+	} else {
+		// Handle the error
+		return nil
+	}
 }
 
 /**
@@ -932,17 +1033,20 @@ func AvfilterGetByName(name ffcommon.FConstCharP) (res *AVFilter) {
  * @return 0 on success, a negative AVERROR on failure
  */
 //int avfilter_init_str(AVFilterContext *ctx, const char *args);
-func (ctx *AVFilterContext) AvfilterInitStr(args ffcommon.FConstCharP) (res ffcommon.FInt) {
-	argsPtr := uintptr(0)
-	if args != "" {
-		argsPtr = ffcommon.UintPtrFromString(args)
-	}
-	t, _, _ := ffcommon.GetAvfilterDll().NewProc("avfilter_init_str").Call(
-		uintptr(unsafe.Pointer(ctx)),
-		argsPtr,
-	)
-	res = ffcommon.FInt(t)
-	return
+var avfilterInitStr func(ctx *AVFilterContext, args ffcommon.FConstCharP) ffcommon.FInt
+var avfilterInitStrOnce sync.Once
+
+func (ctx *AVFilterContext) AvfilterInitStr(args ffcommon.FConstCharP) ffcommon.FInt {
+	avfilterInitStrOnce.Do(func() {
+		purego.RegisterLibFunc(&avfilterInitStr, ffcommon.GetAvfilterDll(), "avfilter_init_str")
+	})
+
+	// argsPtr := uintptr(0)
+	// if args != "" {
+	// 	argsPtr = ffcommon.UintPtrFromString(args)
+	// }
+
+	return avfilterInitStr(ctx, args)
 }
 
 /**
@@ -968,13 +1072,15 @@ func (ctx *AVFilterContext) AvfilterInitStr(args ffcommon.FConstCharP) (res ffco
 //int avfilter_init_dict(AVFilterContext *ctx, AVDictionary **options);
 type AVDictionary = libavutil.AVDictionary
 
-func (ctx *AVFilterContext) AvfilterInitDict(options **AVDictionary) (res ffcommon.FInt) {
-	t, _, _ := ffcommon.GetAvfilterDll().NewProc("avfilter_init_dict").Call(
-		uintptr(unsafe.Pointer(ctx)),
-		uintptr(unsafe.Pointer(options)),
-	)
-	res = ffcommon.FInt(t)
-	return
+var avfilterInitDict func(ctx *AVFilterContext, options **AVDictionary) ffcommon.FInt
+var avfilterInitDictOnce sync.Once
+
+func (ctx *AVFilterContext) AvfilterInitDict(options **AVDictionary) ffcommon.FInt {
+	avfilterInitDictOnce.Do(func() {
+		purego.RegisterLibFunc(&avfilterInitDict, ffcommon.GetAvfilterDll(), "avfilter_init_dict")
+	})
+
+	return avfilterInitDict(ctx, options)
 }
 
 /**
@@ -984,10 +1090,16 @@ func (ctx *AVFilterContext) AvfilterInitDict(options **AVDictionary) (res ffcomm
  * @param filter the filter to free
  */
 //void avfilter_free(AVFilterContext *filter);
+
+var avfilterFree func(filter *AVFilterContext)
+var avfilterFreeOnce sync.Once
+
 func (filter *AVFilterContext) AvfilterFree() {
-	ffcommon.GetAvfilterDll().NewProc("avfilter_free").Call(
-		uintptr(unsafe.Pointer(filter)),
-	)
+	avfilterFreeOnce.Do(func() {
+		purego.RegisterLibFunc(&avfilterFree, ffcommon.GetAvfilterDll(), "avfilter_free")
+	})
+
+	avfilterFree(filter)
 }
 
 /**
@@ -1001,16 +1113,16 @@ func (filter *AVFilterContext) AvfilterFree() {
  */
 //int avfilter_insert_filter(AVFilterLink *link, AVFilterContext *filt,
 //unsigned filt_srcpad_idx, unsigned filt_dstpad_idx);
-func (link *AVFilterLink) AvfilterInsertFilter(filt *AVFilterContext,
-	filt_srcpad_idx, filt_dstpad_idx ffcommon.FUnsigned) (res ffcommon.FInt) {
-	t, _, _ := ffcommon.GetAvfilterDll().NewProc("avfilter_insert_filter").Call(
-		uintptr(unsafe.Pointer(link)),
-		uintptr(unsafe.Pointer(filt)),
-		uintptr(filt_srcpad_idx),
-		uintptr(filt_dstpad_idx),
-	)
-	res = ffcommon.FInt(t)
-	return
+
+var avfilterInsertFilter func(link *AVFilterLink, filt *AVFilterContext, filt_srcpad_idx, filt_dstpad_idx ffcommon.FUnsigned) ffcommon.FInt
+var avfilterInsertFilterOnce sync.Once
+
+func (link *AVFilterLink) AvfilterInsertFilter(filt *AVFilterContext, filt_srcpad_idx, filt_dstpad_idx ffcommon.FUnsigned) ffcommon.FInt {
+	avfilterInsertFilterOnce.Do(func() {
+		purego.RegisterLibFunc(&avfilterInsertFilter, ffcommon.GetAvfilterDll(), "avfilter_insert_filter")
+	})
+
+	return avfilterInsertFilter(link, filt, filt_srcpad_idx, filt_dstpad_idx)
 }
 
 /**
@@ -1019,10 +1131,15 @@ func (link *AVFilterLink) AvfilterInsertFilter(filt *AVFilterContext,
  * @see av_opt_find().
  */
 //const AVClass *avfilter_get_class(void);
-func AvfilterGetClass() (res *AVClass) {
-	t, _, _ := ffcommon.GetAvfilterDll().NewProc("avfilter_get_class").Call()
-	res = (*AVClass)(unsafe.Pointer(t))
-	return
+var avfilterGetClass func() *AVClass
+var avfilterGetClassOnce sync.Once
+
+func AvfilterGetClass() *AVClass {
+	avfilterGetClassOnce.Do(func() {
+		purego.RegisterLibFunc(&avfilterGetClass, ffcommon.GetAvfilterDll(), "avfilter_get_class")
+	})
+
+	return avfilterGetClass()
 }
 
 // typedef struct AVFilterGraphInternal AVFilterGraphInternal;
@@ -1139,10 +1256,15 @@ type AVFilterGraph struct {
  * @return the allocated filter graph on success or NULL.
  */
 //AVFilterGraph *avfilter_graph_alloc(void);
-func AvfilterGraphAlloc() (res *AVFilterGraph) {
-	t, _, _ := ffcommon.GetAvfilterDll().NewProc("avfilter_graph_alloc").Call()
-	res = (*AVFilterGraph)(unsafe.Pointer(t))
-	return
+var avfilterGraphAlloc func() *AVFilterGraph
+var avfilterGraphAllocOnce sync.Once
+
+func AvfilterGraphAlloc() *AVFilterGraph {
+	avfilterGraphAllocOnce.Do(func() {
+		purego.RegisterLibFunc(&avfilterGraphAlloc, ffcommon.GetAvfilterDll(), "avfilter_graph_alloc")
+	})
+
+	return avfilterGraphAlloc()
 }
 
 /**
@@ -1162,15 +1284,15 @@ func AvfilterGraphAlloc() (res *AVFilterGraph) {
 //AVFilterContext *avfilter_graph_alloc_filter(AVFilterGraph *graph,
 //const AVFilter *filter,
 //const char *name);
-func (graph *AVFilterGraph) AvfilterGraphAllocFilter(filter *AVFilter,
-	name ffcommon.FConstCharP) (res *AVFilterContext) {
-	t, _, _ := ffcommon.GetAvfilterDll().NewProc("avfilter_graph_alloc_filter").Call(
-		uintptr(unsafe.Pointer(graph)),
-		uintptr(unsafe.Pointer(filter)),
-		ffcommon.UintPtrFromString(name),
-	)
-	res = (*AVFilterContext)(unsafe.Pointer(t))
-	return
+var avfilterGraphAllocFilter func(graph *AVFilterGraph, filter *AVFilter, name ffcommon.FConstCharP) *AVFilterContext
+var avfilterGraphAllocFilterOnce sync.Once
+
+func (graph *AVFilterGraph) AvfilterGraphAllocFilter(filter *AVFilter, name ffcommon.FConstCharP) *AVFilterContext {
+	avfilterGraphAllocFilterOnce.Do(func() {
+		purego.RegisterLibFunc(&avfilterGraphAllocFilter, ffcommon.GetAvfilterDll(), "avfilter_graph_alloc_filter")
+	})
+
+	return avfilterGraphAllocFilter(graph, filter, name)
 }
 
 /**
@@ -1182,13 +1304,15 @@ func (graph *AVFilterGraph) AvfilterGraphAllocFilter(filter *AVFilter,
  * cannot be found.
  */
 //AVFilterContext *avfilter_graph_get_filter(AVFilterGraph *graph, const char *name);
-func (graph *AVFilterGraph) AvfilterGraphGetFilter(name ffcommon.FConstCharP) (res *AVFilterContext) {
-	t, _, _ := ffcommon.GetAvfilterDll().NewProc("avfilter_graph_get_filter").Call(
-		uintptr(unsafe.Pointer(graph)),
-		ffcommon.UintPtrFromString(name),
-	)
-	res = (*AVFilterContext)(unsafe.Pointer(t))
-	return
+var avfilterGraphGetFilter func(graph *AVFilterGraph, name ffcommon.FConstCharP) *AVFilterContext
+var avfilterGraphGetFilterOnce sync.Once
+
+func (graph *AVFilterGraph) AvfilterGraphGetFilter(name ffcommon.FConstCharP) *AVFilterContext {
+	avfilterGraphGetFilterOnce.Do(func() {
+		purego.RegisterLibFunc(&avfilterGraphGetFilter, ffcommon.GetAvfilterDll(), "avfilter_graph_get_filter")
+	})
+
+	return avfilterGraphGetFilter(graph, name)
 }
 
 /**
@@ -1207,19 +1331,15 @@ func (graph *AVFilterGraph) AvfilterGraphGetFilter(name ffcommon.FConstCharP) (r
 //int avfilter_graph_create_filter(AVFilterContext **filt_ctx, const AVFilter *filt,
 //const char *name, const char *args, void *opaque,
 //AVFilterGraph *graph_ctx);
-func AvfilterGraphCreateFilter(filt_ctx **AVFilterContext, filt *AVFilter,
-	name, args ffcommon.FConstCharP, opaque ffcommon.FVoidP,
-	graph_ctx *AVFilterGraph) (res ffcommon.FInt) {
-	t, _, _ := ffcommon.GetAvfilterDll().NewProc("avfilter_graph_create_filter").Call(
-		uintptr(unsafe.Pointer(filt_ctx)),
-		uintptr(unsafe.Pointer(filt)),
-		ffcommon.UintPtrFromString(name),
-		ffcommon.UintPtrFromString(args),
-		opaque,
-		uintptr(unsafe.Pointer(graph_ctx)),
-	)
-	res = ffcommon.FInt(t)
-	return
+var avfilterGraphCreateFilter func(filt_ctx **AVFilterContext, filt *AVFilter, name, args ffcommon.FConstCharP, opaque ffcommon.FVoidP, graph_ctx *AVFilterGraph) ffcommon.FInt
+var avfilterGraphCreateFilterOnce sync.Once
+
+func AvfilterGraphCreateFilter(filt_ctx **AVFilterContext, filt *AVFilter, name, args ffcommon.FConstCharP, opaque ffcommon.FVoidP, graph_ctx *AVFilterGraph) ffcommon.FInt {
+	avfilterGraphCreateFilterOnce.Do(func() {
+		purego.RegisterLibFunc(&avfilterGraphCreateFilter, ffcommon.GetAvfilterDll(), "avfilter_graph_create_filter")
+	})
+
+	return avfilterGraphCreateFilter(filt_ctx, filt, name, args, opaque, graph_ctx)
 }
 
 /**
@@ -1231,11 +1351,15 @@ func AvfilterGraphCreateFilter(filt_ctx **AVFilterContext, filt *AVFilter,
  * @param flags  any of the AVFILTER_AUTO_CONVERT_* constants
  */
 //void avfilter_graph_set_auto_convert(AVFilterGraph *graph, unsigned flags);
+var avfilterGraphSetAutoConvert func(graph *AVFilterGraph, flags ffcommon.FUnsigned)
+var avfilterGraphSetAutoConvertOnce sync.Once
+
 func (graph *AVFilterGraph) AvfilterGraphSetAutoConvert(flags ffcommon.FUnsigned) {
-	ffcommon.GetAvfilterDll().NewProc("avfilter_graph_set_auto_convert").Call(
-		uintptr(unsafe.Pointer(graph)),
-		uintptr(flags),
-	)
+	avfilterGraphSetAutoConvertOnce.Do(func() {
+		purego.RegisterLibFunc(&avfilterGraphSetAutoConvert, ffcommon.GetAvfilterDll(), "avfilter_graph_set_auto_convert")
+	})
+
+	avfilterGraphSetAutoConvert(graph, flags)
 }
 
 const (
@@ -1251,13 +1375,15 @@ const (
  * @return >= 0 in case of success, a negative AVERROR code otherwise
  */
 //int avfilter_graph_config(AVFilterGraph *graphctx, void *log_ctx);
-func (graphctx *AVFilterGraph) AvfilterGraphConfig(log_ctx ffcommon.FVoidP) (res ffcommon.FInt) {
-	t, _, _ := ffcommon.GetAvfilterDll().NewProc("avfilter_graph_config").Call(
-		uintptr(unsafe.Pointer(graphctx)),
-		log_ctx,
-	)
-	res = ffcommon.FInt(t)
-	return
+var avfilterGraphConfig func(graphctx *AVFilterGraph, log_ctx ffcommon.FVoidP) ffcommon.FInt
+var avfilterGraphConfigOnce sync.Once
+
+func (graphctx *AVFilterGraph) AvfilterGraphConfig(log_ctx ffcommon.FVoidP) ffcommon.FInt {
+	avfilterGraphConfigOnce.Do(func() {
+		purego.RegisterLibFunc(&avfilterGraphConfig, ffcommon.GetAvfilterDll(), "avfilter_graph_config")
+	})
+
+	return avfilterGraphConfig(graphctx, log_ctx)
 }
 
 /**
@@ -1265,10 +1391,15 @@ func (graphctx *AVFilterGraph) AvfilterGraphConfig(log_ctx ffcommon.FVoidP) (res
  * If *graph is NULL, do nothing.
  */
 //void avfilter_graph_free(AVFilterGraph **graph);
+var avfilterGraphFree func(graphctx **AVFilterGraph)
+var avfilterGraphFreeOnce sync.Once
+
 func AvfilterGraphFree(graphctx **AVFilterGraph) {
-	ffcommon.GetAvfilterDll().NewProc("avfilter_graph_free").Call(
-		uintptr(unsafe.Pointer(graphctx)),
-	)
+	avfilterGraphFreeOnce.Do(func() {
+		purego.RegisterLibFunc(&avfilterGraphFree, ffcommon.GetAvfilterDll(), "avfilter_graph_free")
+	})
+
+	avfilterGraphFree(graphctx)
 }
 
 /**
@@ -1301,10 +1432,15 @@ type AVFilterInOut struct {
  * @return allocated AVFilterInOut on success, NULL on failure.
  */
 //AVFilterInOut *avfilter_inout_alloc(void);
-func AvfilterInoutAlloc() (res *AVFilterInOut) {
-	t, _, _ := ffcommon.GetAvfilterDll().NewProc("avfilter_inout_alloc").Call()
-	res = (*AVFilterInOut)(unsafe.Pointer(t))
-	return
+var avfilterInoutAlloc func() *AVFilterInOut
+var avfilterInoutAllocOnce sync.Once
+
+func AvfilterInoutAlloc() *AVFilterInOut {
+	avfilterInoutAllocOnce.Do(func() {
+		purego.RegisterLibFunc(&avfilterInoutAlloc, ffcommon.GetAvfilterDll(), "avfilter_inout_alloc")
+	})
+
+	return avfilterInoutAlloc()
 }
 
 /**
@@ -1312,10 +1448,15 @@ func AvfilterInoutAlloc() (res *AVFilterInOut) {
  * If *inout is NULL, do nothing.
  */
 //void avfilter_inout_free(AVFilterInOut **inout);
+var avfilterInoutFree func(inout **AVFilterInOut)
+var avfilterInoutFreeOnce sync.Once
+
 func AvfilterInoutFree(inout **AVFilterInOut) {
-	ffcommon.GetAvfilterDll().NewProc("avfilter_inout_free").Call(
-		uintptr(unsafe.Pointer(inout)),
-	)
+	avfilterInoutFreeOnce.Do(func() {
+		purego.RegisterLibFunc(&avfilterInoutFree, ffcommon.GetAvfilterDll(), "avfilter_inout_free")
+	})
+
+	avfilterInoutFree(inout)
 }
 
 /**
@@ -1339,18 +1480,15 @@ func AvfilterInoutFree(inout **AVFilterInOut) {
 //int avfilter_graph_parse(AVFilterGraph *graph, const char *filters,
 //AVFilterInOut *inputs, AVFilterInOut *outputs,
 //void *log_ctx);
-func (graph *AVFilterGraph) AvfilterGraphParse(filters ffcommon.FConstCharP,
-	inputs, outputs *AVFilterInOut,
-	log_ctx ffcommon.FVoidP) (res ffcommon.FInt) {
-	t, _, _ := ffcommon.GetAvfilterDll().NewProc("avfilter_graph_parse").Call(
-		uintptr(unsafe.Pointer(graph)),
-		ffcommon.UintPtrFromString(filters),
-		uintptr(unsafe.Pointer(inputs)),
-		uintptr(unsafe.Pointer(outputs)),
-		log_ctx,
-	)
-	res = ffcommon.FInt(t)
-	return
+var avfilterGraphParse func(graph *AVFilterGraph, filters ffcommon.FConstCharP, inputs, outputs *AVFilterInOut, log_ctx ffcommon.FVoidP) ffcommon.FInt
+var avfilterGraphParseOnce sync.Once
+
+func (graph *AVFilterGraph) AvfilterGraphParse(filters ffcommon.FConstCharP, inputs, outputs *AVFilterInOut, log_ctx ffcommon.FVoidP) ffcommon.FInt {
+	avfilterGraphParseOnce.Do(func() {
+		purego.RegisterLibFunc(&avfilterGraphParse, ffcommon.GetAvfilterDll(), "avfilter_graph_parse")
+	})
+
+	return avfilterGraphParse(graph, filters, inputs, outputs, log_ctx)
 }
 
 /**
@@ -1373,18 +1511,15 @@ func (graph *AVFilterGraph) AvfilterGraphParse(filters ffcommon.FConstCharP,
 //int avfilter_graph_parse_ptr(AVFilterGraph *graph, const char *filters,
 //AVFilterInOut **inputs, AVFilterInOut **outputs,
 //void *log_ctx);
-func (graph *AVFilterGraph) AvfilterGraphParsePtr(filters ffcommon.FConstCharP,
-	inputs, outputs **AVFilterInOut,
-	log_ctx ffcommon.FVoidP) (res ffcommon.FInt) {
-	t, _, _ := ffcommon.GetAvfilterDll().NewProc("avfilter_graph_parse_ptr").Call(
-		uintptr(unsafe.Pointer(graph)),
-		ffcommon.UintPtrFromString(filters),
-		uintptr(unsafe.Pointer(inputs)),
-		uintptr(unsafe.Pointer(outputs)),
-		log_ctx,
-	)
-	res = ffcommon.FInt(t)
-	return
+var avfilterGraphParsePtr func(graph *AVFilterGraph, filters ffcommon.FConstCharP, inputs, outputs **AVFilterInOut, log_ctx ffcommon.FVoidP) ffcommon.FInt
+var avfilterGraphParsePtrOnce sync.Once
+
+func (graph *AVFilterGraph) AvfilterGraphParsePtr(filters ffcommon.FConstCharP, inputs, outputs **AVFilterInOut, log_ctx ffcommon.FVoidP) ffcommon.FInt {
+	avfilterGraphParsePtrOnce.Do(func() {
+		purego.RegisterLibFunc(&avfilterGraphParsePtr, ffcommon.GetAvfilterDll(), "avfilter_graph_parse_ptr")
+	})
+
+	return avfilterGraphParsePtr(graph, filters, inputs, outputs, log_ctx)
 }
 
 /**
@@ -1412,16 +1547,15 @@ func (graph *AVFilterGraph) AvfilterGraphParsePtr(filters ffcommon.FConstCharP,
 //int avfilter_graph_parse2(AVFilterGraph *graph, const char *filters,
 //AVFilterInOut **inputs,
 //AVFilterInOut **outputs);
-func (graph *AVFilterGraph) AvfilterGraphParse2(filters ffcommon.FConstCharP,
-	inputs, outputs **AVFilterInOut) (res ffcommon.FInt) {
-	t, _, _ := ffcommon.GetAvfilterDll().NewProc("avfilter_graph_parse2").Call(
-		uintptr(unsafe.Pointer(graph)),
-		ffcommon.UintPtrFromString(filters),
-		uintptr(unsafe.Pointer(inputs)),
-		uintptr(unsafe.Pointer(outputs)),
-	)
-	res = ffcommon.FInt(t)
-	return
+var avfilterGraphParse2 func(graph *AVFilterGraph, filters ffcommon.FConstCharP, inputs, outputs **AVFilterInOut) ffcommon.FInt
+var avfilterGraphParse2Once sync.Once
+
+func (graph *AVFilterGraph) AvfilterGraphParse2(filters ffcommon.FConstCharP, inputs, outputs **AVFilterInOut) ffcommon.FInt {
+	avfilterGraphParse2Once.Do(func() {
+		purego.RegisterLibFunc(&avfilterGraphParse2, ffcommon.GetAvfilterDll(), "avfilter_graph_parse2")
+	})
+
+	return avfilterGraphParse2(graph, filters, inputs, outputs)
 }
 
 /**
@@ -1440,18 +1574,15 @@ func (graph *AVFilterGraph) AvfilterGraphParse2(filters ffcommon.FConstCharP,
  *              AVERROR(ENOSYS) on unsupported commands
  */
 //int avfilter_graph_send_command(AVFilterGraph *graph, const char *target, const char *cmd, const char *arg, char *res, int res_len, int flags);
-func (graph *AVFilterGraph) AvfilterGraphSendCommand(target, cmd, arg, res0 ffcommon.FConstCharP, res_len, flags ffcommon.FInt) (res ffcommon.FInt) {
-	t, _, _ := ffcommon.GetAvfilterDll().NewProc("avfilter_graph_send_command").Call(
-		uintptr(unsafe.Pointer(graph)),
-		ffcommon.UintPtrFromString(target),
-		ffcommon.UintPtrFromString(cmd),
-		ffcommon.UintPtrFromString(arg),
-		ffcommon.UintPtrFromString(res0),
-		uintptr(res_len),
-		uintptr(flags),
-	)
-	res = ffcommon.FInt(t)
-	return
+var avfilterGraphSendCommand func(graph *AVFilterGraph, target, cmd, arg, res0 ffcommon.FConstCharP, res_len, flags ffcommon.FInt) ffcommon.FInt
+var avfilterGraphSendCommandOnce sync.Once
+
+func (graph *AVFilterGraph) AvfilterGraphSendCommand(target, cmd, arg, res0 ffcommon.FConstCharP, res_len, flags ffcommon.FInt) ffcommon.FInt {
+	avfilterGraphSendCommandOnce.Do(func() {
+		purego.RegisterLibFunc(&avfilterGraphSendCommand, ffcommon.GetAvfilterDll(), "avfilter_graph_send_command")
+	})
+
+	return avfilterGraphSendCommand(graph, target, cmd, arg, res0, res_len, flags)
 }
 
 /**
@@ -1470,17 +1601,15 @@ func (graph *AVFilterGraph) AvfilterGraphSendCommand(target, cmd, arg, res0 ffco
  *       from the filter is provided, also AVFILTER_CMD_FLAG_ONE is not supported.
  */
 //int avfilter_graph_queue_command(AVFilterGraph *graph, const char *target, const char *cmd, const char *arg, int flags, double ts);
-func (graph *AVFilterGraph) AvfilterGraphQueueCommand(target, cmd, arg ffcommon.FConstCharP, flags ffcommon.FInt, ts ffcommon.FDouble) (res ffcommon.FInt) {
-	t, _, _ := ffcommon.GetAvfilterDll().NewProc("avfilter_graph_queue_command").Call(
-		uintptr(unsafe.Pointer(graph)),
-		ffcommon.UintPtrFromString(target),
-		ffcommon.UintPtrFromString(cmd),
-		ffcommon.UintPtrFromString(arg),
-		uintptr(flags),
-		uintptr(unsafe.Pointer(&ts)),
-	)
-	res = ffcommon.FInt(t)
-	return
+var avfilterGraphQueueCommand func(graph *AVFilterGraph, target, cmd, arg ffcommon.FConstCharP, flags ffcommon.FInt, ts ffcommon.FDouble) ffcommon.FInt
+var avfilterGraphQueueCommandOnce sync.Once
+
+func (graph *AVFilterGraph) AvfilterGraphQueueCommand(target, cmd, arg ffcommon.FConstCharP, flags ffcommon.FInt, ts ffcommon.FDouble) ffcommon.FInt {
+	avfilterGraphQueueCommandOnce.Do(func() {
+		purego.RegisterLibFunc(&avfilterGraphQueueCommand, ffcommon.GetAvfilterDll(), "avfilter_graph_queue_command")
+	})
+
+	return avfilterGraphQueueCommand(graph, target, cmd, arg, flags, ts)
 }
 
 /**
@@ -1492,13 +1621,15 @@ func (graph *AVFilterGraph) AvfilterGraphQueueCommand(target, cmd, arg ffcommon.
  *          the string must be freed using av_free
  */
 //char *avfilter_graph_dump(AVFilterGraph *graph, const char *options);
-func (graph *AVFilterGraph) AvfilterGraphDump(options ffcommon.FConstCharP) (res ffcommon.FCharP) {
-	t, _, _ := ffcommon.GetAvfilterDll().NewProc("avfilter_graph_dump").Call(
-		uintptr(unsafe.Pointer(graph)),
-		ffcommon.UintPtrFromString(options),
-	)
-	res = ffcommon.StringFromPtr(t)
-	return
+var avfilterGraphDump func(graph *AVFilterGraph, options ffcommon.FConstCharP) ffcommon.FCharP
+var avfilterGraphDumpOnce sync.Once
+
+func (graph *AVFilterGraph) AvfilterGraphDump(options ffcommon.FConstCharP) ffcommon.FCharP {
+	avfilterGraphDumpOnce.Do(func() {
+		purego.RegisterLibFunc(&avfilterGraphDump, ffcommon.GetAvfilterDll(), "avfilter_graph_dump")
+	})
+
+	return avfilterGraphDump(graph, options)
 }
 
 /**
@@ -1520,12 +1651,15 @@ func (graph *AVFilterGraph) AvfilterGraphDump(options ffcommon.FConstCharP) (res
  *          or AVERROR_EOF if all links returned AVERROR_EOF
  */
 //int avfilter_graph_request_oldest(AVFilterGraph *graph);
-func (graph *AVFilterGraph) AvfilterGraphRequestOldest() (res ffcommon.FInt) {
-	t, _, _ := ffcommon.GetAvfilterDll().NewProc("avfilter_graph_request_oldest").Call(
-		uintptr(unsafe.Pointer(graph)),
-	)
-	res = ffcommon.FInt(t)
-	return
+var avfilterGraphRequestOldest func(graph *AVFilterGraph) ffcommon.FInt
+var avfilterGraphRequestOldestOnce sync.Once
+
+func (graph *AVFilterGraph) AvfilterGraphRequestOldest() ffcommon.FInt {
+	avfilterGraphRequestOldestOnce.Do(func() {
+		purego.RegisterLibFunc(&avfilterGraphRequestOldest, ffcommon.GetAvfilterDll(), "avfilter_graph_request_oldest")
+	})
+
+	return avfilterGraphRequestOldest(graph)
 }
 
 /**
