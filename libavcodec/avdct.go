@@ -1,10 +1,11 @@
 package libavcodec
 
 import (
-	"unsafe"
+	"sync"
 
 	"github.com/dwdcth/ffmpeg-go/ffcommon"
 	"github.com/dwdcth/ffmpeg-go/libavutil"
+	"github.com/ebitengine/purego"
 )
 
 /*
@@ -91,25 +92,41 @@ type AVDCT struct {
  * To free it use av_free()
  */
 //AVDCT *avcodec_dct_alloc(void);
+var avcodecDctAllocFunc func() *AVDCT
+var avcodecDctAllocFuncOnce sync.Once
+
 func AvcodecDctAlloc() (res *AVDCT) {
-	t, _, _ := ffcommon.GetAvcodecDll().NewProc("avcodec_dct_alloc").Call()
-	res = (*AVDCT)(unsafe.Pointer(t))
+	avcodecDctAllocFuncOnce.Do(func() {
+		purego.RegisterLibFunc(&avcodecDctAllocFunc, ffcommon.GetAvcodecDll(), "avcodec_dct_alloc")
+	})
+
+	res = avcodecDctAllocFunc()
 	return
 }
 
 // int avcodec_dct_init(AVDCT *);
+var avcodecDctInitFunc func(a *AVDCT) ffcommon.FInt
+var avcodecDctInitFuncOnce sync.Once
+
 func (a *AVDCT) AvcodecDctInit() (res ffcommon.FInt) {
-	t, _, _ := ffcommon.GetAvcodecDll().NewProc("avcodec_dct_init").Call(
-		uintptr(unsafe.Pointer(a)),
-	)
-	res = ffcommon.FInt(t)
+	avcodecDctInitFuncOnce.Do(func() {
+		purego.RegisterLibFunc(&avcodecDctInitFunc, ffcommon.GetAvcodecDll(), "avcodec_dct_init")
+	})
+
+	res = avcodecDctInitFunc(a)
 	return
 }
 
 // const AVClass *avcodec_dct_get_class(void);
+var avcodecDctGetClassFunc func() *AVClass
+var avcodecDctGetClassFuncOnce sync.Once
+
 func AvcodecDctGetClass() (res *AVClass) {
-	t, _, _ := ffcommon.GetAvcodecDll().NewProc("avcodec_dct_get_class").Call()
-	res = (*AVClass)(unsafe.Pointer(t))
+	avcodecDctGetClassFuncOnce.Do(func() {
+		purego.RegisterLibFunc(&avcodecDctGetClassFunc, ffcommon.GetAvcodecDll(), "avcodec_dct_get_class")
+	})
+
+	res = avcodecDctGetClassFunc()
 	return
 }
 

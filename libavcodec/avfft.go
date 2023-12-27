@@ -1,9 +1,10 @@
 package libavcodec
 
 import (
-	"unsafe"
+	"sync"
 
 	"github.com/dwdcth/ffmpeg-go/ffcommon"
+	"github.com/ebitengine/purego"
 )
 
 /*
@@ -56,12 +57,15 @@ type FFTContext struct {
  * @param inverse         if 0 perform the forward transform, if 1 perform the inverse
  */
 //FFTContext *av_fft_init(int nbits, int inverse);
+var avFftInitFunc func(nbits, inverse ffcommon.FInt) *FFTContext
+var avFftInitFuncOnce sync.Once
+
 func AvFftInit(nbits, inverse ffcommon.FInt) (res *FFTContext) {
-	t, _, _ := ffcommon.GetAvcodecDll().NewProc("av_fft_init").Call(
-		uintptr(nbits),
-		uintptr(inverse),
-	)
-	res = (*FFTContext)(unsafe.Pointer(t))
+	avFftInitFuncOnce.Do(func() {
+		purego.RegisterLibFunc(&avFftInitFunc, ffcommon.GetAvcodecDll(), "av_fft_init")
+	})
+
+	res = avFftInitFunc(nbits, inverse)
 	return
 }
 
@@ -69,11 +73,15 @@ func AvFftInit(nbits, inverse ffcommon.FInt) (res *FFTContext) {
  * Do the permutation needed BEFORE calling ff_fft_calc().
  */
 //void av_fft_permute(FFTContext *s, FFTComplex *z);
+var avFftPermuteFunc func(s *FFTContext, z *FFTComplex)
+var avFftPermuteFuncOnce sync.Once
+
 func (s *FFTContext) AvFftPermute(z *FFTComplex) {
-	ffcommon.GetAvcodecDll().NewProc("av_fft_permute").Call(
-		uintptr(unsafe.Pointer(s)),
-		uintptr(unsafe.Pointer(z)),
-	)
+	avFftPermuteFuncOnce.Do(func() {
+		purego.RegisterLibFunc(&avFftPermuteFunc, ffcommon.GetAvcodecDll(), "av_fft_permute")
+	})
+
+	avFftPermuteFunc(s, z)
 }
 
 /**
@@ -81,63 +89,88 @@ func (s *FFTContext) AvFftPermute(z *FFTComplex) {
  * input data must be permuted before. No 1.0/sqrt(n) normalization is done.
  */
 //void av_fft_calc(FFTContext *s, FFTComplex *z);
+var avFftCalcFunc func(s *FFTContext, z *FFTComplex)
+var avFftCalcFuncOnce sync.Once
+
 func (s *FFTContext) AvFftCalc(z *FFTComplex) {
-	ffcommon.GetAvcodecDll().NewProc("av_fft_calc").Call(
-		uintptr(unsafe.Pointer(s)),
-		uintptr(unsafe.Pointer(z)),
-	)
+	avFftCalcFuncOnce.Do(func() {
+		purego.RegisterLibFunc(&avFftCalcFunc, ffcommon.GetAvcodecDll(), "av_fft_calc")
+	})
+
+	avFftCalcFunc(s, z)
 }
 
 // void av_fft_end(FFTContext *s);
+var avFftEndFunc func(s *FFTContext)
+var avFftEndFuncOnce sync.Once
+
 func (s *FFTContext) AvFftEnd() {
-	ffcommon.GetAvcodecDll().NewProc("av_fft_end").Call(
-		uintptr(unsafe.Pointer(s)),
-	)
+	avFftEndFuncOnce.Do(func() {
+		purego.RegisterLibFunc(&avFftEndFunc, ffcommon.GetAvcodecDll(), "av_fft_end")
+	})
+
+	avFftEndFunc(s)
 }
 
 // FFTContext *av_mdct_init(int nbits, int inverse, double scale);
+var avMdctInitFunc func(nbits, inverse ffcommon.FInt, scale ffcommon.FDouble) *FFTContext
+var avMdctInitFuncOnce sync.Once
+
 func AvMdctInit(nbits, inverse ffcommon.FInt, scale ffcommon.FDouble) (res *FFTContext) {
-	t, _, _ := ffcommon.GetAvcodecDll().NewProc("av_mdct_init").Call(
-		uintptr(nbits),
-		uintptr(inverse),
-		uintptr(unsafe.Pointer(&scale)),
-	)
-	res = (*FFTContext)(unsafe.Pointer(t))
+	avMdctInitFuncOnce.Do(func() {
+		purego.RegisterLibFunc(&avMdctInitFunc, ffcommon.GetAvcodecDll(), "av_mdct_init")
+	})
+
+	res = avMdctInitFunc(nbits, inverse, scale)
 	return
 }
 
 // void av_imdct_calc(FFTContext *s, FFTSample *output, const FFTSample *input);
+var avImdctCalcFunc func(s *FFTContext, output, input *ffcommon.FFTSample)
+var avImdctCalcFuncOnce sync.Once
+
 func (s *FFTContext) AvImdctCalc(output, input *ffcommon.FFTSample) {
-	ffcommon.GetAvcodecDll().NewProc("av_imdct_calc").Call(
-		uintptr(unsafe.Pointer(s)),
-		uintptr(unsafe.Pointer(output)),
-		uintptr(unsafe.Pointer(input)),
-	)
+	avImdctCalcFuncOnce.Do(func() {
+		purego.RegisterLibFunc(&avImdctCalcFunc, ffcommon.GetAvcodecDll(), "av_imdct_calc")
+	})
+
+	avImdctCalcFunc(s, output, input)
 }
 
 // void av_imdct_half(FFTContext *s, FFTSample *output, const FFTSample *input);
+var avImdctHalfFunc func(s *FFTContext, output, input *ffcommon.FFTSample)
+var avImdctHalfFuncOnce sync.Once
+
 func (s *FFTContext) AvImdctHalf(output, input *ffcommon.FFTSample) {
-	ffcommon.GetAvcodecDll().NewProc("av_imdct_half").Call(
-		uintptr(unsafe.Pointer(s)),
-		uintptr(unsafe.Pointer(output)),
-		uintptr(unsafe.Pointer(input)),
-	)
+	avImdctHalfFuncOnce.Do(func() {
+		purego.RegisterLibFunc(&avImdctHalfFunc, ffcommon.GetAvcodecDll(), "av_imdct_half")
+	})
+
+	avImdctHalfFunc(s, output, input)
 }
 
 // void av_mdct_calc(FFTContext *s, FFTSample *output, const FFTSample *input);
+var avMdctCalcFunc func(s *FFTContext, output, input *ffcommon.FFTSample)
+var avMdctCalcFuncOnce sync.Once
+
 func (s *FFTContext) AvMdctCalc(output, input *ffcommon.FFTSample) {
-	ffcommon.GetAvcodecDll().NewProc("av_mdct_calc").Call(
-		uintptr(unsafe.Pointer(s)),
-		uintptr(unsafe.Pointer(output)),
-		uintptr(unsafe.Pointer(input)),
-	)
+	avMdctCalcFuncOnce.Do(func() {
+		purego.RegisterLibFunc(&avMdctCalcFunc, ffcommon.GetAvcodecDll(), "av_mdct_calc")
+	})
+
+	avMdctCalcFunc(s, output, input)
 }
 
 // void av_mdct_end(FFTContext *s);
+var avMdctEndFunc func(s *FFTContext)
+var avMdctEndFuncOnce sync.Once
+
 func (s *FFTContext) AvMdctEnd(output, input *ffcommon.FFTSample) {
-	ffcommon.GetAvcodecDll().NewProc("av_mdct_end").Call(
-		uintptr(unsafe.Pointer(s)),
-	)
+	avMdctEndFuncOnce.Do(func() {
+		purego.RegisterLibFunc(&avMdctEndFunc, ffcommon.GetAvcodecDll(), "av_mdct_end")
+	})
+
+	avMdctEndFunc(s)
 }
 
 /* Real Discrete Fourier Transform */
@@ -160,28 +193,40 @@ type RDFTContext struct {
  * @param trans           the type of transform
  */
 //RDFTContext *av_rdft_init(int nbits, enum RDFTransformType trans);
+var avRdftInitFunc func(nbits ffcommon.FInt, trans RDFTransformType) *RDFTContext
+var avRdftInitFuncOnce sync.Once
+
 func AvRdftInit(nbits ffcommon.FInt, trans RDFTransformType) (res *RDFTContext) {
-	t, _, _ := ffcommon.GetAvcodecDll().NewProc("av_rdft_init").Call(
-		uintptr(nbits),
-		uintptr(trans),
-	)
-	res = (*RDFTContext)(unsafe.Pointer(t))
+	avRdftInitFuncOnce.Do(func() {
+		purego.RegisterLibFunc(&avRdftInitFunc, ffcommon.GetAvcodecDll(), "av_rdft_init")
+	})
+
+	res = avRdftInitFunc(nbits, trans)
 	return
 }
 
 // void av_rdft_calc(RDFTContext *s, FFTSample *data);
+var avRdftCalcFunc func(s *RDFTContext, data *ffcommon.FFTSample)
+var avRdftCalcFuncOnce sync.Once
+
 func (s *RDFTContext) AvRdftCalc(data *ffcommon.FFTSample) {
-	ffcommon.GetAvcodecDll().NewProc("av_rdft_calc").Call(
-		uintptr(unsafe.Pointer(s)),
-		uintptr(unsafe.Pointer(data)),
-	)
+	avRdftCalcFuncOnce.Do(func() {
+		purego.RegisterLibFunc(&avRdftCalcFunc, ffcommon.GetAvcodecDll(), "av_rdft_calc")
+	})
+
+	avRdftCalcFunc(s, data)
 }
 
 // void av_rdft_end(RDFTContext *s);
+var avRdftEndFunc func(s *RDFTContext)
+var avRdftEndFuncOnce sync.Once
+
 func (s *RDFTContext) AvRdftEnd() {
-	ffcommon.GetAvcodecDll().NewProc("av_rdft_end").Call(
-		uintptr(unsafe.Pointer(s)),
-	)
+	avRdftEndFuncOnce.Do(func() {
+		purego.RegisterLibFunc(&avRdftEndFunc, ffcommon.GetAvcodecDll(), "av_rdft_end")
+	})
+
+	avRdftEndFunc(s)
 }
 
 /* Discrete Cosine Transform */
@@ -209,28 +254,40 @@ const (
  * @note the first element of the input of DST-I is ignored
  */
 //DCTContext *av_dct_init(int nbits, enum DCTTransformType type);
+var avDctInitFunc func(nbits ffcommon.FInt, type0 DCTTransformType) *DCTContext
+var avDctInitFuncOnce sync.Once
+
 func AvDctInit(nbits ffcommon.FInt, type0 DCTTransformType) (res *DCTContext) {
-	t, _, _ := ffcommon.GetAvcodecDll().NewProc("av_dct_init").Call(
-		uintptr(nbits),
-		uintptr(type0),
-	)
-	res = (*DCTContext)(unsafe.Pointer(t))
+	avDctInitFuncOnce.Do(func() {
+		purego.RegisterLibFunc(&avDctInitFunc, ffcommon.GetAvcodecDll(), "av_dct_init")
+	})
+
+	res = avDctInitFunc(nbits, type0)
 	return
 }
 
 // void av_dct_calc(DCTContext *s, FFTSample *data);
+var avDctCalcFunc func(s *DCTContext, data *ffcommon.FFTSample)
+var avDctCalcFuncOnce sync.Once
+
 func (s *DCTContext) AvDctCalc(data *ffcommon.FFTSample) {
-	ffcommon.GetAvcodecDll().NewProc("av_dct_calc").Call(
-		uintptr(unsafe.Pointer(s)),
-		uintptr(unsafe.Pointer(data)),
-	)
+	avDctCalcFuncOnce.Do(func() {
+		purego.RegisterLibFunc(&avDctCalcFunc, ffcommon.GetAvcodecDll(), "av_dct_calc")
+	})
+
+	avDctCalcFunc(s, data)
 }
 
 // void av_dct_end (DCTContext *s);
+var avDctEndFunc func(s *DCTContext)
+var avDctEndFuncOnce sync.Once
+
 func (s *DCTContext) AvDctEnd() {
-	ffcommon.GetAvcodecDll().NewProc("av_dct_end").Call(
-		uintptr(unsafe.Pointer(s)),
-	)
+	avDctEndFuncOnce.Do(func() {
+		purego.RegisterLibFunc(&avDctEndFunc, ffcommon.GetAvcodecDll(), "av_dct_end")
+	})
+
+	avDctEndFunc(s)
 }
 
 /**
