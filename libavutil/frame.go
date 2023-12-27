@@ -1,9 +1,10 @@
 package libavutil
 
 import (
-	"unsafe"
+	"sync"
 
 	"github.com/dwdcth/ffmpeg-go/ffcommon"
+	"github.com/ebitengine/purego"
 )
 
 /*
@@ -722,238 +723,449 @@ type AVFrame struct {
  */
 //attribute_deprecated
 //int64_t av_frame_get_best_effort_timestamp(const AVFrame *frame);
-func (frame *AVFrame) AvFrameGetBestEffortTimestamp() (res ffcommon.FInt64T) {
-	t, _, _ := ffcommon.GetAvutilDll().NewProc("av_frame_get_best_effort_timestamp").Call(
-		uintptr(unsafe.Pointer(frame)),
-	)
-	res = ffcommon.FInt64T(t)
-	return
+var avFrameGetBestEffortTimestamp func(frame *AVFrame) ffcommon.FInt64T
+var avFrameGetBestEffortTimestampOnce sync.Once
+
+func (frame *AVFrame) AvFrameGetBestEffortTimestamp() ffcommon.FInt64T {
+	avFrameGetBestEffortTimestampOnce.Do(func() {
+		purego.RegisterLibFunc(
+			&avFrameGetBestEffortTimestamp,
+			ffcommon.GetAvutilDll(),
+			"av_frame_get_best_effort_timestamp",
+		)
+	})
+	if avFrameGetBestEffortTimestamp != nil {
+		return avFrameGetBestEffortTimestamp(frame)
+	}
+	return ffcommon.FInt64T(0)
 }
 
 // attribute_deprecated
 // void    av_frame_set_best_effort_timestamp(AVFrame *frame, int64_t val);
+var avFrameSetBestEffortTimestamp func(frame *AVFrame, val ffcommon.FInt64T)
+var avFrameSetBestEffortTimestampOnce sync.Once
+
 func (frame *AVFrame) av_frame_set_best_effort_timestamp(val ffcommon.FInt64T) {
-	ffcommon.GetAvutilDll().NewProc("av_frame_set_best_effort_timestamp").Call(
-		uintptr(unsafe.Pointer(frame)),
-		uintptr(val),
-	)
+	avFrameSetBestEffortTimestampOnce.Do(func() {
+		purego.RegisterLibFunc(
+			&avFrameSetBestEffortTimestamp,
+			ffcommon.GetAvutilDll(),
+			"av_frame_set_best_effort_timestamp",
+		)
+	})
+	if avFrameSetBestEffortTimestamp != nil {
+		avFrameSetBestEffortTimestamp(frame, val)
+	}
 }
 
 // attribute_deprecated
 // int64_t av_frame_get_pkt_duration         (const AVFrame *frame);
-func (frame *AVFrame) AvFrameGetPktDuration() (res ffcommon.FInt64T) {
-	t, _, _ := ffcommon.GetAvutilDll().NewProc("av_frame_get_pkt_duration").Call(
-		uintptr(unsafe.Pointer(frame)),
-	)
-	res = ffcommon.FInt64T(t)
-	return
+var avFrameGetPktDuration func(frame *AVFrame) ffcommon.FInt64T
+var avFrameGetPktDurationOnce sync.Once
+
+func (frame *AVFrame) AvFrameGetPktDuration() ffcommon.FInt64T {
+	avFrameGetPktDurationOnce.Do(func() {
+		purego.RegisterLibFunc(
+			&avFrameGetPktDuration,
+			ffcommon.GetAvutilDll(),
+			"av_frame_get_pkt_duration",
+		)
+	})
+	if avFrameGetPktDuration != nil {
+		return avFrameGetPktDuration(frame)
+	}
+	return ffcommon.FInt64T(0)
 }
 
 // attribute_deprecated
 // void    av_frame_set_pkt_duration         (AVFrame *frame, int64_t val);
+var avFrameSetPktDuration func(frame *AVFrame, val ffcommon.FInt64T)
+var avFrameSetPktDurationOnce sync.Once
+
 func (frame *AVFrame) AvFrameSetPktDuration(val ffcommon.FInt64T) {
-	ffcommon.GetAvutilDll().NewProc("av_frame_set_pkt_duration").Call(
-		uintptr(unsafe.Pointer(frame)),
-		uintptr(val),
-	)
+	avFrameSetPktDurationOnce.Do(func() {
+		purego.RegisterLibFunc(
+			&avFrameSetPktDuration,
+			ffcommon.GetAvutilDll(),
+			"av_frame_set_pkt_duration",
+		)
+	})
+	if avFrameSetPktDuration != nil {
+		avFrameSetPktDuration(frame, val)
+	}
 }
 
 // attribute_deprecated
 // int64_t av_frame_get_pkt_pos              (const AVFrame *frame);
-func (frame *AVFrame) AvFrameGetPktPos() (res ffcommon.FInt64T) {
-	t, _, _ := ffcommon.GetAvutilDll().NewProc("av_frame_get_pkt_pos").Call(
-		uintptr(unsafe.Pointer(frame)),
-	)
-	res = ffcommon.FInt64T(t)
-	return
+var avFrameGetPktPos func(frame *AVFrame) ffcommon.FInt64T
+var avFrameGetPktPosOnce sync.Once
+
+func (frame *AVFrame) AvFrameGetPktPos() ffcommon.FInt64T {
+	avFrameGetPktPosOnce.Do(func() {
+		purego.RegisterLibFunc(
+			&avFrameGetPktPos,
+			ffcommon.GetAvutilDll(),
+			"av_frame_get_pkt_pos",
+		)
+	})
+	if avFrameGetPktPos != nil {
+		return avFrameGetPktPos(frame)
+	}
+	return ffcommon.FInt64T(0)
 }
 
 // attribute_deprecated
 // void    av_frame_set_pkt_pos              (AVFrame *frame, int64_t val);
+var avFrameSetPktPos func(frame *AVFrame, val ffcommon.FInt64T)
+var avFrameSetPktPosOnce sync.Once
+
 func (frame *AVFrame) AvFrameSetPktPos(val ffcommon.FInt64T) {
-	ffcommon.GetAvutilDll().NewProc("av_frame_set_pkt_pos").Call(
-		uintptr(unsafe.Pointer(frame)),
-		uintptr(val),
-	)
+	avFrameSetPktPosOnce.Do(func() {
+		purego.RegisterLibFunc(
+			&avFrameSetPktPos,
+			ffcommon.GetAvutilDll(),
+			"av_frame_set_pkt_pos",
+		)
+	})
+	if avFrameSetPktPos != nil {
+		avFrameSetPktPos(frame, val)
+	}
 }
 
 // attribute_deprecated
 // int64_t av_frame_get_channel_layout       (const AVFrame *frame);
-func (frame *AVFrame) AvFrameGetChannelLayout() (res ffcommon.FInt64T) {
-	t, _, _ := ffcommon.GetAvutilDll().NewProc("av_frame_get_channel_layout").Call(
-		uintptr(unsafe.Pointer(frame)),
-	)
-	res = ffcommon.FInt64T(t)
-	return
+var avFrameGetChannelLayout func(frame *AVFrame) ffcommon.FInt64T
+var avFrameGetChannelLayoutOnce sync.Once
+
+func (frame *AVFrame) AvFrameGetChannelLayout() ffcommon.FInt64T {
+	avFrameGetChannelLayoutOnce.Do(func() {
+		purego.RegisterLibFunc(
+			&avFrameGetChannelLayout,
+			ffcommon.GetAvutilDll(),
+			"av_frame_get_channel_layout",
+		)
+	})
+	if avFrameGetChannelLayout != nil {
+		return avFrameGetChannelLayout(frame)
+	}
+	return ffcommon.FInt64T(0)
 }
 
 // attribute_deprecated
 // void    av_frame_set_channel_layout       (AVFrame *frame, int64_t val);
+var avFrameSetChannelLayout func(frame *AVFrame, val ffcommon.FInt64T)
+var avFrameSetChannelLayoutOnce sync.Once
+
 func (frame *AVFrame) AvFrameSetChannelLayout(val ffcommon.FInt64T) {
-	ffcommon.GetAvutilDll().NewProc("av_frame_set_channel_layout").Call(
-		uintptr(unsafe.Pointer(frame)),
-		uintptr(val),
-	)
+	avFrameSetChannelLayoutOnce.Do(func() {
+		purego.RegisterLibFunc(
+			&avFrameSetChannelLayout,
+			ffcommon.GetAvutilDll(),
+			"av_frame_set_channel_layout",
+		)
+	})
+	if avFrameSetChannelLayout != nil {
+		avFrameSetChannelLayout(frame, val)
+	}
 }
 
 // attribute_deprecated
 // int     av_frame_get_channels             (const AVFrame *frame);
-func (frame *AVFrame) AvFrameGetChannels() (res ffcommon.FInt) {
-	t, _, _ := ffcommon.GetAvutilDll().NewProc("av_frame_get_channels").Call(
-		uintptr(unsafe.Pointer(frame)),
-	)
-	res = ffcommon.FInt(t)
-	return
+var avFrameGetChannels func(frame *AVFrame) ffcommon.FInt
+var avFrameGetChannelsOnce sync.Once
+
+func (frame *AVFrame) AvFrameGetChannels() ffcommon.FInt {
+	avFrameGetChannelsOnce.Do(func() {
+		purego.RegisterLibFunc(
+			&avFrameGetChannels,
+			ffcommon.GetAvutilDll(),
+			"av_frame_get_channels",
+		)
+	})
+	if avFrameGetChannels != nil {
+		return avFrameGetChannels(frame)
+	}
+	return ffcommon.FInt(0)
 }
 
 // attribute_deprecated
 // void    av_frame_set_channels             (AVFrame *frame, int     val);
+var avFrameSetChannels func(frame *AVFrame, val ffcommon.FInt)
+var avFrameSetChannelsOnce sync.Once
+
 func (frame *AVFrame) AvFrameSetChannels(val ffcommon.FInt) {
-	ffcommon.GetAvutilDll().NewProc("av_frame_set_channels").Call(
-		uintptr(unsafe.Pointer(frame)),
-		uintptr(val),
-	)
+	avFrameSetChannelsOnce.Do(func() {
+		purego.RegisterLibFunc(
+			&avFrameSetChannels,
+			ffcommon.GetAvutilDll(),
+			"av_frame_set_channels",
+		)
+	})
+	if avFrameSetChannels != nil {
+		avFrameSetChannels(frame, val)
+	}
 }
 
 // attribute_deprecated
 // int     av_frame_get_sample_rate          (const AVFrame *frame);
-func (frame *AVFrame) AvFrameGetSampleRate() (res ffcommon.FInt) {
-	t, _, _ := ffcommon.GetAvutilDll().NewProc("av_frame_get_sample_rate").Call(
-		uintptr(unsafe.Pointer(frame)),
-	)
-	res = ffcommon.FInt(t)
-	return
+var avFrameGetSampleRate func(frame *AVFrame) ffcommon.FInt
+var avFrameGetSampleRateOnce sync.Once
+
+func (frame *AVFrame) AvFrameGetSampleRate() ffcommon.FInt {
+	avFrameGetSampleRateOnce.Do(func() {
+		purego.RegisterLibFunc(
+			&avFrameGetSampleRate,
+			ffcommon.GetAvutilDll(),
+			"av_frame_get_sample_rate",
+		)
+	})
+	if avFrameGetSampleRate != nil {
+		return avFrameGetSampleRate(frame)
+	}
+	return ffcommon.FInt(0)
 }
 
 // attribute_deprecated
 // void    av_frame_set_sample_rate          (AVFrame *frame, int     val);
+var avFrameSetSampleRate func(frame *AVFrame, val ffcommon.FInt)
+var avFrameSetSampleRateOnce sync.Once
+
 func (frame *AVFrame) AvFrameSetSampleRate(val ffcommon.FInt) {
-	ffcommon.GetAvutilDll().NewProc("av_frame_set_sample_rate").Call(
-		uintptr(unsafe.Pointer(frame)),
-		uintptr(val),
-	)
+	avFrameSetSampleRateOnce.Do(func() {
+		purego.RegisterLibFunc(
+			&avFrameSetSampleRate,
+			ffcommon.GetAvutilDll(),
+			"av_frame_set_sample_rate",
+		)
+	})
+	if avFrameSetSampleRate != nil {
+		avFrameSetSampleRate(frame, val)
+	}
 }
 
 // attribute_deprecated
 // AVDictionary *av_frame_get_metadata       (const AVFrame *frame);
-func (frame *AVFrame) AvFrameGetMetadata() (res *AVDictionary) {
-	t, _, _ := ffcommon.GetAvutilDll().NewProc("av_frame_get_metadata").Call(
-		uintptr(unsafe.Pointer(frame)),
-	)
-	res = (*AVDictionary)(unsafe.Pointer(t))
-	return
+var avFrameGetMetadata func(frame *AVFrame) *AVDictionary
+var avFrameGetMetadataOnce sync.Once
+
+func (frame *AVFrame) AvFrameGetMetadata() *AVDictionary {
+	avFrameGetMetadataOnce.Do(func() {
+		purego.RegisterLibFunc(
+			&avFrameGetMetadata,
+			ffcommon.GetAvutilDll(),
+			"av_frame_get_metadata",
+		)
+	})
+	if avFrameGetMetadata != nil {
+		return avFrameGetMetadata(frame)
+	}
+	return nil
 }
 
 // attribute_deprecated
 // void          av_frame_set_metadata       (AVFrame *frame, AVDictionary *val);
+var avFrameSetMetadata func(frame *AVFrame, val *AVDictionary)
+var avFrameSetMetadataOnce sync.Once
+
 func (frame *AVFrame) AvFrameSetMetadata(val *AVDictionary) {
-	ffcommon.GetAvutilDll().NewProc("av_frame_set_metadata").Call(
-		uintptr(unsafe.Pointer(frame)),
-		uintptr(unsafe.Pointer(val)),
-	)
+	avFrameSetMetadataOnce.Do(func() {
+		purego.RegisterLibFunc(
+			&avFrameSetMetadata,
+			ffcommon.GetAvutilDll(),
+			"av_frame_set_metadata",
+		)
+	})
+	if avFrameSetMetadata != nil {
+		avFrameSetMetadata(frame, val)
+	}
 }
 
 // attribute_deprecated
 // int     av_frame_get_decode_error_flags   (const AVFrame *frame);
-func (frame *AVFrame) AvFrameGetDecodeErrorFlags() (res ffcommon.FInt) {
-	t, _, _ := ffcommon.GetAvutilDll().NewProc("av_frame_get_decode_error_flags").Call(
-		uintptr(unsafe.Pointer(frame)),
-	)
-	res = ffcommon.FInt(t)
-	return
+var avFrameGetDecodeErrorFlags func(frame *AVFrame) ffcommon.FInt
+var avFrameGetDecodeErrorFlagsOnce sync.Once
+
+func (frame *AVFrame) AvFrameGetDecodeErrorFlags() ffcommon.FInt {
+	avFrameGetDecodeErrorFlagsOnce.Do(func() {
+		purego.RegisterLibFunc(
+			&avFrameGetDecodeErrorFlags,
+			ffcommon.GetAvutilDll(),
+			"av_frame_get_decode_error_flags",
+		)
+	})
+	if avFrameGetDecodeErrorFlags != nil {
+		return avFrameGetDecodeErrorFlags(frame)
+	}
+	return ffcommon.FInt(0)
 }
 
 // attribute_deprecated
 // void    av_frame_set_decode_error_flags   (AVFrame *frame, int     val);
+var avFrameSetDecodeErrorFlags func(frame *AVFrame, val ffcommon.FInt)
+var avFrameSetDecodeErrorFlagsOnce sync.Once
+
 func (frame *AVFrame) AvFrameSetDecodeErrorFlags(val ffcommon.FInt) {
-	ffcommon.GetAvutilDll().NewProc("av_frame_set_decode_error_flags").Call(
-		uintptr(unsafe.Pointer(frame)),
-		uintptr(val),
-	)
+	avFrameSetDecodeErrorFlagsOnce.Do(func() {
+		purego.RegisterLibFunc(
+			&avFrameSetDecodeErrorFlags,
+			ffcommon.GetAvutilDll(),
+			"av_frame_set_decode_error_flags",
+		)
+	})
+	if avFrameSetDecodeErrorFlags != nil {
+		avFrameSetDecodeErrorFlags(frame, val)
+	}
 }
 
 // attribute_deprecated
 // int     av_frame_get_pkt_size(const AVFrame *frame);
-func (frame *AVFrame) AvFrameGetPktSize() (res ffcommon.FInt) {
-	t, _, _ := ffcommon.GetAvutilDll().NewProc("av_frame_get_pkt_size").Call(
-		uintptr(unsafe.Pointer(frame)),
-	)
-	res = ffcommon.FInt(t)
-	return
+var avFrameGetPktSize func(frame *AVFrame) ffcommon.FInt
+var avFrameGetPktSizeOnce sync.Once
+
+func (frame *AVFrame) AvFrameGetPktSize() ffcommon.FInt {
+	avFrameGetPktSizeOnce.Do(func() {
+		purego.RegisterLibFunc(
+			&avFrameGetPktSize,
+			ffcommon.GetAvutilDll(),
+			"av_frame_get_pkt_size",
+		)
+	})
+	if avFrameGetPktSize != nil {
+		return avFrameGetPktSize(frame)
+	}
+	return ffcommon.FInt(0)
 }
 
 // attribute_deprecated
 // void    av_frame_set_pkt_size(AVFrame *frame, int val);
+var avFrameSetPktSize func(frame *AVFrame, val ffcommon.FInt)
+var avFrameSetPktSizeOnce sync.Once
+
 func (frame *AVFrame) AvFrameSetPktSize(val ffcommon.FInt) {
-	ffcommon.GetAvutilDll().NewProc("av_frame_set_pkt_size").Call(
-		uintptr(unsafe.Pointer(frame)),
-		uintptr(val),
-	)
+	avFrameSetPktSizeOnce.Do(func() {
+		purego.RegisterLibFunc(
+			&avFrameSetPktSize,
+			ffcommon.GetAvutilDll(),
+			"av_frame_set_pkt_size",
+		)
+	})
+	if avFrameSetPktSize != nil {
+		avFrameSetPktSize(frame, val)
+	}
 }
 
 // #if FF_API_FRAME_QP
 // attribute_deprecated
 // int8_t *av_frame_get_qp_table(AVFrame *f, int *stride, int *type);
-func (f *AVFrame) AvFrameGetQpTable(stride, type0 *ffcommon.FInt) (res *ffcommon.FInt8T) {
-	t, _, _ := ffcommon.GetAvutilDll().NewProc("av_frame_get_qp_table").Call(
-		uintptr(unsafe.Pointer(f)),
-		uintptr(unsafe.Pointer(stride)),
-		uintptr(unsafe.Pointer(type0)),
-	)
-	res = (*ffcommon.FInt8T)(unsafe.Pointer(t))
-	return
+var avFrameGetQpTable func(f *AVFrame, stride, type0 *ffcommon.FInt) *ffcommon.FInt8T
+var avFrameGetQpTableOnce sync.Once
+
+func (f *AVFrame) AvFrameGetQpTable(stride, type0 *ffcommon.FInt) *ffcommon.FInt8T {
+	avFrameGetQpTableOnce.Do(func() {
+		purego.RegisterLibFunc(
+			&avFrameGetQpTable,
+			ffcommon.GetAvutilDll(),
+			"av_frame_get_qp_table",
+		)
+	})
+	if avFrameGetQpTable != nil {
+		return avFrameGetQpTable(f, stride, type0)
+	}
+	return nil
 }
 
 // attribute_deprecated
 // int av_frame_set_qp_table(AVFrame *f, AVBufferRef *buf, int stride, int type);
-func (f *AVFrame) AvFrameSetQpTable(buf *AVBufferRef, stride, type0 ffcommon.FInt) (res *ffcommon.FInt8T) {
-	t, _, _ := ffcommon.GetAvutilDll().NewProc("av_frame_set_qp_table").Call(
-		uintptr(unsafe.Pointer(f)),
-		uintptr(unsafe.Pointer(buf)),
-		uintptr(stride),
-		uintptr(type0),
-	)
-	res = (*ffcommon.FInt8T)(unsafe.Pointer(t))
-	return
+var avFrameSetQpTable func(f *AVFrame, buf *AVBufferRef, stride, type0 ffcommon.FInt) *ffcommon.FInt8T
+var avFrameSetQpTableOnce sync.Once
+
+func (f *AVFrame) AvFrameSetQpTable(buf *AVBufferRef, stride, type0 ffcommon.FInt) *ffcommon.FInt8T {
+	avFrameSetQpTableOnce.Do(func() {
+		purego.RegisterLibFunc(
+			&avFrameSetQpTable,
+			ffcommon.GetAvutilDll(),
+			"av_frame_set_qp_table",
+		)
+	})
+	if avFrameSetQpTable != nil {
+		return avFrameSetQpTable(f, buf, stride, type0)
+	}
+	return nil
 }
 
 // #endif
 // attribute_deprecated
 // enum AVColorSpace av_frame_get_colorspace(const AVFrame *frame);
-func (frame *AVFrame) AvFrameGetColorspace() (res AVColorSpace) {
-	t, _, _ := ffcommon.GetAvutilDll().NewProc("av_frame_get_colorspace").Call(
-		uintptr(unsafe.Pointer(frame)),
-	)
-	res = AVColorSpace(t)
-	return
+var avFrameGetColorspace func(frame *AVFrame) AVColorSpace
+var avFrameGetColorspaceOnce sync.Once
+
+func (frame *AVFrame) AvFrameGetColorspace() AVColorSpace {
+	avFrameGetColorspaceOnce.Do(func() {
+		purego.RegisterLibFunc(
+			&avFrameGetColorspace,
+			ffcommon.GetAvutilDll(),
+			"av_frame_get_colorspace",
+		)
+	})
+	if avFrameGetColorspace != nil {
+		return avFrameGetColorspace(frame)
+	}
+	return AVColorSpace(0)
 }
 
 // attribute_deprecated
 // void    av_frame_set_colorspace(AVFrame *frame, enum AVColorSpace val);
+var avFrameSetColorspace func(frame *AVFrame, val AVColorSpace)
+var avFrameSetColorspaceOnce sync.Once
+
 func (frame *AVFrame) AvFrameSetColorspace(val AVColorSpace) {
-	ffcommon.GetAvutilDll().NewProc("av_frame_set_colorspace").Call(
-		uintptr(unsafe.Pointer(frame)),
-		uintptr(val),
-	)
+	avFrameSetColorspaceOnce.Do(func() {
+		purego.RegisterLibFunc(
+			&avFrameSetColorspace,
+			ffcommon.GetAvutilDll(),
+			"av_frame_set_colorspace",
+		)
+	})
+	if avFrameSetColorspace != nil {
+		avFrameSetColorspace(frame, val)
+	}
 }
 
 // attribute_deprecated
 // enum AVColorRange av_frame_get_color_range(const AVFrame *frame);
-func (frame *AVFrame) AvFrameGetColorRange() (res AVColorRange) {
-	t, _, _ := ffcommon.GetAvutilDll().NewProc("av_frame_get_color_range").Call(
-		uintptr(unsafe.Pointer(frame)),
-	)
-	res = AVColorRange(t)
-	return
+var avFrameGetColorRange func(frame *AVFrame) AVColorRange
+var avFrameGetColorRangeOnce sync.Once
+
+func (frame *AVFrame) AvFrameGetColorRange() AVColorRange {
+	avFrameGetColorRangeOnce.Do(func() {
+		purego.RegisterLibFunc(
+			&avFrameGetColorRange,
+			ffcommon.GetAvutilDll(),
+			"av_frame_get_color_range",
+		)
+	})
+	if avFrameGetColorRange != nil {
+		return avFrameGetColorRange(frame)
+	}
+	return AVColorRange(0)
 }
 
 // attribute_deprecated
 // void    av_frame_set_color_range(AVFrame *frame, enum AVColorRange val);
-func (frame *AVFrame) AvFrameSetColorRange(val AVColorSpace) {
-	ffcommon.GetAvutilDll().NewProc("av_frame_set_color_range").Call(
-		uintptr(unsafe.Pointer(frame)),
-		uintptr(val),
-	)
+var avFrameSetColorRange func(frame *AVFrame, val AVColorRange)
+var avFrameSetColorRangeOnce sync.Once
+
+func (frame *AVFrame) AvFrameSetColorRange(val AVColorRange) {
+	avFrameSetColorRangeOnce.Do(func() {
+		purego.RegisterLibFunc(
+			&avFrameSetColorRange,
+			ffcommon.GetAvutilDll(),
+			"av_frame_set_color_range",
+		)
+	})
+	if avFrameSetColorRange != nil {
+		avFrameSetColorRange(frame, val)
+	}
 }
 
 //#endif
@@ -963,12 +1175,20 @@ func (frame *AVFrame) AvFrameSetColorRange(val AVColorSpace) {
  * @return a static string identifying the colorspace; can be NULL.
  */
 //const char *av_get_colorspace_name(enum AVColorSpace val);
-func AvGetColorspaceName(val AVColorSpace) (res ffcommon.FCharP) {
-	t, _, _ := ffcommon.GetAvutilDll().NewProc("av_get_colorspace_name").Call(
-		uintptr(val),
-	)
-	res = ffcommon.StringFromPtr(t)
-	return
+var avGetColorspaceName func(val AVColorSpace) ffcommon.FCharP
+var avGetColorspaceNameOnce sync.Once
+
+func AvGetColorspaceName(val AVColorSpace) ffcommon.FCharP {
+	avGetColorspaceNameOnce.Do(func() {
+		purego.RegisterLibFunc(
+			&avGetColorspaceName,
+			ffcommon.GetAvutilDll(),
+			"av_get_colorspace_name",
+		)
+	})
+
+	return avGetColorspaceName(val)
+
 }
 
 /**
@@ -982,10 +1202,21 @@ func AvGetColorspaceName(val AVColorSpace) (res ffcommon.FCharP) {
  * manually.
  */
 //AVFrame *av_frame_alloc(void);
-func AvFrameAlloc() (res *AVFrame) {
-	t, _, _ := ffcommon.GetAvutilDll().NewProc("av_frame_alloc").Call()
-	res = (*AVFrame)(unsafe.Pointer(t))
-	return
+var avFrameAlloc func() *AVFrame
+var avFrameAllocOnce sync.Once
+
+func AvFrameAlloc() *AVFrame {
+	avFrameAllocOnce.Do(func() {
+		purego.RegisterLibFunc(
+			&avFrameAlloc,
+			ffcommon.GetAvutilDll(),
+			"av_frame_alloc",
+		)
+	})
+	if avFrameAlloc != nil {
+		return avFrameAlloc()
+	}
+	return nil
 }
 
 /**
@@ -996,10 +1227,20 @@ func AvFrameAlloc() (res *AVFrame) {
  * @param frame frame to be freed. The pointer will be set to NULL.
  */
 //void av_frame_free(AVFrame **frame);
+var avFrameFree func(frame **AVFrame)
+var avFrameFreeOnce sync.Once
+
 func AvFrameFree(frame **AVFrame) {
-	ffcommon.GetAvutilDll().NewProc("av_frame_free").Call(
-		uintptr(unsafe.Pointer(frame)),
-	)
+	avFrameFreeOnce.Do(func() {
+		purego.RegisterLibFunc(
+			&avFrameFree,
+			ffcommon.GetAvutilDll(),
+			"av_frame_free",
+		)
+	})
+	if avFrameFree != nil {
+		avFrameFree(frame)
+	}
 }
 
 /**
@@ -1018,13 +1259,21 @@ func AvFrameFree(frame **AVFrame) {
  * @return 0 on success, a negative AVERROR on error
  */
 //int av_frame_ref(AVFrame *dst, const AVFrame *src);
-func AvFrameRef(dst, src *AVFrame) (res ffcommon.FInt) {
-	t, _, _ := ffcommon.GetAvutilDll().NewProc("av_frame_ref").Call(
-		uintptr(unsafe.Pointer(dst)),
-		uintptr(unsafe.Pointer(src)),
-	)
-	res = ffcommon.FInt(t)
-	return
+var avFrameRef func(dst, src *AVFrame) ffcommon.FInt
+var avFrameRefOnce sync.Once
+
+func AvFrameRef(dst, src *AVFrame) ffcommon.FInt {
+	avFrameRefOnce.Do(func() {
+		purego.RegisterLibFunc(
+			&avFrameRef,
+			ffcommon.GetAvutilDll(),
+			"av_frame_ref",
+		)
+	})
+	if avFrameRef != nil {
+		return avFrameRef(dst, src)
+	}
+	return ffcommon.FInt(0)
 }
 
 /**
@@ -1035,22 +1284,41 @@ func AvFrameRef(dst, src *AVFrame) (res ffcommon.FInt) {
  * @return newly created AVFrame on success, NULL on error.
  */
 //AVFrame *av_frame_clone(const AVFrame *src);
-func (src *AVFrame) AvFrameClone() (res *AVFrame) {
-	t, _, _ := ffcommon.GetAvutilDll().NewProc("av_frame_clone").Call(
-		uintptr(unsafe.Pointer(src)),
-	)
-	res = (*AVFrame)(unsafe.Pointer(t))
-	return
+var avFrameClone func(src *AVFrame) *AVFrame
+var avFrameCloneOnce sync.Once
+
+func (src *AVFrame) AvFrameClone() *AVFrame {
+	avFrameCloneOnce.Do(func() {
+		purego.RegisterLibFunc(
+			&avFrameClone,
+			ffcommon.GetAvutilDll(),
+			"av_frame_clone",
+		)
+	})
+	if avFrameClone != nil {
+		return avFrameClone(src)
+	}
+	return nil
 }
 
 /**
  * Unreference all the buffers referenced by frame and reset the frame fields.
  */
 //void av_frame_unref(AVFrame *frame);
+var avFrameUnref func(src *AVFrame)
+var avFrameUnrefOnce sync.Once
+
 func (src *AVFrame) AvFrameUnref() {
-	ffcommon.GetAvutilDll().NewProc("av_frame_unref").Call(
-		uintptr(unsafe.Pointer(src)),
-	)
+	avFrameUnrefOnce.Do(func() {
+		purego.RegisterLibFunc(
+			&avFrameUnref,
+			ffcommon.GetAvutilDll(),
+			"av_frame_unref",
+		)
+	})
+	if avFrameUnref != nil {
+		avFrameUnref(src)
+	}
 }
 
 /**
@@ -1061,14 +1329,6 @@ func (src *AVFrame) AvFrameUnref() {
  *           before calling this function to ensure that no memory is leaked.
  */
 //void av_frame_move_ref(AVFrame *dst, AVFrame *src);
-func AvFrameMoveRef(dst, src *AVFrame) (res ffcommon.FCharP) {
-	t, _, _ := ffcommon.GetAvutilDll().NewProc("av_frame_move_ref").Call(
-		uintptr(unsafe.Pointer(dst)),
-		uintptr(unsafe.Pointer(src)),
-	)
-	res = ffcommon.StringFromPtr(t)
-	return
-}
 
 /**
  * Allocate new buffer(s) for audio or video data.
@@ -1094,13 +1354,18 @@ func AvFrameMoveRef(dst, src *AVFrame) (res ffcommon.FCharP) {
  * @return 0 on success, a negative AVERROR on error.
  */
 //int av_frame_get_buffer(AVFrame *frame, int align);
-func (frame *AVFrame) AvFrameGetBuffer(align ffcommon.FInt) (res ffcommon.FInt) {
-	t, _, _ := ffcommon.GetAvutilDll().NewProc("av_frame_get_buffer").Call(
-		uintptr(unsafe.Pointer(frame)),
-		uintptr(align),
-	)
-	res = ffcommon.FInt(t)
-	return
+var avFrameMoveRef func(dst, src *AVFrame) ffcommon.FCharP
+var avFrameMoveRefOnce sync.Once
+
+func AvFrameMoveRef(dst, src *AVFrame) ffcommon.FCharP {
+	avFrameMoveRefOnce.Do(func() {
+		purego.RegisterLibFunc(
+			&avFrameMoveRef,
+			ffcommon.GetAvutilDll(),
+			"av_frame_move_ref",
+		)
+	})
+	return avFrameMoveRef(dst, src)
 }
 
 /**
@@ -1116,12 +1381,21 @@ func (frame *AVFrame) AvFrameGetBuffer(align ffcommon.FInt) (res ffcommon.FInt) 
  * @see av_frame_make_writable(), av_buffer_is_writable()
  */
 //int av_frame_is_writable(AVFrame *frame);
-func (frame *AVFrame) AvFrameIsWritable() (res ffcommon.FInt) {
-	t, _, _ := ffcommon.GetAvutilDll().NewProc("av_frame_is_writable").Call(
-		uintptr(unsafe.Pointer(frame)),
-	)
-	res = ffcommon.FInt(t)
-	return
+var avFrameIsWritable func(frame *AVFrame) ffcommon.FInt
+var avFrameIsWritableOnce sync.Once
+
+func (frame *AVFrame) AvFrameIsWritable() ffcommon.FInt {
+	avFrameIsWritableOnce.Do(func() {
+		purego.RegisterLibFunc(
+			&avFrameIsWritable,
+			ffcommon.GetAvutilDll(),
+			"av_frame_is_writable",
+		)
+	})
+	if avFrameIsWritable != nil {
+		return avFrameIsWritable(frame)
+	}
+	return ffcommon.FInt(0)
 }
 
 /**
@@ -1136,12 +1410,21 @@ func (frame *AVFrame) AvFrameIsWritable() (res ffcommon.FInt) {
  * av_buffer_make_writable()
  */
 //int av_frame_make_writable(AVFrame *frame);
-func (frame *AVFrame) AvFrameMakeWritable() (res ffcommon.FInt) {
-	t, _, _ := ffcommon.GetAvutilDll().NewProc("av_frame_make_writable").Call(
-		uintptr(unsafe.Pointer(frame)),
-	)
-	res = ffcommon.FInt(t)
-	return
+var avFrameMakeWritable func(frame *AVFrame) ffcommon.FInt
+var avFrameMakeWritableOnce sync.Once
+
+func (frame *AVFrame) AvFrameMakeWritable() ffcommon.FInt {
+	avFrameMakeWritableOnce.Do(func() {
+		purego.RegisterLibFunc(
+			&avFrameMakeWritable,
+			ffcommon.GetAvutilDll(),
+			"av_frame_make_writable",
+		)
+	})
+	if avFrameMakeWritable != nil {
+		return avFrameMakeWritable(frame)
+	}
+	return ffcommon.FInt(0)
 }
 
 /**
@@ -1156,13 +1439,21 @@ func (frame *AVFrame) AvFrameMakeWritable() (res ffcommon.FInt) {
  * @return >= 0 on success, a negative AVERROR on error.
  */
 //int av_frame_copy(AVFrame *dst, const AVFrame *src);
-func AvFrameCopy(dst, src *AVFrame) (res ffcommon.FInt) {
-	t, _, _ := ffcommon.GetAvutilDll().NewProc("av_frame_copy").Call(
-		uintptr(unsafe.Pointer(dst)),
-		uintptr(unsafe.Pointer(src)),
-	)
-	res = ffcommon.FInt(t)
-	return
+var avFrameCopy func(dst, src *AVFrame) ffcommon.FInt
+var avFrameCopyOnce sync.Once
+
+func AvFrameCopy(dst, src *AVFrame) ffcommon.FInt {
+	avFrameCopyOnce.Do(func() {
+		purego.RegisterLibFunc(
+			&avFrameCopy,
+			ffcommon.GetAvutilDll(),
+			"av_frame_copy",
+		)
+	})
+	if avFrameCopy != nil {
+		return avFrameCopy(dst, src)
+	}
+	return ffcommon.FInt(0)
 }
 
 /**
@@ -1174,13 +1465,21 @@ func AvFrameCopy(dst, src *AVFrame) (res ffcommon.FInt) {
  * Side data is also copied.
  */
 //int av_frame_copy_props(AVFrame *dst, const AVFrame *src);
-func AvFrameCopyProps(dst, src *AVFrame) (res ffcommon.FInt) {
-	t, _, _ := ffcommon.GetAvutilDll().NewProc("av_frame_copy_props").Call(
-		uintptr(unsafe.Pointer(dst)),
-		uintptr(unsafe.Pointer(src)),
-	)
-	res = ffcommon.FInt(t)
-	return
+var avFrameCopyProps func(dst, src *AVFrame) ffcommon.FInt
+var avFrameCopyPropsOnce sync.Once
+
+func AvFrameCopyProps(dst, src *AVFrame) ffcommon.FInt {
+	avFrameCopyPropsOnce.Do(func() {
+		purego.RegisterLibFunc(
+			&avFrameCopyProps,
+			ffcommon.GetAvutilDll(),
+			"av_frame_copy_props",
+		)
+	})
+	if avFrameCopyProps != nil {
+		return avFrameCopyProps(dst, src)
+	}
+	return ffcommon.FInt(0)
 }
 
 /**
@@ -1192,13 +1491,21 @@ func AvFrameCopyProps(dst, src *AVFrame) (res ffcommon.FInt) {
  * frame is not valid.
  */
 //AVBufferRef *av_frame_get_plane_buffer(AVFrame *frame, int plane);
-func (frame *AVFrame) AvFrameGetPlaneBuffer(plane ffcommon.FInt) (res *AVBufferRef) {
-	t, _, _ := ffcommon.GetAvutilDll().NewProc("av_frame_get_plane_buffer").Call(
-		uintptr(unsafe.Pointer(frame)),
-		uintptr(plane),
-	)
-	res = (*AVBufferRef)(unsafe.Pointer(t))
-	return
+var avFrameGetPlaneBuffer func(frame *AVFrame, plane ffcommon.FInt) *AVBufferRef
+var avFrameGetPlaneBufferOnce sync.Once
+
+func (frame *AVFrame) AvFrameGetPlaneBuffer(plane ffcommon.FInt) *AVBufferRef {
+	avFrameGetPlaneBufferOnce.Do(func() {
+		purego.RegisterLibFunc(
+			&avFrameGetPlaneBuffer,
+			ffcommon.GetAvutilDll(),
+			"av_frame_get_plane_buffer",
+		)
+	})
+	if avFrameGetPlaneBuffer != nil {
+		return avFrameGetPlaneBuffer(frame, plane)
+	}
+	return nil
 }
 
 /**
@@ -1217,14 +1524,21 @@ func (frame *AVFrame) AvFrameGetPlaneBuffer(plane ffcommon.FInt) (res *AVBufferR
 //#else
 //size_t size);
 //#endif
-func (frame *AVFrame) AvFrameNewSideData(type0 AVFrameSideDataType, size ffcommon.FIntOrSizeT) (res *AVFrameSideData) {
-	t, _, _ := ffcommon.GetAvutilDll().NewProc("av_frame_new_side_data").Call(
-		uintptr(unsafe.Pointer(frame)),
-		uintptr(type0),
-		uintptr(size),
-	)
-	res = (*AVFrameSideData)(unsafe.Pointer(t))
-	return
+var avFrameNewSideData func(frame *AVFrame, type0 AVFrameSideDataType, size ffcommon.FIntOrSizeT) *AVFrameSideData
+var avFrameNewSideDataOnce sync.Once
+
+func (frame *AVFrame) AvFrameNewSideData(type0 AVFrameSideDataType, size ffcommon.FIntOrSizeT) *AVFrameSideData {
+	avFrameNewSideDataOnce.Do(func() {
+		purego.RegisterLibFunc(
+			&avFrameNewSideData,
+			ffcommon.GetAvutilDll(),
+			"av_frame_new_side_data",
+		)
+	})
+	if avFrameNewSideData != nil {
+		return avFrameNewSideData(frame, type0, size)
+	}
+	return nil
 }
 
 /**
@@ -1242,14 +1556,21 @@ func (frame *AVFrame) AvFrameNewSideData(type0 AVFrameSideDataType, size ffcommo
 //AVFrameSideData *av_frame_new_side_data_from_buf(AVFrame *frame,
 //enum AVFrameSideDataType type,
 //AVBufferRef *buf);
-func (frame *AVFrame) AvFrameNewSideDataFromBuf(type0 AVFrameSideDataType, buf *AVBufferRef) (res *AVFrameSideData) {
-	t, _, _ := ffcommon.GetAvutilDll().NewProc("av_frame_new_side_data_from_buf").Call(
-		uintptr(unsafe.Pointer(frame)),
-		uintptr(type0),
-		uintptr(unsafe.Pointer(buf)),
-	)
-	res = (*AVFrameSideData)(unsafe.Pointer(t))
-	return
+var avFrameNewSideDataFromBuf func(frame *AVFrame, type0 AVFrameSideDataType, buf *AVBufferRef) *AVFrameSideData
+var avFrameNewSideDataFromBufOnce sync.Once
+
+func (frame *AVFrame) AvFrameNewSideDataFromBuf(type0 AVFrameSideDataType, buf *AVBufferRef) *AVFrameSideData {
+	avFrameNewSideDataFromBufOnce.Do(func() {
+		purego.RegisterLibFunc(
+			&avFrameNewSideDataFromBuf,
+			ffcommon.GetAvutilDll(),
+			"av_frame_new_side_data_from_buf",
+		)
+	})
+	if avFrameNewSideDataFromBuf != nil {
+		return avFrameNewSideDataFromBuf(frame, type0, buf)
+	}
+	return nil
 }
 
 /**
@@ -1258,24 +1579,41 @@ func (frame *AVFrame) AvFrameNewSideDataFromBuf(type0 AVFrameSideDataType, buf *
  */
 //AVFrameSideData *av_frame_get_side_data(const AVFrame *frame,
 //enum AVFrameSideDataType type);
-func (frame *AVFrame) AvFrameGetSideData(type0 AVFrameSideDataType) (res *AVFrameSideData) {
-	t, _, _ := ffcommon.GetAvutilDll().NewProc("av_frame_get_side_data").Call(
-		uintptr(unsafe.Pointer(frame)),
-		uintptr(type0),
-	)
-	res = (*AVFrameSideData)(unsafe.Pointer(t))
-	return
+var avFrameGetSideData func(frame *AVFrame, type0 AVFrameSideDataType) *AVFrameSideData
+var avFrameGetSideDataOnce sync.Once
+
+func (frame *AVFrame) AvFrameGetSideData(type0 AVFrameSideDataType) *AVFrameSideData {
+	avFrameGetSideDataOnce.Do(func() {
+		purego.RegisterLibFunc(
+			&avFrameGetSideData,
+			ffcommon.GetAvutilDll(),
+			"av_frame_get_side_data",
+		)
+	})
+	if avFrameGetSideData != nil {
+		return avFrameGetSideData(frame, type0)
+	}
+	return nil
 }
 
 /**
  * Remove and free all side data instances of the given type.
  */
 //void av_frame_remove_side_data(AVFrame *frame, enum AVFrameSideDataType type);
+var avFrameRemoveSideData func(frame *AVFrame, type0 AVFrameSideDataType)
+var avFrameRemoveSideDataOnce sync.Once
+
 func (frame *AVFrame) AvFrameRemoveSideData(type0 AVFrameSideDataType) {
-	ffcommon.GetAvutilDll().NewProc("av_frame_remove_side_data").Call(
-		uintptr(unsafe.Pointer(frame)),
-		uintptr(type0),
-	)
+	avFrameRemoveSideDataOnce.Do(func() {
+		purego.RegisterLibFunc(
+			&avFrameRemoveSideData,
+			ffcommon.GetAvutilDll(),
+			"av_frame_remove_side_data",
+		)
+	})
+	if avFrameRemoveSideData != nil {
+		avFrameRemoveSideData(frame, type0)
+	}
 }
 
 /**
@@ -1311,25 +1649,42 @@ const AV_FRAME_CROP_UNALIGNED = 1 << 0
  * were invalid, AVERROR(ERANGE) is returned, and nothing is changed.
  */
 //int av_frame_apply_cropping(AVFrame *frame, int flags);
-func (frame *AVFrame) AvFrameApplyCropping(flags ffcommon.FInt) (res ffcommon.FInt) {
-	t, _, _ := ffcommon.GetAvutilDll().NewProc("av_frame_apply_cropping").Call(
-		uintptr(unsafe.Pointer(frame)),
-		uintptr(flags),
-	)
-	res = ffcommon.FInt(t)
-	return
+var avFrameApplyCropping func(frame *AVFrame, flags ffcommon.FInt) ffcommon.FInt
+var avFrameApplyCroppingOnce sync.Once
+
+func (frame *AVFrame) AvFrameApplyCropping(flags ffcommon.FInt) ffcommon.FInt {
+	avFrameApplyCroppingOnce.Do(func() {
+		purego.RegisterLibFunc(
+			&avFrameApplyCropping,
+			ffcommon.GetAvutilDll(),
+			"av_frame_apply_cropping",
+		)
+	})
+	if avFrameApplyCropping != nil {
+		return avFrameApplyCropping(frame, flags)
+	}
+	return 0 // Return a default value if the function is not registered
 }
 
 /**
  * @return a string identifying the side data type
  */
 //const char *av_frame_side_data_name(enum AVFrameSideDataType type);
-func AvFrameSideDataName(type0 AVFrameSideDataType) (res ffcommon.FCharP) {
-	t, _, _ := ffcommon.GetAvutilDll().NewProc("av_frame_side_data_name").Call(
-		uintptr(type0),
-	)
-	res = ffcommon.StringFromPtr(t)
-	return
+var avFrameSideDataName func(type0 AVFrameSideDataType) ffcommon.FCharP
+var avFrameSideDataNameOnce sync.Once
+
+func AvFrameSideDataName(type0 AVFrameSideDataType) ffcommon.FCharP {
+	avFrameSideDataNameOnce.Do(func() {
+		purego.RegisterLibFunc(
+			&avFrameSideDataName,
+			ffcommon.GetAvutilDll(),
+			"av_frame_side_data_name",
+		)
+	})
+	if avFrameSideDataName != nil {
+		return avFrameSideDataName(type0)
+	}
+	return ""
 }
 
 /**
