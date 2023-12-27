@@ -1,10 +1,10 @@
 package libavutil
 
 import (
-	"math"
-	"unsafe"
+	"sync"
 
 	"github.com/dwdcth/ffmpeg-go/ffcommon"
+	"github.com/ebitengine/purego"
 )
 
 /*
@@ -394,15 +394,14 @@ type AVOptionRanges struct {
  * @param av_log_obj log context to use for showing the options
  */
 //int av_opt_show2(void *obj, void *av_log_obj, int req_flags, int rej_flags);
-func AvOptShow2(obj, av_log_obj ffcommon.FVoidP, req_flags, rej_flags ffcommon.FInt) (res ffcommon.FInt) {
-	t, _, _ := ffcommon.GetAvutilDll().NewProc("av_opt_show2").Call(
-		obj,
-		av_log_obj,
-		uintptr(req_flags),
-		uintptr(rej_flags),
-	)
-	res = ffcommon.FInt(t)
-	return
+var avOptShow2 func(obj, av_log_obj ffcommon.FVoidP, req_flags, rej_flags ffcommon.FInt) ffcommon.FInt
+var avOptShow2Once sync.Once
+
+func AvOptShow2(obj, av_log_obj ffcommon.FVoidP, req_flags, rej_flags ffcommon.FInt) ffcommon.FInt {
+	avOptShow2Once.Do(func() {
+		purego.RegisterLibFunc(&avOptShow2, ffcommon.GetAvutilDll(), "av_opt_show2")
+	})
+	return avOptShow2(obj, av_log_obj, req_flags, rej_flags)
 }
 
 /**
@@ -411,10 +410,14 @@ func AvOptShow2(obj, av_log_obj ffcommon.FVoidP, req_flags, rej_flags ffcommon.F
  * @param s an AVOption-enabled struct (its first member must be a pointer to AVClass)
  */
 //void av_opt_set_defaults(void *s);
+var avOptSetDefaults func(s ffcommon.FVoidP)
+var avOptSetDefaultsOnce sync.Once
+
 func AvOptSetDefaults(s ffcommon.FVoidP) {
-	ffcommon.GetAvutilDll().NewProc("av_opt_set_defaults").Call(
-		s,
-	)
+	avOptSetDefaultsOnce.Do(func() {
+		purego.RegisterLibFunc(&avOptSetDefaults, ffcommon.GetAvutilDll(), "av_opt_set_defaults")
+	})
+	avOptSetDefaults(s)
 }
 
 /**
@@ -427,12 +430,14 @@ func AvOptSetDefaults(s ffcommon.FVoidP) {
  * @param flags combination of AV_OPT_FLAG_*
  */
 //void av_opt_set_defaults2(void *s, int mask, int flags);
+var avOptSetDefaults2 func(s ffcommon.FVoidP, mask, flags ffcommon.FInt)
+var avOptSetDefaults2Once sync.Once
+
 func AvOptSetDefaults2(s ffcommon.FVoidP, mask, flags ffcommon.FInt) {
-	ffcommon.GetAvutilDll().NewProc("av_opt_set_defaults2").Call(
-		s,
-		uintptr(mask),
-		uintptr(flags),
-	)
+	avOptSetDefaults2Once.Do(func() {
+		purego.RegisterLibFunc(&avOptSetDefaults2, ffcommon.GetAvutilDll(), "av_opt_set_defaults2")
+	})
+	avOptSetDefaults2(s, mask, flags)
 }
 
 /**
@@ -454,16 +459,14 @@ func AvOptSetDefaults2(s ffcommon.FVoidP, mask, flags ffcommon.FInt) {
  */
 //int av_set_options_string(void *ctx, const char *opts,
 //const char *key_val_sep, const char *pairs_sep);
-func AvSetOptionsString(ctx ffcommon.FVoidP, opts,
-	key_val_sep, pairs_sep ffcommon.FConstCharP) (res ffcommon.FInt) {
-	t, _, _ := ffcommon.GetAvutilDll().NewProc("av_set_options_string").Call(
-		ctx,
-		ffcommon.UintPtrFromString(opts),
-		ffcommon.UintPtrFromString(key_val_sep),
-		ffcommon.UintPtrFromString(pairs_sep),
-	)
-	res = ffcommon.FInt(t)
-	return
+var avSetOptionsString func(ctx ffcommon.FVoidP, opts, key_val_sep, pairs_sep ffcommon.FConstCharP) ffcommon.FInt
+var avSetOptionsStringOnce sync.Once
+
+func AvSetOptionsString(ctx ffcommon.FVoidP, opts, key_val_sep, pairs_sep ffcommon.FConstCharP) ffcommon.FInt {
+	avSetOptionsStringOnce.Do(func() {
+		purego.RegisterLibFunc(&avSetOptionsString, ffcommon.GetAvutilDll(), "av_set_options_string")
+	})
+	return avSetOptionsString(ctx, opts, key_val_sep, pairs_sep)
 }
 
 /**
@@ -496,28 +499,28 @@ func AvSetOptionsString(ctx ffcommon.FVoidP, opts,
 //int av_opt_set_from_string(void *ctx, const char *opts,
 //const char *const *shorthand,
 //const char *key_val_sep, const char *pairs_sep);
-func AvOptSetFromString(ctx ffcommon.FVoidP, opts ffcommon.FConstCharP,
-	shorthand *ffcommon.FBuf,
-	key_val_sep, pairs_sep ffcommon.FConstCharP) (res ffcommon.FInt) {
-	t, _, _ := ffcommon.GetAvutilDll().NewProc("av_opt_set_from_string").Call(
-		ctx,
-		ffcommon.UintPtrFromString(opts),
-		uintptr(unsafe.Pointer(shorthand)),
-		ffcommon.UintPtrFromString(key_val_sep),
-		ffcommon.UintPtrFromString(pairs_sep),
-	)
-	res = ffcommon.FInt(t)
-	return
+var avOptSetFromString func(ctx ffcommon.FVoidP, opts ffcommon.FConstCharP, shorthand *ffcommon.FBuf, key_val_sep, pairs_sep ffcommon.FConstCharP) ffcommon.FInt
+var avOptSetFromStringOnce sync.Once
+
+func AvOptSetFromString(ctx ffcommon.FVoidP, opts ffcommon.FConstCharP, shorthand *ffcommon.FBuf, key_val_sep, pairs_sep ffcommon.FConstCharP) ffcommon.FInt {
+	avOptSetFromStringOnce.Do(func() {
+		purego.RegisterLibFunc(&avOptSetFromString, ffcommon.GetAvutilDll(), "av_opt_set_from_string")
+	})
+	return avOptSetFromString(ctx, opts, shorthand, key_val_sep, pairs_sep)
 }
 
 /**
  * Free all allocated objects in obj.
  */
 //void av_opt_free(void *obj);
+var avOptFree func(obj ffcommon.FVoidP)
+var avOptFreeOnce sync.Once
+
 func AvOptFree(obj ffcommon.FVoidP) {
-	ffcommon.GetAvutilDll().NewProc("av_opt_free").Call(
-		obj,
-	)
+	avOptFreeOnce.Do(func() {
+		purego.RegisterLibFunc(&avOptFree, ffcommon.GetAvutilDll(), "av_opt_free")
+	})
+	avOptFree(obj)
 }
 
 /**
@@ -529,14 +532,14 @@ func AvOptFree(obj ffcommon.FVoidP) {
  *         isn't of the right type, or the flags field doesn't exist.
  */
 //int av_opt_flag_is_set(void *obj, const char *field_name, const char *flag_name);
-func AvOptFlagIsSet(obj ffcommon.FVoidP, field_name, flag_name ffcommon.FConstCharP) (res ffcommon.FInt) {
-	t, _, _ := ffcommon.GetAvutilDll().NewProc("av_opt_flag_is_set").Call(
-		obj,
-		ffcommon.UintPtrFromString(field_name),
-		ffcommon.UintPtrFromString(flag_name),
-	)
-	res = ffcommon.FInt(t)
-	return
+var avOptFlagIsSet func(obj ffcommon.FVoidP, field_name, flag_name ffcommon.FConstCharP) ffcommon.FInt
+var avOptFlagIsSetOnce sync.Once
+
+func AvOptFlagIsSet(obj ffcommon.FVoidP, field_name, flag_name ffcommon.FConstCharP) ffcommon.FInt {
+	avOptFlagIsSetOnce.Do(func() {
+		purego.RegisterLibFunc(&avOptFlagIsSet, ffcommon.GetAvutilDll(), "av_opt_flag_is_set")
+	})
+	return avOptFlagIsSet(obj, field_name, flag_name)
 }
 
 /**
@@ -554,13 +557,14 @@ func AvOptFlagIsSet(obj ffcommon.FVoidP, field_name, flag_name ffcommon.FConstCh
  * @see av_dict_copy()
  */
 //int av_opt_set_dict(void *obj, struct AVDictionary **options);
-func AvOptSetDict(obj ffcommon.FVoidP, options **AVDictionary) (res ffcommon.FInt) {
-	t, _, _ := ffcommon.GetAvutilDll().NewProc("av_opt_set_dict").Call(
-		obj,
-		uintptr(unsafe.Pointer(options)),
-	)
-	res = ffcommon.FInt(t)
-	return
+var avOptSetDict func(obj ffcommon.FVoidP, options **AVDictionary) ffcommon.FInt
+var avOptSetDictOnce sync.Once
+
+func AvOptSetDict(obj ffcommon.FVoidP, options **AVDictionary) ffcommon.FInt {
+	avOptSetDictOnce.Do(func() {
+		purego.RegisterLibFunc(&avOptSetDict, ffcommon.GetAvutilDll(), "av_opt_set_dict")
+	})
+	return avOptSetDict(obj, options)
 }
 
 /**
@@ -579,14 +583,14 @@ func AvOptSetDict(obj ffcommon.FVoidP, options **AVDictionary) (res ffcommon.FIn
  * @see av_dict_copy()
  */
 //int av_opt_set_dict2(void *obj, struct AVDictionary **options, int search_flags);
-func AvOptSetDict2(obj ffcommon.FVoidP, options **AVDictionary, search_flags ffcommon.FInt) (res ffcommon.FInt) {
-	t, _, _ := ffcommon.GetAvutilDll().NewProc("av_opt_set_dict2").Call(
-		obj,
-		uintptr(unsafe.Pointer(options)),
-		uintptr(search_flags),
-	)
-	res = ffcommon.FInt(t)
-	return
+var avOptSetDict2 func(obj ffcommon.FVoidP, options **AVDictionary, search_flags ffcommon.FInt) ffcommon.FInt
+var avOptSetDict2Once sync.Once
+
+func AvOptSetDict2(obj ffcommon.FVoidP, options **AVDictionary, search_flags ffcommon.FInt) ffcommon.FInt {
+	avOptSetDict2Once.Do(func() {
+		purego.RegisterLibFunc(&avOptSetDict2, ffcommon.GetAvutilDll(), "av_opt_set_dict2")
+	})
+	return avOptSetDict2(obj, options, search_flags)
 }
 
 /**
@@ -612,20 +616,20 @@ func AvOptSetDict2(obj ffcommon.FVoidP, options **AVDictionary, search_flags ffc
 //const char *key_val_sep, const char *pairs_sep,
 //unsigned flags,
 //char **rkey, char **rval);
+var avOptGetKeyValue func(ropts *ffcommon.FBuf,
+	key_val_sep, pairs_sep ffcommon.FConstCharP,
+	flags ffcommon.FUnsigned,
+	rkey, rval *ffcommon.FBuf) ffcommon.FInt
+var avOptGetKeyValueOnce sync.Once
+
 func AvOptGetKeyValue(ropts *ffcommon.FBuf,
 	key_val_sep, pairs_sep ffcommon.FConstCharP,
 	flags ffcommon.FUnsigned,
-	rkey, rval *ffcommon.FBuf) (res ffcommon.FInt) {
-	t, _, _ := ffcommon.GetAvutilDll().NewProc("av_opt_get_key_value").Call(
-		uintptr(unsafe.Pointer(ropts)),
-		ffcommon.UintPtrFromString(key_val_sep),
-		ffcommon.UintPtrFromString(pairs_sep),
-		uintptr(flags),
-		uintptr(unsafe.Pointer(rkey)),
-		uintptr(unsafe.Pointer(rval)),
-	)
-	res = ffcommon.FInt(t)
-	return
+	rkey, rval *ffcommon.FBuf) ffcommon.FInt {
+	avOptGetKeyValueOnce.Do(func() {
+		purego.RegisterLibFunc(&avOptGetKeyValue, ffcommon.GetAvutilDll(), "av_opt_get_key_value")
+	})
+	return avOptGetKeyValue(ropts, key_val_sep, pairs_sep, flags, rkey, rval)
 }
 
 //enum {
@@ -653,75 +657,69 @@ const AV_OPT_FLAG_IMPLICIT_KEY = 1
  * @return 0 on success, a negative number on failure.
  */
 //int av_opt_eval_flags (void *obj, const AVOption *o, const char *val, int        *flags_out);
-func AvOptEvalFlags(obj ffcommon.FVoidP, o *AVOption, val ffcommon.FConstCharP, flags_out *ffcommon.FInt) (res ffcommon.FInt) {
-	t, _, _ := ffcommon.GetAvutilDll().NewProc("av_opt_eval_flags").Call(
-		obj,
-		uintptr(unsafe.Pointer(o)),
-		ffcommon.UintPtrFromString(val),
-		uintptr(unsafe.Pointer(flags_out)),
-	)
-	res = ffcommon.FInt(t)
-	return
+var avOptEvalFlags func(obj ffcommon.FVoidP, o *AVOption, val ffcommon.FConstCharP, flags_out *ffcommon.FInt) ffcommon.FInt
+var avOptEvalFlagsOnce sync.Once
+
+func AvOptEvalFlags(obj ffcommon.FVoidP, o *AVOption, val ffcommon.FConstCharP, flags_out *ffcommon.FInt) ffcommon.FInt {
+	avOptEvalFlagsOnce.Do(func() {
+		purego.RegisterLibFunc(&avOptEvalFlags, ffcommon.GetAvutilDll(), "av_opt_eval_flags")
+	})
+	return avOptEvalFlags(obj, o, val, flags_out)
 }
 
 // int av_opt_eval_int   (void *obj, const AVOption *o, const char *val, int        *int_out);
-func AvOptEvalInt(obj ffcommon.FVoidP, o *AVOption, val ffcommon.FConstCharP, int_out *ffcommon.FInt) (res ffcommon.FInt) {
-	t, _, _ := ffcommon.GetAvutilDll().NewProc("av_opt_eval_int").Call(
-		obj,
-		uintptr(unsafe.Pointer(o)),
-		ffcommon.UintPtrFromString(val),
-		uintptr(unsafe.Pointer(int_out)),
-	)
-	res = ffcommon.FInt(t)
-	return
+var avOptEvalInt func(obj ffcommon.FVoidP, o *AVOption, val ffcommon.FConstCharP, int_out *ffcommon.FInt) ffcommon.FInt
+var avOptEvalIntOnce sync.Once
+
+func AvOptEvalInt(obj ffcommon.FVoidP, o *AVOption, val ffcommon.FConstCharP, int_out *ffcommon.FInt) ffcommon.FInt {
+	avOptEvalIntOnce.Do(func() {
+		purego.RegisterLibFunc(&avOptEvalInt, ffcommon.GetAvutilDll(), "av_opt_eval_int")
+	})
+	return avOptEvalInt(obj, o, val, int_out)
 }
 
 // int av_opt_eval_int64 (void *obj, const AVOption *o, const char *val, int64_t    *int64_out);
-func AvOptEvalInt64(obj ffcommon.FVoidP, o *AVOption, val ffcommon.FConstCharP, int64_out *ffcommon.FInt64T) (res ffcommon.FInt) {
-	t, _, _ := ffcommon.GetAvutilDll().NewProc("av_opt_eval_int64").Call(
-		obj,
-		uintptr(unsafe.Pointer(o)),
-		ffcommon.UintPtrFromString(val),
-		uintptr(unsafe.Pointer(int64_out)),
-	)
-	res = ffcommon.FInt(t)
-	return
+var avOptEvalInt64 func(obj ffcommon.FVoidP, o *AVOption, val ffcommon.FConstCharP, int64_out *ffcommon.FInt64T) ffcommon.FInt
+var avOptEvalInt64Once sync.Once
+
+func AvOptEvalInt64(obj ffcommon.FVoidP, o *AVOption, val ffcommon.FConstCharP, int64_out *ffcommon.FInt64T) ffcommon.FInt {
+	avOptEvalInt64Once.Do(func() {
+		purego.RegisterLibFunc(&avOptEvalInt64, ffcommon.GetAvutilDll(), "av_opt_eval_int64")
+	})
+	return avOptEvalInt64(obj, o, val, int64_out)
 }
 
 // int av_opt_eval_float (void *obj, const AVOption *o, const char *val, float      *float_out);
-func AvOptEvalFloat(obj ffcommon.FVoidP, o *AVOption, val ffcommon.FConstCharP, float_out *ffcommon.FFloat) (res ffcommon.FInt) {
-	t, _, _ := ffcommon.GetAvutilDll().NewProc("av_opt_eval_float").Call(
-		obj,
-		uintptr(unsafe.Pointer(o)),
-		ffcommon.UintPtrFromString(val),
-		uintptr(unsafe.Pointer(float_out)),
-	)
-	res = ffcommon.FInt(t)
-	return
+var avOptEvalFloat func(obj ffcommon.FVoidP, o *AVOption, val ffcommon.FConstCharP, float_out *ffcommon.FFloat) ffcommon.FInt
+var avOptEvalFloatOnce sync.Once
+
+func AvOptEvalFloat(obj ffcommon.FVoidP, o *AVOption, val ffcommon.FConstCharP, float_out *ffcommon.FFloat) ffcommon.FInt {
+	avOptEvalFloatOnce.Do(func() {
+		purego.RegisterLibFunc(&avOptEvalFloat, ffcommon.GetAvutilDll(), "av_opt_eval_float")
+	})
+	return avOptEvalFloat(obj, o, val, float_out)
 }
 
 // int av_opt_eval_double(void *obj, const AVOption *o, const char *val, double     *double_out);
-func AvOptEvalDouble(obj ffcommon.FVoidP, o *AVOption, val ffcommon.FConstCharP, double_out *ffcommon.FDouble) (res ffcommon.FInt) {
-	t, _, _ := ffcommon.GetAvutilDll().NewProc("av_opt_eval_double").Call(
-		obj,
-		uintptr(unsafe.Pointer(o)),
-		ffcommon.UintPtrFromString(val),
-		uintptr(unsafe.Pointer(double_out)),
-	)
-	res = ffcommon.FInt(t)
-	return
+var avOptEvalDouble func(obj ffcommon.FVoidP, o *AVOption, val ffcommon.FConstCharP, double_out *ffcommon.FDouble) ffcommon.FInt
+var avOptEvalDoubleOnce sync.Once
+
+func AvOptEvalDouble(obj ffcommon.FVoidP, o *AVOption, val ffcommon.FConstCharP, double_out *ffcommon.FDouble) ffcommon.FInt {
+	avOptEvalDoubleOnce.Do(func() {
+		purego.RegisterLibFunc(&avOptEvalDouble, ffcommon.GetAvutilDll(), "av_opt_eval_double")
+	})
+	return avOptEvalDouble(obj, o, val, double_out)
 }
 
 // int av_opt_eval_q     (void *obj, const AVOption *o, const char *val, AVRational *q_out);
-func AvOptEvalQ(obj ffcommon.FVoidP, o *AVOption, val ffcommon.FConstCharP, q_out *AVRational) (res ffcommon.FInt) {
-	t, _, _ := ffcommon.GetAvutilDll().NewProc("av_opt_eval_q").Call(
-		obj,
-		uintptr(unsafe.Pointer(o)),
-		ffcommon.UintPtrFromString(val),
-		uintptr(unsafe.Pointer(q_out)),
-	)
-	res = ffcommon.FInt(t)
-	return
+var avOptEvalQ func(obj ffcommon.FVoidP, o *AVOption, val ffcommon.FConstCharP, q_out *AVRational) ffcommon.FInt
+var avOptEvalQOnce sync.Once
+
+func AvOptEvalQ(obj ffcommon.FVoidP, o *AVOption, val ffcommon.FConstCharP, q_out *AVRational) ffcommon.FInt {
+	avOptEvalQOnce.Do(func() {
+		purego.RegisterLibFunc(&avOptEvalQ, ffcommon.GetAvutilDll(), "av_opt_eval_q")
+	})
+	return avOptEvalQ(obj, o, val, q_out)
 }
 
 /**
@@ -775,17 +773,16 @@ const AV_OPT_MULTI_COMPONENT_RANGE = (1 << 12)
  */
 //const AVOption *av_opt_find(void *obj, const char *name, const char *unit,
 //int opt_flags, int search_flags);
+var avOptFind func(obj ffcommon.FVoidP, name, unit ffcommon.FConstCharP,
+	opt_flags, search_flags ffcommon.FInt) *AVOption
+var avOptFindOnce sync.Once
+
 func AvOptFind(obj ffcommon.FVoidP, name, unit ffcommon.FConstCharP,
-	opt_flags, search_flags ffcommon.FInt) (res *AVOption) {
-	t, _, _ := ffcommon.GetAvutilDll().NewProc("av_opt_find").Call(
-		obj,
-		ffcommon.UintPtrFromString(name),
-		ffcommon.UintPtrFromString(unit),
-		uintptr(opt_flags),
-		uintptr(search_flags),
-	)
-	res = (*AVOption)(unsafe.Pointer(t))
-	return
+	opt_flags, search_flags ffcommon.FInt) *AVOption {
+	avOptFindOnce.Do(func() {
+		purego.RegisterLibFunc(&avOptFind, ffcommon.GetAvutilDll(), "av_opt_find")
+	})
+	return avOptFind(obj, name, unit, opt_flags, search_flags)
 }
 
 /**
@@ -811,18 +808,16 @@ func AvOptFind(obj ffcommon.FVoidP, name, unit ffcommon.FConstCharP,
  */
 //const AVOption *av_opt_find2(void *obj, const char *name, const char *unit,
 //int opt_flags, int search_flags, void **target_obj);
+var avOptFind2 func(obj ffcommon.FVoidP, name, unit ffcommon.FConstCharP,
+	opt_flags, search_flags ffcommon.FInt, target_obj *ffcommon.FVoidP) *AVOption
+var avOptFind2Once sync.Once
+
 func AvOptFind2(obj ffcommon.FVoidP, name, unit ffcommon.FConstCharP,
-	opt_flags, search_flags ffcommon.FInt, target_obj *ffcommon.FVoidP) (res *AVOption) {
-	t, _, _ := ffcommon.GetAvutilDll().NewProc("av_opt_find2").Call(
-		obj,
-		ffcommon.UintPtrFromString(name),
-		ffcommon.UintPtrFromString(unit),
-		uintptr(opt_flags),
-		uintptr(search_flags),
-		uintptr(unsafe.Pointer(target_obj)),
-	)
-	res = (*AVOption)(unsafe.Pointer(t))
-	return
+	opt_flags, search_flags ffcommon.FInt, target_obj *ffcommon.FVoidP) *AVOption {
+	avOptFind2Once.Do(func() {
+		purego.RegisterLibFunc(&avOptFind2, ffcommon.GetAvutilDll(), "av_opt_find2")
+	})
+	return avOptFind2(obj, name, unit, opt_flags, search_flags, target_obj)
 }
 
 /**
@@ -835,13 +830,14 @@ func AvOptFind2(obj ffcommon.FVoidP, name, unit ffcommon.FConstCharP,
  * @return next AVOption or NULL
  */
 //const AVOption *av_opt_next(const void *obj, const AVOption *prev);
-func AvOptNext(obj ffcommon.FVoidP, prev *AVOption) (res *AVOption) {
-	t, _, _ := ffcommon.GetAvutilDll().NewProc("av_opt_next").Call(
-		obj,
-		uintptr(unsafe.Pointer(prev)),
-	)
-	res = (*AVOption)(unsafe.Pointer(t))
-	return
+var avOptNext func(obj ffcommon.FVoidP, prev *AVOption) *AVOption
+var avOptNextOnce sync.Once
+
+func AvOptNext(obj ffcommon.FVoidP, prev *AVOption) *AVOption {
+	avOptNextOnce.Do(func() {
+		purego.RegisterLibFunc(&avOptNext, ffcommon.GetAvutilDll(), "av_opt_next")
+	})
+	return avOptNext(obj, prev)
 }
 
 /**
@@ -851,13 +847,14 @@ func AvOptNext(obj ffcommon.FVoidP, prev *AVOption) (res *AVOption) {
  * @return next AVOptions-enabled child or NULL
  */
 //void *av_opt_child_next(void *obj, void *prev);
-func AvOptChildNext(obj ffcommon.FVoidP, prev *AVOption) (res ffcommon.FVoidP) {
-	t, _, _ := ffcommon.GetAvutilDll().NewProc("av_opt_child_next").Call(
-		obj,
-		uintptr(unsafe.Pointer(prev)),
-	)
-	res = t
-	return
+var avOptChildNext func(obj ffcommon.FVoidP, prev *AVOption) ffcommon.FVoidP
+var avOptChildNextOnce sync.Once
+
+func AvOptChildNext(obj ffcommon.FVoidP, prev *AVOption) ffcommon.FVoidP {
+	avOptChildNextOnce.Do(func() {
+		purego.RegisterLibFunc(&avOptChildNext, ffcommon.GetAvutilDll(), "av_opt_child_next")
+	})
+	return avOptChildNext(obj, prev)
 }
 
 //#if FF_API_CHILD_CLASS_NEXT
@@ -871,13 +868,14 @@ func AvOptChildNext(obj ffcommon.FVoidP, prev *AVOption) (res ffcommon.FVoidP) {
  */
 //attribute_deprecated
 //const AVClass *av_opt_child_class_next(const AVClass *parent, const AVClass *prev);
-func (parent *AVClass) AvOptChildClassNext(prev *AVClass) (res *AVClass) {
-	t, _, _ := ffcommon.GetAvutilDll().NewProc("av_opt_child_class_next").Call(
-		uintptr(unsafe.Pointer(parent)),
-		uintptr(unsafe.Pointer(prev)),
-	)
-	res = (*AVClass)(unsafe.Pointer(t))
-	return
+var avOptChildClassNext func(parent *AVClass, prev *AVClass) *AVClass
+var avOptChildClassNextOnce sync.Once
+
+func (parent *AVClass) AvOptChildClassNext(prev *AVClass) *AVClass {
+	avOptChildClassNextOnce.Do(func() {
+		purego.RegisterLibFunc(&avOptChildClassNext, ffcommon.GetAvutilDll(), "av_opt_child_class_next")
+	})
+	return avOptChildClassNext(parent, prev)
 }
 
 //#endif
@@ -889,13 +887,14 @@ func (parent *AVClass) AvOptChildClassNext(prev *AVClass) (res *AVClass) {
  * @return AVClass corresponding to next potential child or NULL
  */
 //const AVClass *av_opt_child_class_iterate(const AVClass *parent, void **iter);
-func (parent *AVClass) AvOptChildClassIterate(iter *ffcommon.FVoidP) (res *AVClass) {
-	t, _, _ := ffcommon.GetAvutilDll().NewProc("av_opt_child_class_iterate").Call(
-		uintptr(unsafe.Pointer(parent)),
-		uintptr(unsafe.Pointer(iter)),
-	)
-	res = (*AVClass)(unsafe.Pointer(t))
-	return
+var avOptChildClassIterate func(parent *AVClass, iter *ffcommon.FVoidP) *AVClass
+var avOptChildClassIterateOnce sync.Once
+
+func (parent *AVClass) AvOptChildClassIterate(iter *ffcommon.FVoidP) *AVClass {
+	avOptChildClassIterateOnce.Do(func() {
+		purego.RegisterLibFunc(&avOptChildClassIterate, ffcommon.GetAvutilDll(), "av_opt_child_class_iterate")
+	})
+	return avOptChildClassIterate(parent, iter)
 }
 
 /**
@@ -928,125 +927,113 @@ func (parent *AVClass) AvOptChildClassIterate(iter *ffcommon.FVoidP) (res *AVCla
  * AVERROR(EINVAL) if the value is not valid
  */
 //int av_opt_set         (void *obj, const char *name, const char *val, int search_flags);
-func AvOptSet(obj ffcommon.FVoidP, name, val ffcommon.FConstCharP, search_flags ffcommon.FInt) (res ffcommon.FInt) {
-	t, _, _ := ffcommon.GetAvutilDll().NewProc("av_opt_set").Call(
-		obj,
-		ffcommon.UintPtrFromString(name),
-		ffcommon.UintPtrFromString(val),
-		uintptr(search_flags),
-	)
-	res = ffcommon.FInt(t)
-	return
+var avOptSet func(obj ffcommon.FVoidP, name, val ffcommon.FConstCharP, searchFlags ffcommon.FInt) ffcommon.FInt
+var avOptSetOnce sync.Once
+
+func AvOptSet(obj ffcommon.FVoidP, name, val ffcommon.FConstCharP, searchFlags ffcommon.FInt) ffcommon.FInt {
+	avOptSetOnce.Do(func() {
+		purego.RegisterLibFunc(&avOptSet, ffcommon.GetAvutilDll(), "av_opt_set")
+	})
+	return avOptSet(obj, name, val, searchFlags)
 }
 
 // int av_opt_set_int     (void *obj, const char *name, int64_t     val, int search_flags);
-func AvOptSetInt(obj ffcommon.FVoidP, name ffcommon.FConstCharP, val ffcommon.FInt64T, search_flags ffcommon.FInt) (res ffcommon.FInt) {
-	t, _, _ := ffcommon.GetAvutilDll().NewProc("av_opt_set_int").Call(
-		obj,
-		ffcommon.UintPtrFromString(name),
-		uintptr(val),
-		uintptr(search_flags),
-	)
-	res = ffcommon.FInt(t)
-	return
+var avOptSetInt func(obj ffcommon.FVoidP, name ffcommon.FConstCharP, val ffcommon.FInt64T, searchFlags ffcommon.FInt) ffcommon.FInt
+var avOptSetIntOnce sync.Once
+
+func AvOptSetInt(obj ffcommon.FVoidP, name ffcommon.FConstCharP, val ffcommon.FInt64T, searchFlags ffcommon.FInt) ffcommon.FInt {
+	avOptSetIntOnce.Do(func() {
+		purego.RegisterLibFunc(&avOptSetInt, ffcommon.GetAvutilDll(), "av_opt_set_int")
+	})
+	return avOptSetInt(obj, name, val, searchFlags)
 }
 
 // int av_opt_set_double  (void *obj, const char *name, double      val, int search_flags);
-func AvOptSetDouble(obj ffcommon.FVoidP, name ffcommon.FConstCharP, val ffcommon.FDouble, search_flags ffcommon.FInt) (res ffcommon.FInt) {
-	t, _, _ := ffcommon.GetAvutilDll().NewProc("av_opt_set_double").Call(
-		obj,
-		ffcommon.UintPtrFromString(name),
-		uintptr(unsafe.Pointer(&val)),
-		uintptr(search_flags),
-	)
-	res = ffcommon.FInt(t)
-	return
+var avOptSetDouble func(obj ffcommon.FVoidP, name ffcommon.FConstCharP, val ffcommon.FDouble, searchFlags ffcommon.FInt) ffcommon.FInt
+var avOptSetDoubleOnce sync.Once
+
+func AvOptSetDouble(obj ffcommon.FVoidP, name ffcommon.FConstCharP, val ffcommon.FDouble, searchFlags ffcommon.FInt) ffcommon.FInt {
+	avOptSetDoubleOnce.Do(func() {
+		purego.RegisterLibFunc(&avOptSetDouble, ffcommon.GetAvutilDll(), "av_opt_set_double")
+	})
+	return avOptSetDouble(obj, name, val, searchFlags)
 }
 
 // int av_opt_set_q       (void *obj, const char *name, AVRational  val, int search_flags);
-func AvOptSetQ(obj ffcommon.FVoidP, name ffcommon.FConstCharP, val AVRational, search_flags ffcommon.FInt) (res ffcommon.FInt) {
-	t, _, _ := ffcommon.GetAvutilDll().NewProc("av_opt_set_q").Call(
-		obj,
-		ffcommon.UintPtrFromString(name),
-		*(*uintptr)(unsafe.Pointer(&val)),
-		uintptr(search_flags),
-	)
-	res = ffcommon.FInt(t)
-	return
+var avOptSetQ func(obj ffcommon.FVoidP, name ffcommon.FConstCharP, val AVRational, searchFlags ffcommon.FInt) ffcommon.FInt
+var avOptSetQOnce sync.Once
+
+func AvOptSetQ(obj ffcommon.FVoidP, name ffcommon.FConstCharP, val AVRational, searchFlags ffcommon.FInt) ffcommon.FInt {
+	avOptSetQOnce.Do(func() {
+		purego.RegisterLibFunc(&avOptSetQ, ffcommon.GetAvutilDll(), "av_opt_set_q")
+	})
+	return avOptSetQ(obj, name, val, searchFlags)
 }
 
 // int av_opt_set_bin     (void *obj, const char *name, const uint8_t *val, int size, int search_flags);
-func AvOptSetBin(obj ffcommon.FVoidP, name ffcommon.FConstCharP, val *ffcommon.FUint8T, size ffcommon.FInt, search_flags ffcommon.FInt) (res ffcommon.FInt) {
-	t, _, _ := ffcommon.GetAvutilDll().NewProc("av_opt_set_bin").Call(
-		obj,
-		ffcommon.UintPtrFromString(name),
-		uintptr(unsafe.Pointer(val)),
-		uintptr(size),
-		uintptr(search_flags),
-	)
-	res = ffcommon.FInt(t)
-	return
+var avOptSetBin func(obj ffcommon.FVoidP, name ffcommon.FConstCharP, val *ffcommon.FUint8T, size ffcommon.FInt, searchFlags ffcommon.FInt) ffcommon.FInt
+var avOptSetBinOnce sync.Once
+
+func AvOptSetBin(obj ffcommon.FVoidP, name ffcommon.FConstCharP, val *ffcommon.FUint8T, size ffcommon.FInt, searchFlags ffcommon.FInt) ffcommon.FInt {
+	avOptSetBinOnce.Do(func() {
+		purego.RegisterLibFunc(&avOptSetBin, ffcommon.GetAvutilDll(), "av_opt_set_bin")
+	})
+	return avOptSetBin(obj, name, val, size, searchFlags)
 }
 
 // int av_opt_set_image_size(void *obj, const char *name, int w, int h, int search_flags);
-func AvOptSetImageSize(obj ffcommon.FVoidP, name ffcommon.FConstCharP, w, h ffcommon.FInt, search_flags ffcommon.FInt) (res ffcommon.FInt) {
-	t, _, _ := ffcommon.GetAvutilDll().NewProc("av_opt_set_image_size").Call(
-		obj,
-		ffcommon.UintPtrFromString(name),
-		uintptr(w),
-		uintptr(h),
-		uintptr(search_flags),
-	)
-	res = ffcommon.FInt(t)
-	return
+var avOptSetImageSize func(obj ffcommon.FVoidP, name ffcommon.FConstCharP, w, h ffcommon.FInt, searchFlags ffcommon.FInt) ffcommon.FInt
+var avOptSetImageSizeOnce sync.Once
+
+func AvOptSetImageSize(obj ffcommon.FVoidP, name ffcommon.FConstCharP, w, h ffcommon.FInt, searchFlags ffcommon.FInt) ffcommon.FInt {
+	avOptSetImageSizeOnce.Do(func() {
+		purego.RegisterLibFunc(&avOptSetImageSize, ffcommon.GetAvutilDll(), "av_opt_set_image_size")
+	})
+	return avOptSetImageSize(obj, name, w, h, searchFlags)
 }
 
 // int av_opt_set_pixel_fmt (void *obj, const char *name, enum AVPixelFormat fmt, int search_flags);
-func AvOptSetPixelFmt(obj ffcommon.FVoidP, name ffcommon.FConstCharP, fmt0 AVPixelFormat, search_flags ffcommon.FInt) (res ffcommon.FInt) {
-	t, _, _ := ffcommon.GetAvutilDll().NewProc("av_opt_set_pixel_fmt").Call(
-		obj,
-		ffcommon.UintPtrFromString(name),
-		uintptr(fmt0),
-		uintptr(search_flags),
-	)
-	res = ffcommon.FInt(t)
-	return
+var avOptSetPixelFmt func(obj ffcommon.FVoidP, name ffcommon.FConstCharP, fmt0 AVPixelFormat, searchFlags ffcommon.FInt) ffcommon.FInt
+var avOptSetPixelFmtOnce sync.Once
+
+func AvOptSetPixelFmt(obj ffcommon.FVoidP, name ffcommon.FConstCharP, fmt0 AVPixelFormat, searchFlags ffcommon.FInt) ffcommon.FInt {
+	avOptSetPixelFmtOnce.Do(func() {
+		purego.RegisterLibFunc(&avOptSetPixelFmt, ffcommon.GetAvutilDll(), "av_opt_set_pixel_fmt")
+	})
+	return avOptSetPixelFmt(obj, name, fmt0, searchFlags)
 }
 
 // int av_opt_set_sample_fmt(void *obj, const char *name, enum AVSampleFormat fmt, int search_flags);
-func AvOptSetSampleFmt(obj ffcommon.FVoidP, name ffcommon.FConstCharP, fmt0 AVSampleFormat, search_flags ffcommon.FInt) (res ffcommon.FInt) {
-	t, _, _ := ffcommon.GetAvutilDll().NewProc("av_opt_set_sample_fmt").Call(
-		obj,
-		ffcommon.UintPtrFromString(name),
-		uintptr(fmt0),
-		uintptr(search_flags),
-	)
-	res = ffcommon.FInt(t)
-	return
+var avOptSetSampleFmt func(obj ffcommon.FVoidP, name ffcommon.FConstCharP, fmt0 AVSampleFormat, searchFlags ffcommon.FInt) ffcommon.FInt
+var avOptSetSampleFmtOnce sync.Once
+
+func AvOptSetSampleFmt(obj ffcommon.FVoidP, name ffcommon.FConstCharP, fmt0 AVSampleFormat, searchFlags ffcommon.FInt) ffcommon.FInt {
+	avOptSetSampleFmtOnce.Do(func() {
+		purego.RegisterLibFunc(&avOptSetSampleFmt, ffcommon.GetAvutilDll(), "av_opt_set_sample_fmt")
+	})
+	return avOptSetSampleFmt(obj, name, fmt0, searchFlags)
 }
 
 // int av_opt_set_video_rate(void *obj, const char *name, AVRational val, int search_flags);
-func AvOptSetVideoRate(obj ffcommon.FVoidP, name ffcommon.FConstCharP, val AVRational, search_flags ffcommon.FInt) (res ffcommon.FInt) {
-	t, _, _ := ffcommon.GetAvutilDll().NewProc("av_opt_set_video_rate").Call(
-		obj,
-		ffcommon.UintPtrFromString(name),
-		uintptr(unsafe.Pointer(&val)),
-		uintptr(search_flags),
-	)
-	res = ffcommon.FInt(t)
-	return
+var avOptSetVideoRate func(obj ffcommon.FVoidP, name ffcommon.FConstCharP, val AVRational, searchFlags ffcommon.FInt) ffcommon.FInt
+var avOptSetVideoRateOnce sync.Once
+
+func AvOptSetVideoRate(obj ffcommon.FVoidP, name ffcommon.FConstCharP, val AVRational, searchFlags ffcommon.FInt) ffcommon.FInt {
+	avOptSetVideoRateOnce.Do(func() {
+		purego.RegisterLibFunc(&avOptSetVideoRate, ffcommon.GetAvutilDll(), "av_opt_set_video_rate")
+	})
+	return avOptSetVideoRate(obj, name, val, searchFlags)
 }
 
 // int av_opt_set_channel_layout(void *obj, const char *name, int64_t ch_layout, int search_flags);
-func AvOptSetChannelLayout(obj ffcommon.FVoidP, name ffcommon.FConstCharP, ch_layout ffcommon.FInt64T, search_flags ffcommon.FInt) (res ffcommon.FInt) {
-	t, _, _ := ffcommon.GetAvutilDll().NewProc("av_opt_set_channel_layout").Call(
-		obj,
-		ffcommon.UintPtrFromString(name),
-		uintptr(ch_layout),
-		uintptr(search_flags),
-	)
-	res = ffcommon.FInt(t)
-	return
+var avOptSetChannelLayout func(obj ffcommon.FVoidP, name ffcommon.FConstCharP, chLayout ffcommon.FInt64T, searchFlags ffcommon.FInt) ffcommon.FInt
+var avOptSetChannelLayoutOnce sync.Once
+
+func AvOptSetChannelLayout(obj ffcommon.FVoidP, name ffcommon.FConstCharP, chLayout ffcommon.FInt64T, searchFlags ffcommon.FInt) ffcommon.FInt {
+	avOptSetChannelLayoutOnce.Do(func() {
+		purego.RegisterLibFunc(&avOptSetChannelLayout, ffcommon.GetAvutilDll(), "av_opt_set_channel_layout")
+	})
+	return avOptSetChannelLayout(obj, name, chLayout, searchFlags)
 }
 
 /**
@@ -1054,15 +1041,14 @@ func AvOptSetChannelLayout(obj ffcommon.FVoidP, name ffcommon.FConstCharP, ch_la
  * caller still owns val is and responsible for freeing it.
  */
 //int av_opt_set_dict_val(void *obj, const char *name, const AVDictionary *val, int search_flags);
-func AvOptSetDictVal(obj ffcommon.FVoidP, name ffcommon.FConstCharP, val *AVDictionary, search_flags ffcommon.FInt) (res ffcommon.FInt) {
-	t, _, _ := ffcommon.GetAvutilDll().NewProc("av_opt_set_dict_val").Call(
-		obj,
-		ffcommon.UintPtrFromString(name),
-		uintptr(unsafe.Pointer(val)),
-		uintptr(search_flags),
-	)
-	res = ffcommon.FInt(t)
-	return
+var avOptSetDictVal func(obj ffcommon.FVoidP, name ffcommon.FConstCharP, val *AVDictionary, searchFlags ffcommon.FInt) ffcommon.FInt
+var avOptSetDictValOnce sync.Once
+
+func AvOptSetDictVal(obj ffcommon.FVoidP, name ffcommon.FConstCharP, val *AVDictionary, searchFlags ffcommon.FInt) ffcommon.FInt {
+	avOptSetDictValOnce.Do(func() {
+		purego.RegisterLibFunc(&avOptSetDictVal, ffcommon.GetAvutilDll(), "av_opt_set_dict_val")
+	})
+	return avOptSetDictVal(obj, name, val, searchFlags)
 }
 
 /**
@@ -1081,15 +1067,14 @@ func AvOptSetDictVal(obj ffcommon.FVoidP, name ffcommon.FConstCharP, val *AVDict
 //av_opt_set_bin(obj, name, (const uint8_t *)(val), \
 //av_int_list_length(val, term) * sizeof(*(val)), flags))
 //todo可能有问题，暂时别用
-func AvOptSetIntList(obj ffcommon.FVoidP, name ffcommon.FConstCharP, val uintptr, size ffcommon.FInt /*sizeof(*(val))*/, term ffcommon.FUint64T, flags ffcommon.FInt) (res ffcommon.FInt) {
-	//a := AvIntListLength(val, term)
-	a := AvIntListLengthForSize(uint32(size), val, term)
-	if a > uint32(math.MaxInt32/size) {
-		res = -EINVAL
-	} else {
-		res = AvOptSetBin(obj, name, (*byte)(unsafe.Pointer(val)), size, flags)
-	}
-	return
+var avOptSetIntList func(obj ffcommon.FVoidP, name ffcommon.FConstCharP, val uintptr, size ffcommon.FInt, term ffcommon.FUint64T, flags ffcommon.FInt) ffcommon.FInt
+var avOptSetIntListOnce sync.Once
+
+func AvOptSetIntList(obj ffcommon.FVoidP, name ffcommon.FConstCharP, val uintptr, size ffcommon.FInt, term ffcommon.FUint64T, flags ffcommon.FInt) ffcommon.FInt {
+	avOptSetIntListOnce.Do(func() {
+		purego.RegisterLibFunc(&avOptSetIntList, ffcommon.GetAvutilDll(), "av_opt_set_int_list")
+	})
+	return avOptSetIntList(obj, name, val, size, term, flags)
 }
 
 /**
@@ -1117,112 +1102,102 @@ func AvOptSetIntList(obj ffcommon.FVoidP, name ffcommon.FConstCharP, val uintptr
  * empty string.
  */
 //int av_opt_get         (void *obj, const char *name, int search_flags, uint8_t   **out_val);
-func AvOptGet(obj ffcommon.FVoidP, name ffcommon.FConstCharP, search_flags ffcommon.FInt, out_val **ffcommon.FUint8T) (res ffcommon.FInt) {
-	t, _, _ := ffcommon.GetAvutilDll().NewProc("av_opt_get").Call(
-		obj,
-		ffcommon.UintPtrFromString(name),
-		uintptr(search_flags),
-		uintptr(unsafe.Pointer(out_val)),
-	)
-	res = ffcommon.FInt(t)
-	return
+var avOptGet func(obj ffcommon.FVoidP, name ffcommon.FConstCharP, searchFlags ffcommon.FInt, outVal **ffcommon.FUint8T) ffcommon.FInt
+var avOptGetOnce sync.Once
+
+func AvOptGet(obj ffcommon.FVoidP, name ffcommon.FConstCharP, searchFlags ffcommon.FInt, outVal **ffcommon.FUint8T) ffcommon.FInt {
+	avOptGetOnce.Do(func() {
+		purego.RegisterLibFunc(&avOptGet, ffcommon.GetAvutilDll(), "av_opt_get")
+	})
+	return avOptGet(obj, name, searchFlags, outVal)
 }
 
 // int av_opt_get_int     (void *obj, const char *name, int search_flags, int64_t    *out_val);
-func AvOptGetInt(obj ffcommon.FVoidP, name ffcommon.FConstCharP, search_flags ffcommon.FInt, out_val *ffcommon.FInt64T) (res ffcommon.FInt) {
-	t, _, _ := ffcommon.GetAvutilDll().NewProc("av_opt_get_int").Call(
-		obj,
-		ffcommon.UintPtrFromString(name),
-		uintptr(search_flags),
-		uintptr(unsafe.Pointer(out_val)),
-	)
-	res = ffcommon.FInt(t)
-	return
+var avOptGetInt func(obj ffcommon.FVoidP, name ffcommon.FConstCharP, searchFlags ffcommon.FInt, outVal *ffcommon.FInt64T) ffcommon.FInt
+var avOptGetIntOnce sync.Once
+
+func AvOptGetInt(obj ffcommon.FVoidP, name ffcommon.FConstCharP, searchFlags ffcommon.FInt, outVal *ffcommon.FInt64T) ffcommon.FInt {
+	avOptGetIntOnce.Do(func() {
+		purego.RegisterLibFunc(&avOptGetInt, ffcommon.GetAvutilDll(), "av_opt_get_int")
+	})
+	return avOptGetInt(obj, name, searchFlags, outVal)
 }
 
 // int av_opt_get_double  (void *obj, const char *name, int search_flags, double     *out_val);
-func av_opt_get_double(obj ffcommon.FVoidP, name ffcommon.FConstCharP, search_flags ffcommon.FInt, out_val *ffcommon.FDouble) (res ffcommon.FInt) {
-	t, _, _ := ffcommon.GetAvutilDll().NewProc("av_opt_get_double").Call(
-		obj,
-		ffcommon.UintPtrFromString(name),
-		uintptr(search_flags),
-		uintptr(unsafe.Pointer(out_val)),
-	)
-	res = ffcommon.FInt(t)
-	return
+var avOptGetDouble func(obj ffcommon.FVoidP, name ffcommon.FConstCharP, searchFlags ffcommon.FInt, outVal *ffcommon.FDouble) ffcommon.FInt
+var avOptGetDoubleOnce sync.Once
+
+func AvOptGetDouble(obj ffcommon.FVoidP, name ffcommon.FConstCharP, searchFlags ffcommon.FInt, outVal *ffcommon.FDouble) ffcommon.FInt {
+	avOptGetDoubleOnce.Do(func() {
+		purego.RegisterLibFunc(&avOptGetDouble, ffcommon.GetAvutilDll(), "av_opt_get_double")
+	})
+	return avOptGetDouble(obj, name, searchFlags, outVal)
 }
 
 // int av_opt_get_q       (void *obj, const char *name, int search_flags, AVRational *out_val);
-func AvOptGetQ(obj ffcommon.FVoidP, name ffcommon.FConstCharP, search_flags ffcommon.FInt, out_val *AVRational) (res ffcommon.FInt) {
-	t, _, _ := ffcommon.GetAvutilDll().NewProc("av_opt_get_q").Call(
-		obj,
-		ffcommon.UintPtrFromString(name),
-		uintptr(search_flags),
-		uintptr(unsafe.Pointer(out_val)),
-	)
-	res = ffcommon.FInt(t)
-	return
+var avOptGetQ func(obj ffcommon.FVoidP, name ffcommon.FConstCharP, searchFlags ffcommon.FInt, outVal *AVRational) ffcommon.FInt
+var avOptGetQOnce sync.Once
+
+func AvOptGetQ(obj ffcommon.FVoidP, name ffcommon.FConstCharP, searchFlags ffcommon.FInt, outVal *AVRational) ffcommon.FInt {
+	avOptGetQOnce.Do(func() {
+		purego.RegisterLibFunc(&avOptGetQ, ffcommon.GetAvutilDll(), "av_opt_get_q")
+	})
+	return avOptGetQ(obj, name, searchFlags, outVal)
 }
 
 // int av_opt_get_image_size(void *obj, const char *name, int search_flags, int *w_out, int *h_out);
-func AvOptGetImageSize(obj ffcommon.FVoidP, name ffcommon.FConstCharP, search_flags ffcommon.FInt, w_out, h_out *ffcommon.FInt) (res ffcommon.FInt) {
-	t, _, _ := ffcommon.GetAvutilDll().NewProc("av_opt_get_image_size").Call(
-		obj,
-		ffcommon.UintPtrFromString(name),
-		uintptr(search_flags),
-		uintptr(unsafe.Pointer(w_out)),
-		uintptr(unsafe.Pointer(h_out)),
-	)
-	res = ffcommon.FInt(t)
-	return
+var avOptGetImageSize func(obj ffcommon.FVoidP, name ffcommon.FConstCharP, searchFlags ffcommon.FInt, wOut, hOut *ffcommon.FInt) ffcommon.FInt
+var avOptGetImageSizeOnce sync.Once
+
+func AvOptGetImageSize(obj ffcommon.FVoidP, name ffcommon.FConstCharP, searchFlags ffcommon.FInt, wOut, hOut *ffcommon.FInt) ffcommon.FInt {
+	avOptGetImageSizeOnce.Do(func() {
+		purego.RegisterLibFunc(&avOptGetImageSize, ffcommon.GetAvutilDll(), "av_opt_get_image_size")
+	})
+	return avOptGetImageSize(obj, name, searchFlags, wOut, hOut)
 }
 
 // int av_opt_get_pixel_fmt (void *obj, const char *name, int search_flags, enum AVPixelFormat *out_fmt);
-func AvOptGetPixelFmt(obj ffcommon.FVoidP, name ffcommon.FConstCharP, search_flags ffcommon.FInt, out_fmt *AVPixelFormat) (res ffcommon.FInt) {
-	t, _, _ := ffcommon.GetAvutilDll().NewProc("av_opt_get_pixel_fmt").Call(
-		obj,
-		ffcommon.UintPtrFromString(name),
-		uintptr(search_flags),
-		uintptr(unsafe.Pointer(out_fmt)),
-	)
-	res = ffcommon.FInt(t)
-	return
+var avOptGetPixelFmt func(obj ffcommon.FVoidP, name ffcommon.FConstCharP, searchFlags ffcommon.FInt, outFmt *AVPixelFormat) ffcommon.FInt
+var avOptGetPixelFmtOnce sync.Once
+
+func AvOptGetPixelFmt(obj ffcommon.FVoidP, name ffcommon.FConstCharP, searchFlags ffcommon.FInt, outFmt *AVPixelFormat) ffcommon.FInt {
+	avOptGetPixelFmtOnce.Do(func() {
+		purego.RegisterLibFunc(&avOptGetPixelFmt, ffcommon.GetAvutilDll(), "av_opt_get_pixel_fmt")
+	})
+	return avOptGetPixelFmt(obj, name, searchFlags, outFmt)
 }
 
 // int av_opt_get_sample_fmt(void *obj, const char *name, int search_flags, enum AVSampleFormat *out_fmt);
-func AvOptGetSampleFmt(obj ffcommon.FVoidP, name ffcommon.FConstCharP, search_flags ffcommon.FInt, out_fmt *AVSampleFormat) (res ffcommon.FInt) {
-	t, _, _ := ffcommon.GetAvutilDll().NewProc("av_opt_get_sample_fmt").Call(
-		obj,
-		ffcommon.UintPtrFromString(name),
-		uintptr(search_flags),
-		uintptr(unsafe.Pointer(out_fmt)),
-	)
-	res = ffcommon.FInt(t)
-	return
+var avOptGetSampleFmt func(obj ffcommon.FVoidP, name ffcommon.FConstCharP, searchFlags ffcommon.FInt, outFmt *AVSampleFormat) ffcommon.FInt
+var avOptGetSampleFmtOnce sync.Once
+
+func AvOptGetSampleFmt(obj ffcommon.FVoidP, name ffcommon.FConstCharP, searchFlags ffcommon.FInt, outFmt *AVSampleFormat) ffcommon.FInt {
+	avOptGetSampleFmtOnce.Do(func() {
+		purego.RegisterLibFunc(&avOptGetSampleFmt, ffcommon.GetAvutilDll(), "av_opt_get_sample_fmt")
+	})
+	return avOptGetSampleFmt(obj, name, searchFlags, outFmt)
 }
 
 // int av_opt_get_video_rate(void *obj, const char *name, int search_flags, AVRational *out_val);
-func AvOptGetVideoRate(obj ffcommon.FVoidP, name ffcommon.FConstCharP, search_flags ffcommon.FInt, out_fmt *AVRational) (res ffcommon.FInt) {
-	t, _, _ := ffcommon.GetAvutilDll().NewProc("av_opt_get_video_rate").Call(
-		obj,
-		ffcommon.UintPtrFromString(name),
-		uintptr(search_flags),
-		uintptr(unsafe.Pointer(out_fmt)),
-	)
-	res = ffcommon.FInt(t)
-	return
+var avOptGetVideoRate func(obj ffcommon.FVoidP, name ffcommon.FConstCharP, searchFlags ffcommon.FInt, outFmt *AVRational) ffcommon.FInt
+var avOptGetVideoRateOnce sync.Once
+
+func AvOptGetVideoRate(obj ffcommon.FVoidP, name ffcommon.FConstCharP, searchFlags ffcommon.FInt, outFmt *AVRational) ffcommon.FInt {
+	avOptGetVideoRateOnce.Do(func() {
+		purego.RegisterLibFunc(&avOptGetVideoRate, ffcommon.GetAvutilDll(), "av_opt_get_video_rate")
+	})
+	return avOptGetVideoRate(obj, name, searchFlags, outFmt)
 }
 
 // int av_opt_get_channel_layout(void *obj, const char *name, int search_flags, int64_t *ch_layout);
-func AvOptGetChannelLayout(obj ffcommon.FVoidP, name ffcommon.FConstCharP, search_flags ffcommon.FInt, ch_layout *ffcommon.FInt64T) (res ffcommon.FInt) {
-	t, _, _ := ffcommon.GetAvutilDll().NewProc("av_opt_get_channel_layout").Call(
-		obj,
-		ffcommon.UintPtrFromString(name),
-		uintptr(search_flags),
-		uintptr(unsafe.Pointer(ch_layout)),
-	)
-	res = ffcommon.FInt(t)
-	return
+var avOptGetChannelLayout func(obj ffcommon.FVoidP, name ffcommon.FConstCharP, searchFlags ffcommon.FInt, chLayout *ffcommon.FInt64T) ffcommon.FInt
+var avOptGetChannelLayoutOnce sync.Once
+
+func AvOptGetChannelLayout(obj ffcommon.FVoidP, name ffcommon.FConstCharP, searchFlags ffcommon.FInt, chLayout *ffcommon.FInt64T) ffcommon.FInt {
+	avOptGetChannelLayoutOnce.Do(func() {
+		purego.RegisterLibFunc(&avOptGetChannelLayout, ffcommon.GetAvutilDll(), "av_opt_get_channel_layout")
+	})
+	return avOptGetChannelLayout(obj, name, searchFlags, chLayout)
 }
 
 /**
@@ -1230,15 +1205,14 @@ func AvOptGetChannelLayout(obj ffcommon.FVoidP, name ffcommon.FConstCharP, searc
  * be freed with av_dict_free() by the caller
  */
 //int av_opt_get_dict_val(void *obj, const char *name, int search_flags, AVDictionary **out_val);
-func AvOptGetDictVal(obj ffcommon.FVoidP, name ffcommon.FConstCharP, search_flags ffcommon.FInt, out_val **AVDictionary) (res ffcommon.FInt) {
-	t, _, _ := ffcommon.GetAvutilDll().NewProc("av_opt_get_dict_val").Call(
-		obj,
-		ffcommon.UintPtrFromString(name),
-		uintptr(search_flags),
-		uintptr(unsafe.Pointer(out_val)),
-	)
-	res = ffcommon.FInt(t)
-	return
+var avOptGetDictVal func(obj ffcommon.FVoidP, name ffcommon.FConstCharP, searchFlags ffcommon.FInt, outVal **AVDictionary) ffcommon.FInt
+var avOptGetDictValOnce sync.Once
+
+func AvOptGetDictVal(obj ffcommon.FVoidP, name ffcommon.FConstCharP, searchFlags ffcommon.FInt, outVal **AVDictionary) ffcommon.FInt {
+	avOptGetDictValOnce.Do(func() {
+		purego.RegisterLibFunc(&avOptGetDictVal, ffcommon.GetAvutilDll(), "av_opt_get_dict_val")
+	})
+	return avOptGetDictVal(obj, name, searchFlags, outVal)
 }
 
 /**
@@ -1253,24 +1227,29 @@ func AvOptGetDictVal(obj ffcommon.FVoidP, name ffcommon.FConstCharP, search_flag
  *          or written to.
  */
 //void *av_opt_ptr(const AVClass *avclass, void *obj, const char *name);
-func (avclass *AVClass) AvOptPtr(obj ffcommon.FVoidP, name ffcommon.FConstCharP) (res ffcommon.FVoidP) {
-	t, _, _ := ffcommon.GetAvutilDll().NewProc("av_opt_ptr").Call(
-		uintptr(unsafe.Pointer(avclass)),
-		obj,
-		ffcommon.UintPtrFromString(name),
-	)
-	res = t
-	return
+var avOptPtr func(avclass *AVClass, obj ffcommon.FVoidP, name ffcommon.FConstCharP) ffcommon.FVoidP
+var avOptPtrOnce sync.Once
+
+func (avclass *AVClass) AvOptPtr(obj ffcommon.FVoidP, name ffcommon.FConstCharP) ffcommon.FVoidP {
+	avOptPtrOnce.Do(func() {
+		purego.RegisterLibFunc(&avOptPtr, ffcommon.GetAvutilDll(), "av_opt_ptr")
+	})
+	return avOptPtr(avclass, obj, name)
 }
 
 /**
  * Free an AVOptionRanges struct and set it to NULL.
  */
 //void av_opt_freep_ranges(AVOptionRanges **ranges);
+var avOptFreepRanges func(ranges **AVOptionRanges)
+var avOptFreepRangesOnce sync.Once
+
+// AvOptFreepRanges is a purego function to free AVOptionRanges.
 func AvOptFreepRanges(ranges **AVOptionRanges) {
-	ffcommon.GetAvutilDll().NewProc("av_opt_freep_ranges").Call(
-		uintptr(unsafe.Pointer(ranges)),
-	)
+	avOptFreepRangesOnce.Do(func() {
+		purego.RegisterLibFunc(&avOptFreepRanges, ffcommon.GetAvutilDll(), "av_opt_freep_ranges")
+	})
+	avOptFreepRanges(ranges)
 }
 
 /**
@@ -1287,15 +1266,15 @@ func AvOptFreepRanges(ranges **AVOptionRanges) {
  * @return number of compontents returned on success, a negative errro code otherwise
  */
 //int av_opt_query_ranges(AVOptionRanges **, void *obj, const char *key, int flags);
-func AvOptQueryRanges(a **AVOptionRanges, obj ffcommon.FVoidP, key ffcommon.FConstCharP, flags ffcommon.FInt) (res ffcommon.FInt64T) {
-	t, _, _ := ffcommon.GetAvutilDll().NewProc("av_opt_query_ranges").Call(
-		uintptr(unsafe.Pointer(a)),
-		obj,
-		ffcommon.UintPtrFromString(key),
-		uintptr(flags),
-	)
-	res = ffcommon.FInt64T(t)
-	return
+var avOptQueryRanges func(a **AVOptionRanges, obj ffcommon.FVoidP, key ffcommon.FConstCharP, flags ffcommon.FInt) ffcommon.FInt64T
+var avOptQueryRangesOnce sync.Once
+
+// AvOptQueryRanges is a purego function to query AVOptionRanges.
+func AvOptQueryRanges(a **AVOptionRanges, obj ffcommon.FVoidP, key ffcommon.FConstCharP, flags ffcommon.FInt) ffcommon.FInt64T {
+	avOptQueryRangesOnce.Do(func() {
+		purego.RegisterLibFunc(&avOptQueryRanges, ffcommon.GetAvutilDll(), "av_opt_query_ranges")
+	})
+	return avOptQueryRanges(a, obj, key, flags)
 }
 
 /**
@@ -1309,10 +1288,15 @@ func AvOptQueryRanges(a **AVOptionRanges, obj ffcommon.FVoidP, key ffcommon.FCon
  * @return 0 on success, negative on error
  */
 //int av_opt_copy(void *dest, const void *src);
-func AvOptCopy(dest ffcommon.FVoidP, src ffcommon.FConstVoidP) (res ffcommon.FInt) {
-	t, _, _ := ffcommon.GetAvutilDll().NewProc("av_opt_copy").Call()
-	res = ffcommon.FInt(t)
-	return
+var avOptCopy func(dest ffcommon.FVoidP, src ffcommon.FConstVoidP) ffcommon.FInt
+var avOptCopyOnce sync.Once
+
+// AvOptCopy is a purego function to copy AVOptions.
+func AvOptCopy(dest ffcommon.FVoidP, src ffcommon.FConstVoidP) ffcommon.FInt {
+	avOptCopyOnce.Do(func() {
+		purego.RegisterLibFunc(&avOptCopy, ffcommon.GetAvutilDll(), "av_opt_copy")
+	})
+	return avOptCopy(dest, src)
 }
 
 /**
@@ -1330,15 +1314,15 @@ func AvOptCopy(dest ffcommon.FVoidP, src ffcommon.FConstVoidP) (res ffcommon.FIn
  * @return number of compontents returned on success, a negative errro code otherwise
  */
 //int av_opt_query_ranges_default(AVOptionRanges **, void *obj, const char *key, int flags);
-func AvOptQueryRangesDefault(a **AVOptionRanges, obj ffcommon.FVoidP, key ffcommon.FConstCharP, flags ffcommon.FInt) (res ffcommon.FInt) {
-	t, _, _ := ffcommon.GetAvutilDll().NewProc("av_opt_query_ranges_default").Call(
-		uintptr(unsafe.Pointer(a)),
-		obj,
-		ffcommon.UintPtrFromString(key),
-		uintptr(flags),
-	)
-	res = ffcommon.FInt(t)
-	return
+var avOptQueryRangesDefault func(a **AVOptionRanges, obj ffcommon.FVoidP, key ffcommon.FConstCharP, flags ffcommon.FInt) ffcommon.FInt
+var avOptQueryRangesDefaultOnce sync.Once
+
+// AvOptQueryRangesDefault is a purego function to query default AVOptionRanges.
+func AvOptQueryRangesDefault(a **AVOptionRanges, obj ffcommon.FVoidP, key ffcommon.FConstCharP, flags ffcommon.FInt) ffcommon.FInt {
+	avOptQueryRangesDefaultOnce.Do(func() {
+		purego.RegisterLibFunc(&avOptQueryRangesDefault, ffcommon.GetAvutilDll(), "av_opt_query_ranges_default")
+	})
+	return avOptQueryRangesDefault(a, obj, key, flags)
 }
 
 /**
@@ -1354,13 +1338,15 @@ func AvOptQueryRangesDefault(a **AVOptionRanges, obj ffcommon.FVoidP, key ffcomm
  *             <0 on error
  */
 //int av_opt_is_set_to_default(void *obj, const AVOption *o);
-func AvOptIsSetToDefault(obj ffcommon.FVoidP, o *AVOption) (res ffcommon.FInt) {
-	t, _, _ := ffcommon.GetAvutilDll().NewProc("av_opt_is_set_to_default").Call(
-		obj,
-		uintptr(unsafe.Pointer(o)),
-	)
-	res = ffcommon.FInt(t)
-	return
+var avOptIsSetToDefault func(obj ffcommon.FVoidP, o *AVOption) ffcommon.FInt
+var avOptIsSetToDefaultOnce sync.Once
+
+// AvOptIsSetToDefault is a purego function to check if an option is set to its default value.
+func AvOptIsSetToDefault(obj ffcommon.FVoidP, o *AVOption) ffcommon.FInt {
+	avOptIsSetToDefaultOnce.Do(func() {
+		purego.RegisterLibFunc(&avOptIsSetToDefault, ffcommon.GetAvutilDll(), "av_opt_is_set_to_default")
+	})
+	return avOptIsSetToDefault(obj, o)
 }
 
 /**
@@ -1374,14 +1360,15 @@ func AvOptIsSetToDefault(obj ffcommon.FVoidP, o *AVOption) (res ffcommon.FInt) {
  *                     <0 on error
  */
 //int av_opt_is_set_to_default_by_name(void *obj, const char *name, int search_flags);
-func AvOptIsSetToDefaultByName(obj ffcommon.FVoidP, name ffcommon.FConstCharP, search_flags ffcommon.FInt) (res ffcommon.FInt) {
-	t, _, _ := ffcommon.GetAvutilDll().NewProc("av_opt_is_set_to_default_by_name").Call(
-		obj,
-		ffcommon.UintPtrFromString(name),
-		uintptr(search_flags),
-	)
-	res = ffcommon.FInt(t)
-	return
+var avOptIsSetToDefaultByName func(obj ffcommon.FVoidP, name ffcommon.FConstCharP, searchFlags ffcommon.FInt) ffcommon.FInt
+var avOptIsSetToDefaultByNameOnce sync.Once
+
+// AvOptIsSetToDefaultByName is a purego function to check if an option is set to its default value by name.
+func AvOptIsSetToDefaultByName(obj ffcommon.FVoidP, name ffcommon.FConstCharP, searchFlags ffcommon.FInt) ffcommon.FInt {
+	avOptIsSetToDefaultByNameOnce.Do(func() {
+		purego.RegisterLibFunc(&avOptIsSetToDefaultByName, ffcommon.GetAvutilDll(), "av_opt_is_set_to_default_by_name")
+	})
+	return avOptIsSetToDefaultByName(obj, name, searchFlags)
 }
 
 const AV_OPT_SERIALIZE_SKIP_DEFAULTS = 0x00000001   ///< Serialize options that are not set to default values only.
@@ -1407,18 +1394,15 @@ const AV_OPT_SERIALIZE_OPT_FLAGS_EXACT = 0x00000002 ///< Serialize options that 
  */
 //int av_opt_serialize(void *obj, int opt_flags, int flags, char **buffer,
 //const char key_val_sep, const char pairs_sep);
-func AvOptSerialize(obj ffcommon.FVoidP, opt_flags, flags ffcommon.FInt, buffer *ffcommon.FBuf,
-	key_val_sep, pairs_sep ffcommon.FChar) (res ffcommon.FInt) {
-	t, _, _ := ffcommon.GetAvutilDll().NewProc("av_opt_serialize").Call(
-		obj,
-		uintptr(opt_flags),
-		uintptr(flags),
-		uintptr(unsafe.Pointer(buffer)),
-		uintptr(key_val_sep),
-		uintptr(pairs_sep),
-	)
-	res = ffcommon.FInt(t)
-	return
+var avOptSerialize func(obj ffcommon.FVoidP, optFlags, flags ffcommon.FInt, buffer *ffcommon.FBuf, keyValSep, pairsSep ffcommon.FChar) ffcommon.FInt
+var avOptSerializeOnce sync.Once
+
+// AvOptSerialize is a purego function to serialize AVOptions.
+func AvOptSerialize(obj ffcommon.FVoidP, optFlags, flags ffcommon.FInt, buffer *ffcommon.FBuf, keyValSep, pairsSep ffcommon.FChar) ffcommon.FInt {
+	avOptSerializeOnce.Do(func() {
+		purego.RegisterLibFunc(&avOptSerialize, ffcommon.GetAvutilDll(), "av_opt_serialize")
+	})
+	return avOptSerialize(obj, optFlags, flags, buffer, keyValSep, pairsSep)
 }
 
 /**
