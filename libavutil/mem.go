@@ -1,9 +1,11 @@
 package libavutil
 
 import (
-	"unsafe"
+	"math"
+	"sync"
 
 	"github.com/dwdcth/ffmpeg-go/ffcommon"
+	"github.com/ebitengine/purego"
 )
 
 /*
@@ -208,12 +210,15 @@ import (
  * @see av_mallocz()
  */
 //void *av_malloc(size_t size) av_malloc_attrib av_alloc_size(1);
-func AvMalloc(size ffcommon.FSizeT) (res ffcommon.FVoidP) {
-	t, _, _ := ffcommon.GetAvutilDll().NewProc("av_malloc").Call(
-		uintptr(size),
-	)
-	res = t
-	return
+var avMalloc func(size ffcommon.FSizeT) ffcommon.FVoidP
+var avMallocOnce sync.Once
+
+// AvMalloc is a purego function to allocate memory using av_malloc.
+func AvMalloc(size ffcommon.FSizeT) ffcommon.FVoidP {
+	avMallocOnce.Do(func() {
+		purego.RegisterLibFunc(&avMalloc, ffcommon.GetAvutilDll(), "av_malloc")
+	})
+	return avMalloc(size)
 }
 
 /**
@@ -226,12 +231,15 @@ func AvMalloc(size ffcommon.FSizeT) (res ffcommon.FVoidP) {
  * @see av_malloc()
  */
 //void *av_mallocz(size_t size) av_malloc_attrib av_alloc_size(1);
-func AvMallocz(size ffcommon.FSizeT) (res ffcommon.FVoidP) {
-	t, _, _ := ffcommon.GetAvutilDll().NewProc("av_mallocz").Call(
-		uintptr(size),
-	)
-	res = t
-	return
+var avMallocz func(size ffcommon.FSizeT) ffcommon.FVoidP
+var avMalloczOnce sync.Once
+
+// AvMallocz is a purego function to allocate and zero-fill memory using av_mallocz.
+func AvMallocz(size ffcommon.FSizeT) ffcommon.FVoidP {
+	avMalloczOnce.Do(func() {
+		purego.RegisterLibFunc(&avMallocz, ffcommon.GetAvutilDll(), "av_mallocz")
+	})
+	return avMallocz(size)
 }
 
 /**
@@ -246,13 +254,15 @@ func AvMallocz(size ffcommon.FSizeT) (res ffcommon.FVoidP) {
  * @see av_malloc()
  */
 //av_alloc_size(1, 2) void *av_malloc_array(size_t nmemb, size_t size);
-func AvMallocArray(nmemb, size ffcommon.FSizeT) (res ffcommon.FVoidP) {
-	t, _, _ := ffcommon.GetAvutilDll().NewProc("av_malloc_array").Call(
-		uintptr(nmemb),
-		uintptr(size),
-	)
-	res = t
-	return
+var avMallocArray func(nmemb, size ffcommon.FSizeT) ffcommon.FVoidP
+var avMallocArrayOnce sync.Once
+
+// AvMallocArray is a purego function to allocate an array of nmemb elements of size bytes each using av_malloc_array.
+func AvMallocArray(nmemb, size ffcommon.FSizeT) ffcommon.FVoidP {
+	avMallocArrayOnce.Do(func() {
+		purego.RegisterLibFunc(&avMallocArray, ffcommon.GetAvutilDll(), "av_malloc_array")
+	})
+	return avMallocArray(nmemb, size)
 }
 
 /**
@@ -269,13 +279,15 @@ func AvMallocArray(nmemb, size ffcommon.FSizeT) (res ffcommon.FVoidP) {
  * @see av_malloc_array()
  */
 //av_alloc_size(1, 2) void *av_mallocz_array(size_t nmemb, size_t size);
-func AvMalloczArray(nmemb, size ffcommon.FSizeT) (res ffcommon.FVoidP) {
-	t, _, _ := ffcommon.GetAvutilDll().NewProc("av_mallocz_array").Call(
-		uintptr(nmemb),
-		uintptr(size),
-	)
-	res = t
-	return
+var avMalloczArray func(nmemb, size ffcommon.FSizeT) ffcommon.FVoidP
+var avMalloczArrayOnce sync.Once
+
+// AvMalloczArray is a purego function to allocate and zero-fill an array of nmemb elements of size bytes each using av_mallocz_array.
+func AvMalloczArray(nmemb, size ffcommon.FSizeT) ffcommon.FVoidP {
+	avMalloczArrayOnce.Do(func() {
+		purego.RegisterLibFunc(&avMalloczArray, ffcommon.GetAvutilDll(), "av_mallocz_array")
+	})
+	return avMalloczArray(nmemb, size)
 }
 
 /**
@@ -284,13 +296,15 @@ func AvMalloczArray(nmemb, size ffcommon.FSizeT) (res ffcommon.FVoidP) {
  * Created for symmetry with the calloc() C function.
  */
 //void *av_calloc(size_t nmemb, size_t size) av_malloc_attrib;
-func AvCalloc(nmemb, size ffcommon.FSizeT) (res ffcommon.FVoidP) {
-	t, _, _ := ffcommon.GetAvutilDll().NewProc("av_calloc").Call(
-		uintptr(nmemb),
-		uintptr(size),
-	)
-	res = t
-	return
+var avCalloc func(nmemb, size ffcommon.FSizeT) ffcommon.FVoidP
+var avCallocOnce sync.Once
+
+// AvCalloc is a purego function to allocate memory for an array of nmemb elements of size bytes each using av_calloc.
+func AvCalloc(nmemb, size ffcommon.FSizeT) ffcommon.FVoidP {
+	avCallocOnce.Do(func() {
+		purego.RegisterLibFunc(&avCalloc, ffcommon.GetAvutilDll(), "av_calloc")
+	})
+	return avCalloc(nmemb, size)
 }
 
 /**
@@ -314,13 +328,15 @@ func AvCalloc(nmemb, size ffcommon.FSizeT) (res ffcommon.FVoidP) {
  * @see av_reallocp()
  */
 //void *av_realloc(void *ptr, size_t size) av_alloc_size(2);
-func AvRealloc(ptr ffcommon.FVoidP, size ffcommon.FSizeT) (res ffcommon.FVoidP) {
-	t, _, _ := ffcommon.GetAvutilDll().NewProc("av_realloc").Call(
-		ptr,
-		uintptr(size),
-	)
-	res = t
-	return
+var avRealloc func(ptr ffcommon.FVoidP, size ffcommon.FSizeT) ffcommon.FVoidP
+var avReallocOnce sync.Once
+
+// AvRealloc is a purego function to resize the memory block pointed to by ptr to size bytes using av_realloc.
+func AvRealloc(ptr ffcommon.FVoidP, size ffcommon.FSizeT) ffcommon.FVoidP {
+	avReallocOnce.Do(func() {
+		purego.RegisterLibFunc(&avRealloc, ffcommon.GetAvutilDll(), "av_realloc")
+	})
+	return avRealloc(ptr, size)
 }
 
 /**
@@ -344,13 +360,15 @@ func AvRealloc(ptr ffcommon.FVoidP, size ffcommon.FSizeT) (res ffcommon.FVoidP) 
  */
 //av_warn_unused_result
 //int av_reallocp(void *ptr, size_t size);
-func AvReallocp(ptr ffcommon.FVoidP, size ffcommon.FSizeT) (res ffcommon.FInt) {
-	t, _, _ := ffcommon.GetAvutilDll().NewProc("av_realloc").Call(
-		ptr,
-		uintptr(size),
-	)
-	res = ffcommon.FInt(t)
-	return
+var avReallocp func(ptr ffcommon.FVoidP, size ffcommon.FSizeT) ffcommon.FInt
+var avReallocpOnce sync.Once
+
+// AvReallocp is a purego function to resize the memory block pointed to by ptr to size bytes using av_realloc and return an error code.
+func AvReallocp(ptr ffcommon.FVoidP, size ffcommon.FSizeT) ffcommon.FInt {
+	avReallocpOnce.Do(func() {
+		purego.RegisterLibFunc(&avReallocp, ffcommon.GetAvutilDll(), "av_realloc")
+	})
+	return avReallocp(ptr, size)
 }
 
 /**
@@ -369,14 +387,15 @@ func AvReallocp(ptr ffcommon.FVoidP, size ffcommon.FSizeT) (res ffcommon.FInt) {
  *   pattern.
  */
 //void *av_realloc_f(void *ptr, size_t nelem, size_t elsize);
-func AvReallocF(ptr ffcommon.FVoidP, nelem, elsize ffcommon.FSizeT) (res ffcommon.FVoidP) {
-	t, _, _ := ffcommon.GetAvutilDll().NewProc("av_realloc_f").Call(
-		ptr,
-		uintptr(nelem),
-		uintptr(elsize),
-	)
-	res = t
-	return
+var avReallocF func(ptr ffcommon.FVoidP, nelem, elsize ffcommon.FSizeT) ffcommon.FVoidP
+var avReallocFOnce sync.Once
+
+// AvReallocF is a purego function to resize the memory block pointed to by ptr to nelem * elsize bytes using av_realloc_f.
+func AvReallocF(ptr ffcommon.FVoidP, nelem, elsize ffcommon.FSizeT) ffcommon.FVoidP {
+	avReallocFOnce.Do(func() {
+		purego.RegisterLibFunc(&avReallocF, ffcommon.GetAvutilDll(), "av_realloc_f")
+	})
+	return avReallocF(ptr, nelem, elsize)
 }
 
 /**
@@ -398,14 +417,15 @@ func AvReallocF(ptr ffcommon.FVoidP, nelem, elsize ffcommon.FSizeT) (res ffcommo
  * @see av_reallocp_array()
  */
 //av_alloc_size(2, 3) void *av_realloc_array(void *ptr, size_t nmemb, size_t size);
-func AvReallocArray(ptr ffcommon.FVoidP, nmemb, size ffcommon.FSizeT) (res ffcommon.FVoidP) {
-	t, _, _ := ffcommon.GetAvutilDll().NewProc("av_realloc_array").Call(
-		ptr,
-		uintptr(nmemb),
-		uintptr(size),
-	)
-	res = t
-	return
+var avReallocArray func(ptr ffcommon.FVoidP, nmemb, size ffcommon.FSizeT) ffcommon.FVoidP
+var avReallocArrayOnce sync.Once
+
+// AvReallocArray is a purego function to resize the memory block pointed to by ptr to nmemb * size bytes using av_realloc_array.
+func AvReallocArray(ptr ffcommon.FVoidP, nmemb, size ffcommon.FSizeT) ffcommon.FVoidP {
+	avReallocArrayOnce.Do(func() {
+		purego.RegisterLibFunc(&avReallocArray, ffcommon.GetAvutilDll(), "av_realloc_array")
+	})
+	return avReallocArray(ptr, nmemb, size)
 }
 
 /**
@@ -426,14 +446,15 @@ func AvReallocArray(ptr ffcommon.FVoidP, nmemb, size ffcommon.FSizeT) (res ffcom
  *          correctly aligned.
  */
 //int av_reallocp_array(void *ptr, size_t nmemb, size_t size);
-func AvReallocpArray(ptr ffcommon.FVoidP, nmemb, size ffcommon.FSizeT) (res ffcommon.FInt) {
-	t, _, _ := ffcommon.GetAvutilDll().NewProc("av_reallocp_array").Call(
-		ptr,
-		uintptr(nmemb),
-		uintptr(size),
-	)
-	res = ffcommon.FInt(t)
-	return
+var avReallocpArray func(ptr ffcommon.FVoidP, nmemb, size ffcommon.FSizeT) ffcommon.FInt
+var avReallocpArrayOnce sync.Once
+
+// AvReallocpArray is a purego function to resize the memory block pointed to by ptr to nmemb * size bytes using av_reallocp_array.
+func AvReallocpArray(ptr ffcommon.FVoidP, nmemb, size ffcommon.FSizeT) ffcommon.FInt {
+	avReallocpArrayOnce.Do(func() {
+		purego.RegisterLibFunc(&avReallocpArray, ffcommon.GetAvutilDll(), "av_reallocp_array")
+	})
+	return avReallocpArray(ptr, nmemb, size)
 }
 
 /**
@@ -469,14 +490,15 @@ func AvReallocpArray(ptr ffcommon.FVoidP, nmemb, size ffcommon.FSizeT) (res ffco
  * @see av_fast_malloc()
  */
 //void *av_fast_realloc(void *ptr, unsigned int *size, size_t min_size);
-func AvFastRealloc(ptr ffcommon.FVoidP, size *ffcommon.FUnsignedInt, min_size ffcommon.FSizeT) (res ffcommon.FVoidP) {
-	t, _, _ := ffcommon.GetAvutilDll().NewProc("av_fast_realloc").Call(
-		ptr,
-		uintptr(unsafe.Pointer(size)),
-		uintptr(min_size),
-	)
-	res = t
-	return
+var avFastRealloc func(ptr ffcommon.FVoidP, size *ffcommon.FUnsignedInt, min_size ffcommon.FSizeT) ffcommon.FVoidP
+var avFastReallocOnce sync.Once
+
+// AvFastRealloc is a purego function to reallocate the given block with av_fast_realloc.
+func AvFastRealloc(ptr ffcommon.FVoidP, size *ffcommon.FUnsignedInt, min_size ffcommon.FSizeT) ffcommon.FVoidP {
+	avFastReallocOnce.Do(func() {
+		purego.RegisterLibFunc(&avFastRealloc, ffcommon.GetAvutilDll(), "av_fast_realloc")
+	})
+	return avFastRealloc(ptr, size, min_size)
 }
 
 /**
@@ -509,12 +531,15 @@ func AvFastRealloc(ptr ffcommon.FVoidP, size *ffcommon.FUnsignedInt, min_size ff
  * @see av_fast_mallocz()
  */
 //void av_fast_malloc(void *ptr, unsigned int *size, size_t min_size);
+var avFastMalloc func(ptr ffcommon.FVoidP, size *ffcommon.FUnsignedInt, min_size ffcommon.FSizeT)
+var avFastMallocOnce sync.Once
+
+// AvFastMalloc is a purego function to allocate memory with av_fast_malloc.
 func AvFastMalloc(ptr ffcommon.FVoidP, size *ffcommon.FUnsignedInt, min_size ffcommon.FSizeT) {
-	ffcommon.GetAvutilDll().NewProc("av_fast_malloc").Call(
-		ptr,
-		uintptr(unsafe.Pointer(size)),
-		uintptr(min_size),
-	)
+	avFastMallocOnce.Do(func() {
+		purego.RegisterLibFunc(&avFastMalloc, ffcommon.GetAvutilDll(), "av_fast_malloc")
+	})
+	avFastMalloc(ptr, size, min_size)
 }
 
 /**
@@ -536,12 +561,15 @@ func AvFastMalloc(ptr ffcommon.FVoidP, size *ffcommon.FUnsignedInt, min_size ffc
  * @see av_fast_malloc()
  */
 //void av_fast_mallocz(void *ptr, unsigned int *size, size_t min_size);
+var avFastMallocz func(ptr ffcommon.FVoidP, size *ffcommon.FUnsignedInt, min_size ffcommon.FSizeT)
+var avFastMalloczOnce sync.Once
+
+// AvFastMallocz is a purego function to allocate and zero-initialize memory with av_fast_mallocz.
 func AvFastMallocz(ptr ffcommon.FVoidP, size *ffcommon.FUnsignedInt, min_size ffcommon.FSizeT) {
-	ffcommon.GetAvutilDll().NewProc("av_fast_mallocz").Call(
-		ptr,
-		uintptr(unsafe.Pointer(size)),
-		uintptr(min_size),
-	)
+	avFastMalloczOnce.Do(func() {
+		purego.RegisterLibFunc(&avFastMallocz, ffcommon.GetAvutilDll(), "av_fast_mallocz")
+	})
+	avFastMallocz(ptr, size, min_size)
 }
 
 /**
@@ -556,10 +584,15 @@ func AvFastMallocz(ptr ffcommon.FVoidP, size *ffcommon.FUnsignedInt, min_size ff
  * @see av_freep()
  */
 //void av_free(void *ptr);
+var avFree func(ptr ffcommon.FVoidP)
+var avFreeOnce sync.Once
+
+// AvFree is a purego function to free memory with av_free.
 func AvFree(ptr ffcommon.FVoidP) {
-	ffcommon.GetAvutilDll().NewProc("av_free").Call(
-		ptr,
-	)
+	avFreeOnce.Do(func() {
+		purego.RegisterLibFunc(&avFree, ffcommon.GetAvutilDll(), "av_free")
+	})
+	avFree(ptr)
 }
 
 /**
@@ -584,10 +617,15 @@ func AvFree(ptr ffcommon.FVoidP) {
  * @see av_free()
  */
 //void av_freep(void *ptr);
+var avFreep func(ptr ffcommon.FVoidP)
+var avFreepOnce sync.Once
+
+// AvFreep is a purego function to free memory with av_freep.
 func AvFreep(ptr ffcommon.FVoidP) {
-	ffcommon.GetAvutilDll().NewProc("av_freep").Call(
-		ptr,
-	)
+	avFreepOnce.Do(func() {
+		purego.RegisterLibFunc(&avFreep, ffcommon.GetAvutilDll(), "av_freep")
+	})
+	avFreep(ptr)
 }
 
 /**
@@ -599,12 +637,15 @@ func AvFreep(ptr ffcommon.FVoidP) {
  * @see av_strndup()
  */
 //char *av_strdup(const char *s) av_malloc_attrib;
-func AvStrdup(s ffcommon.FConstCharP) (res ffcommon.FCharP) {
-	t, _, _ := ffcommon.GetAvutilDll().NewProc("av_strdup").Call(
-		ffcommon.UintPtrFromString(s),
-	)
-	res = ffcommon.StringFromPtr(t)
-	return
+var avStrdup func(s ffcommon.FConstCharP) ffcommon.FCharP
+var avStrdupOnce sync.Once
+
+// AvStrdup is a purego function to duplicate a string with av_strdup.
+func AvStrdup(s ffcommon.FConstCharP) ffcommon.FCharP {
+	avStrdupOnce.Do(func() {
+		purego.RegisterLibFunc(&avStrdup, ffcommon.GetAvutilDll(), "av_strdup")
+	})
+	return avStrdup(s)
 }
 
 /**
@@ -617,13 +658,15 @@ func AvStrdup(s ffcommon.FConstCharP) (res ffcommon.FCharP) {
  *         substring of `s` or `NULL` if the string cannot be allocated
  */
 //char *av_strndup(const char *s, size_t len) av_malloc_attrib;
-func AvStrndup(s ffcommon.FConstCharP, len0 ffcommon.FSizeT) (res ffcommon.FCharP) {
-	t, _, _ := ffcommon.GetAvutilDll().NewProc("av_strndup").Call(
-		ffcommon.UintPtrFromString(s),
-		uintptr(len0),
-	)
-	res = ffcommon.StringFromPtr(t)
-	return
+var avStrndup func(s ffcommon.FConstCharP, len0 ffcommon.FSizeT) ffcommon.FCharP
+var avStrndupOnce sync.Once
+
+// AvStrndup is a purego function to duplicate a string with av_strndup.
+func AvStrndup(s ffcommon.FConstCharP, len0 ffcommon.FSizeT) ffcommon.FCharP {
+	avStrndupOnce.Do(func() {
+		purego.RegisterLibFunc(&avStrndup, ffcommon.GetAvutilDll(), "av_strndup")
+	})
+	return avStrndup(s, len0)
 }
 
 /**
@@ -635,13 +678,15 @@ func AvStrndup(s ffcommon.FConstCharP, len0 ffcommon.FSizeT) (res ffcommon.FChar
  *         copy of `p` or `NULL` if the buffer cannot be allocated
  */
 //void *av_memdup(const void *p, size_t size);
-func AvMemdup(p ffcommon.FConstVoidP, size ffcommon.FSizeT) (res ffcommon.FVoidP) {
-	t, _, _ := ffcommon.GetAvutilDll().NewProc("av_memdup").Call(
-		p,
-		uintptr(size),
-	)
-	res = t
-	return
+var avMemdup func(p ffcommon.FConstVoidP, size ffcommon.FSizeT) ffcommon.FVoidP
+var avMemdupOnce sync.Once
+
+// AvMemdup is a purego function to duplicate a memory block with av_memdup.
+func AvMemdup(p ffcommon.FConstVoidP, size ffcommon.FSizeT) ffcommon.FVoidP {
+	avMemdupOnce.Do(func() {
+		purego.RegisterLibFunc(&avMemdup, ffcommon.GetAvutilDll(), "av_memdup")
+	})
+	return avMemdup(p, size)
 }
 
 /**
@@ -656,12 +701,15 @@ func AvMemdup(p ffcommon.FConstVoidP, size ffcommon.FSizeT) (res ffcommon.FVoidP
  *       thus creating a repeating pattern with a period length of `back`.
  */
 //void av_memcpy_backptr(uint8_t *dst, int back, int cnt);
+var avMemcpyBackptr func(dst *ffcommon.FUint8T, back, cnt ffcommon.FInt)
+var avMemcpyBackptrOnce sync.Once
+
+// AvMemcpyBackptr is a purego function to copy memory back with av_memcpy_backptr.
 func AvMemcpyBackptr(dst *ffcommon.FUint8T, back, cnt ffcommon.FInt) {
-	ffcommon.GetAvutilDll().NewProc("av_memcpy_backptr").Call(
-		uintptr(unsafe.Pointer(dst)),
-		uintptr(back),
-		uintptr(cnt),
-	)
+	avMemcpyBackptrOnce.Do(func() {
+		purego.RegisterLibFunc(&avMemcpyBackptr, ffcommon.GetAvutilDll(), "av_memcpy_backptr")
+	})
+	avMemcpyBackptr(dst, back, cnt)
 }
 
 /**
@@ -765,14 +813,15 @@ func AvMemcpyBackptr(dst *ffcommon.FUint8T, back, cnt ffcommon.FInt) {
  * @see av_dynarray_add_nofree(), av_dynarray2_add()
  */
 //void av_dynarray_add(void *tab_ptr, int *nb_ptr, void *elem);
-func AvDynarrayAdd(tab_ptr, nb_ptr, elem ffcommon.FVoidP) {
-	t, _, _ := ffcommon.GetAvutilDll().NewProc("av_dynarray_add").Call(
-		tab_ptr, nb_ptr, elem,
-	)
-	if t == 0 {
+var avDynarrayAdd func(tab_ptr, nb_ptr, elem ffcommon.FVoidP)
+var avDynarrayAddOnce sync.Once
 
-	}
-	return
+// AvDynarrayAdd is a purego function to add an element to a dynamic array with av_dynarray_add.
+func AvDynarrayAdd(tab_ptr, nb_ptr, elem ffcommon.FVoidP) {
+	avDynarrayAddOnce.Do(func() {
+		purego.RegisterLibFunc(&avDynarrayAdd, ffcommon.GetAvutilDll(), "av_dynarray_add")
+	})
+	avDynarrayAdd(tab_ptr, nb_ptr, elem)
 }
 
 /**
@@ -787,12 +836,15 @@ func AvDynarrayAdd(tab_ptr, nb_ptr, elem ffcommon.FVoidP) {
  */
 //av_warn_unused_result
 //int av_dynarray_add_nofree(void *tab_ptr, int *nb_ptr, void *elem);
-func AvDynarrayAddNofree(tab_ptr, nb_ptr, elem ffcommon.FVoidP) (res ffcommon.FInt) {
-	t, _, _ := ffcommon.GetAvutilDll().NewProc("av_dynarray_add_nofree").Call(
-		tab_ptr, nb_ptr, elem,
-	)
-	res = ffcommon.FInt(t)
-	return
+var avDynarrayAddNofree func(tab_ptr, nb_ptr, elem ffcommon.FVoidP) ffcommon.FInt
+var avDynarrayAddNofreeOnce sync.Once
+
+// AvDynarrayAddNofree is a purego function to add an element to a dynamic array with av_dynarray_add_nofree.
+func AvDynarrayAddNofree(tab_ptr, nb_ptr, elem ffcommon.FVoidP) ffcommon.FInt {
+	avDynarrayAddNofreeOnce.Do(func() {
+		purego.RegisterLibFunc(&avDynarrayAddNofree, ffcommon.GetAvutilDll(), "av_dynarray_add_nofree")
+	})
+	return avDynarrayAddNofree(tab_ptr, nb_ptr, elem)
 }
 
 /**
@@ -820,15 +872,15 @@ func AvDynarrayAddNofree(tab_ptr, nb_ptr, elem ffcommon.FVoidP) (res ffcommon.FI
  */
 //void *av_dynarray2_add(void **tab_ptr, int *nb_ptr, size_t elem_size,
 //const uint8_t *elem_data);
-func AvDynarray2Add(tab_ptr *ffcommon.FVoidP, nb_ptr *ffcommon.FInt, elem_size ffcommon.FSizeT, elem_data *ffcommon.FUint8T) (res ffcommon.FVoidP) {
-	t, _, _ := ffcommon.GetAvutilDll().NewProc("av_dynarray2_add").Call(
-		uintptr(unsafe.Pointer(tab_ptr)),
-		uintptr(unsafe.Pointer(nb_ptr)),
-		uintptr(elem_size),
-		uintptr(unsafe.Pointer(elem_data)),
-	)
-	res = t
-	return
+var avDynarray2Add func(tab_ptr *ffcommon.FVoidP, nb_ptr *ffcommon.FInt, elem_size ffcommon.FSizeT, elem_data *ffcommon.FUint8T) ffcommon.FVoidP
+var avDynarray2AddOnce sync.Once
+
+// AvDynarray2Add is a purego function to add an element to a dynamic array with av_dynarray2_add.
+func AvDynarray2Add(tab_ptr *ffcommon.FVoidP, nb_ptr *ffcommon.FInt, elem_size ffcommon.FSizeT, elem_data *ffcommon.FUint8T) ffcommon.FVoidP {
+	avDynarray2AddOnce.Do(func() {
+		purego.RegisterLibFunc(&avDynarray2Add, ffcommon.GetAvutilDll(), "av_dynarray2_add")
+	})
+	return avDynarray2Add(tab_ptr, nb_ptr, elem_size, elem_data)
 }
 
 /**
@@ -861,13 +913,17 @@ func AvDynarray2Add(tab_ptr *ffcommon.FVoidP, nb_ptr *ffcommon.FInt, elem_size f
 //return 0;
 //}
 //todo
-func av_size_mult(a, b ffcommon.FSizeT, r *ffcommon.FSizeT) (res ffcommon.FInt) {
-	//t, _, _ := ffcommon.GetAvutilDll().NewProc("av_size_mult").Call()
-	//if t == 0 {
-	//
-	//}
-	//res = ffcommon.FInt(t)
-	return
+func AvSizeMult(a, b ffcommon.FSizeT, r *ffcommon.FSizeT) (res ffcommon.FInt) {
+	// 实现 av_size_mult 函数的纯Go版本
+	//purego.RegisterLibFunc
+	if a > ffcommon.FSizeT(math.MaxInt64/b) {
+		// 处理溢出的情况
+		res = ffcommon.FInt(-1)
+	} else {
+		*r = a * b
+		res = ffcommon.FInt(0)
+	}
+	return res
 }
 
 /**
@@ -884,12 +940,14 @@ func av_size_mult(a, b ffcommon.FSizeT, r *ffcommon.FSizeT) (res ffcommon.FInt) 
  *          this if you do not understand the full consequence of doing so.
  */
 //void av_max_alloc(size_t max);
-func AvMaxAlloc(max ffcommon.FSizeT) (res ffcommon.FCharP) {
-	t, _, _ := ffcommon.GetAvutilDll().NewProc("av_max_alloc").Call(
-		uintptr(max),
-	)
-	res = ffcommon.StringFromPtr(t)
-	return
+var avMaxAlloc func(max ffcommon.FSizeT) ffcommon.FCharP
+var avMaxAllocOnce sync.Once
+
+func AvMaxAlloc(max ffcommon.FSizeT) ffcommon.FCharP {
+	avMaxAllocOnce.Do(func() {
+		purego.RegisterLibFunc(&avMaxAlloc, ffcommon.GetAvutilDll(), "av_max_alloc")
+	})
+	return avMaxAlloc(max)
 }
 
 /**
