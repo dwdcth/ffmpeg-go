@@ -1,10 +1,11 @@
 package libswscale
 
 import (
-	"unsafe"
+	"sync"
 
 	"github.com/dwdcth/ffmpeg-go/ffcommon"
 	"github.com/dwdcth/ffmpeg-go/libavutil"
+	"github.com/ebitengine/purego"
 )
 
 /*
@@ -53,39 +54,45 @@ import (
  */
 //unsigned swscale_version(void);
 //todo
-func swscale_version() (res ffcommon.FCharP) {
-	t, _, _ := ffcommon.GetAvswscaleDll().NewProc("swscale_version").Call()
-	if t == 0 {
+var swscale_version func() ffcommon.FCharP
+var swscale_versionOnce sync.Once
 
-	}
-	res = ffcommon.StringFromPtr(t)
-	return
+func SwscaleVersion() ffcommon.FCharP {
+	swscale_versionOnce.Do(func() {
+		purego.RegisterLibFunc(&swscale_version, ffcommon.GetAvswscaleDll(), "swscale_version")
+	})
+
+	return swscale_version()
 }
 
 /**
  * Return the libswscale build-time configuration.
  */
 //const char *swscale_configuration(void);
-func SwscaleConfiguration() (res ffcommon.FConstCharP) {
-	t, _, _ := ffcommon.GetAvswscaleDll().NewProc("swscale_configuration").Call()
-	if t == 0 {
+var swscaleConfiguration func() ffcommon.FConstCharP
+var swscaleConfigurationOnce sync.Once
 
-	}
-	res = ffcommon.StringFromPtr(t)
-	return
+func SwscaleConfiguration() ffcommon.FConstCharP {
+	swscaleConfigurationOnce.Do(func() {
+		purego.RegisterLibFunc(&swscaleConfiguration, ffcommon.GetAvswscaleDll(), "swscale_configuration")
+	})
+
+	return swscaleConfiguration()
 }
 
 /**
  * Return the libswscale license.
  */
 //const char *swscale_license(void);
-func SwscaleLicense() (res ffcommon.FConstCharP) {
-	t, _, _ := ffcommon.GetAvswscaleDll().NewProc("swscale_license").Call()
-	if t == 0 {
+var swscaleLicense func() ffcommon.FConstCharP
+var swscaleLicenseOnce sync.Once
 
-	}
-	res = ffcommon.StringFromPtr(t)
-	return
+func SwscaleLicense() ffcommon.FConstCharP {
+	swscaleLicenseOnce.Do(func() {
+		purego.RegisterLibFunc(&swscaleLicense, ffcommon.GetAvswscaleDll(), "swscale_license")
+	})
+
+	return swscaleLicense()
 }
 
 /* values for the flags, the stuff on the command line is different */
@@ -138,15 +145,17 @@ const SWS_CS_BT2020 = 9
  * SWS_CS_DEFAULT is used.
  */
 //const int *sws_getCoefficients(int colorspace);
-func SwsGetCoefficients(colorspace ffcommon.FInt) (res *ffcommon.FInt) {
-	t, _, _ := ffcommon.GetAvswscaleDll().NewProc("sws_getCoefficients").Call(
-		uintptr(colorspace),
-	)
-	if t == 0 {
+var swsGetCoefficients func(colorspace ffcommon.FInt) *ffcommon.FInt
+var swsGetCoefficientsOnce sync.Once
 
-	}
-	res = (*ffcommon.FInt)(unsafe.Pointer(t))
-	return
+func SwsGetCoefficients(colorspace ffcommon.FInt) *ffcommon.FInt {
+	swsGetCoefficientsOnce.Do(func() {
+		purego.RegisterLibFunc(&swsGetCoefficients, ffcommon.GetAvswscaleDll(), "sws_getCoefficients")
+	})
+
+	return swsGetCoefficients(colorspace)
+
+	// return (*ffcommon.FInt)(unsafe.Pointer(t))
 }
 
 // when used for filters they must have an odd number of elements
@@ -175,15 +184,20 @@ type SwsContext struct {
 //int sws_isSupportedInput(enum AVPixelFormat pix_fmt);
 type AVPixelFormat = libavutil.AVPixelFormat
 
-func SwsIsSupportedInput(pix_fmt AVPixelFormat) (res ffcommon.FInt) {
-	t, _, _ := ffcommon.GetAvswscaleDll().NewProc("sws_isSupportedInput").Call(
-		uintptr(pix_fmt),
-	)
-	if t == 0 {
+var swsIsSupportedInput func(pix_fmt AVPixelFormat) ffcommon.FInt
+var swsIsSupportedInputOnce sync.Once
 
+func SwsIsSupportedInput(pix_fmt AVPixelFormat) ffcommon.FInt {
+	swsIsSupportedInputOnce.Do(func() {
+		purego.RegisterLibFunc(&swsIsSupportedInput, ffcommon.GetAvswscaleDll(), "sws_isSupportedInput")
+	})
+
+	t := uintptr(swsIsSupportedInput(pix_fmt))
+	if t == 0 {
+		return ffcommon.FInt(0)
 	}
-	res = ffcommon.FInt(t)
-	return
+
+	return ffcommon.FInt(t)
 }
 
 /**
@@ -191,15 +205,20 @@ func SwsIsSupportedInput(pix_fmt AVPixelFormat) (res ffcommon.FInt) {
  * otherwise.
  */
 //int sws_isSupportedOutput(enum AVPixelFormat pix_fmt);
-func SwsIsSupportedOutput(pix_fmt AVPixelFormat) (res ffcommon.FInt) {
-	t, _, _ := ffcommon.GetAvswscaleDll().NewProc("sws_isSupportedOutput").Call(
-		uintptr(pix_fmt),
-	)
-	if t == 0 {
+var swsIsSupportedOutput func(pix_fmt AVPixelFormat) ffcommon.FInt
+var swsIsSupportedOutputOnce sync.Once
 
+func SwsIsSupportedOutput(pix_fmt AVPixelFormat) ffcommon.FInt {
+	swsIsSupportedOutputOnce.Do(func() {
+		purego.RegisterLibFunc(&swsIsSupportedOutput, ffcommon.GetAvswscaleDll(), "sws_isSupportedOutput")
+	})
+
+	t := uintptr(swsIsSupportedOutput(pix_fmt))
+	if t == 0 {
+		return ffcommon.FInt(0)
 	}
-	res = ffcommon.FInt(t)
-	return
+
+	return ffcommon.FInt(t)
 }
 
 /**
@@ -208,15 +227,20 @@ func SwsIsSupportedOutput(pix_fmt AVPixelFormat) (res ffcommon.FInt) {
  * supported, 0 otherwise.
  */
 //int sws_isSupportedEndiannessConversion(enum AVPixelFormat pix_fmt);
-func SwsIsSupportedEndiannessConversion(pix_fmt AVPixelFormat) (res ffcommon.FInt) {
-	t, _, _ := ffcommon.GetAvswscaleDll().NewProc("sws_isSupportedEndiannessConversion").Call(
-		uintptr(pix_fmt),
-	)
-	if t == 0 {
+var swsIsSupportedEndiannessConversion func(pix_fmt AVPixelFormat) ffcommon.FInt
+var swsIsSupportedEndiannessConversionOnce sync.Once
 
+func SwsIsSupportedEndiannessConversion(pix_fmt AVPixelFormat) ffcommon.FInt {
+	swsIsSupportedEndiannessConversionOnce.Do(func() {
+		purego.RegisterLibFunc(&swsIsSupportedEndiannessConversion, ffcommon.GetAvswscaleDll(), "sws_isSupportedEndiannessConversion")
+	})
+
+	t := uintptr(swsIsSupportedEndiannessConversion(pix_fmt))
+	if t == 0 {
+		return ffcommon.FInt(0)
 	}
-	res = ffcommon.FInt(t)
-	return
+
+	return ffcommon.FInt(t)
 }
 
 /**
@@ -225,13 +249,16 @@ func SwsIsSupportedEndiannessConversion(pix_fmt AVPixelFormat) (res ffcommon.FIn
  * sws_setColorspaceDetails().
  */
 //struct SwsContext *sws_alloc_context(void);
-func SwsAllocContext() (res *SwsContext) {
-	t, _, _ := ffcommon.GetAvswscaleDll().NewProc("sws_alloc_context").Call()
-	if t == 0 {
+var swsAllocContext func() *SwsContext
+var swsAllocContextOnce sync.Once
 
-	}
-	res = (*SwsContext)(unsafe.Pointer(t))
-	return
+func SwsAllocContext() *SwsContext {
+	swsAllocContextOnce.Do(func() {
+		purego.RegisterLibFunc(&swsAllocContext, ffcommon.GetAvswscaleDll(), "sws_alloc_context")
+	})
+
+	return swsAllocContext()
+
 }
 
 /**
@@ -242,17 +269,20 @@ func SwsAllocContext() (res *SwsContext) {
  */
 //av_warn_unused_result
 //int sws_init_context(struct SwsContext *sws_context, SwsFilter *srcFilter, SwsFilter *dstFilter);
-func (sws_context *SwsContext) SwsInitContext(srcFilter, dstFilter *SwsFilter) (res ffcommon.FInt) {
-	t, _, _ := ffcommon.GetAvswscaleDll().NewProc("sws_init_context").Call(
-		uintptr(unsafe.Pointer(sws_context)),
-		uintptr(unsafe.Pointer(srcFilter)),
-		uintptr(unsafe.Pointer(dstFilter)),
-	)
-	if t == 0 {
+var swsInitContext func(sws_context *SwsContext, srcFilter, dstFilter *SwsFilter) ffcommon.FInt
+var swsInitContextOnce sync.Once
 
+func (sws_context *SwsContext) SwsInitContext(srcFilter, dstFilter *SwsFilter) ffcommon.FInt {
+	swsInitContextOnce.Do(func() {
+		purego.RegisterLibFunc(&swsInitContext, ffcommon.GetAvswscaleDll(), "sws_init_context")
+	})
+
+	t := uintptr(swsInitContext(sws_context, srcFilter, dstFilter))
+	if t == 0 {
+		return ffcommon.FInt(0)
 	}
-	res = ffcommon.FInt(t)
-	return
+
+	return ffcommon.FInt(t)
 }
 
 /**
@@ -260,14 +290,15 @@ func (sws_context *SwsContext) SwsInitContext(srcFilter, dstFilter *SwsFilter) (
  * If swsContext is NULL, then does nothing.
  */
 //void sws_freeContext(struct SwsContext *swsContext);
-func (swsContext *SwsContext) SwsFreeContext() {
-	t, _, _ := ffcommon.GetAvswscaleDll().NewProc("sws_freeContext").Call(
-		uintptr(unsafe.Pointer(swsContext)),
-	)
-	if t == 0 {
+var swsFreeContext func(swsContext *SwsContext)
+var swsFreeContextOnce sync.Once
 
-	}
-	return
+func (swsContext *SwsContext) SwsFreeContext() {
+	swsFreeContextOnce.Do(func() {
+		purego.RegisterLibFunc(&swsFreeContext, ffcommon.GetAvswscaleDll(), "sws_freeContext")
+	})
+
+	swsFreeContext(swsContext)
 }
 
 /**
@@ -295,24 +326,20 @@ func (swsContext *SwsContext) SwsFreeContext() {
 //int dstW, int dstH, enum AVPixelFormat dstFormat,
 //int flags, SwsFilter *srcFilter,
 //SwsFilter *dstFilter, const double *param);
+var swsGetContext func(srcW, srcH ffcommon.FInt, srcFormat AVPixelFormat,
+	dstW, dstH ffcommon.FInt, dstFormat AVPixelFormat,
+	flags ffcommon.FInt, srcFilter, dstFilter *SwsFilter, param *ffcommon.FDouble) *SwsContext
+var swsGetContextOnce sync.Once
+
 func SwsGetContext(srcW, srcH ffcommon.FInt, srcFormat AVPixelFormat,
 	dstW, dstH ffcommon.FInt, dstFormat AVPixelFormat,
-	flags ffcommon.FInt, srcFilter,
-	dstFilter *SwsFilter, param *ffcommon.FDouble) (res *SwsContext) {
-	t, _, _ := ffcommon.GetAvswscaleDll().NewProc("sws_getContext").Call(
-		uintptr(srcW),
-		uintptr(srcH),
-		uintptr(srcFormat),
-		uintptr(dstW),
-		uintptr(dstH),
-		uintptr(dstFormat),
-		uintptr(flags),
-		uintptr(unsafe.Pointer(srcFilter)),
-		uintptr(unsafe.Pointer(dstFilter)),
-		uintptr(unsafe.Pointer(param)),
-	)
-	res = (*SwsContext)(unsafe.Pointer(t))
-	return
+	flags ffcommon.FInt, srcFilter, dstFilter *SwsFilter, param *ffcommon.FDouble) *SwsContext {
+	swsGetContextOnce.Do(func() {
+		purego.RegisterLibFunc(&swsGetContext, ffcommon.GetAvswscaleDll(), "sws_getContext")
+	})
+
+	return swsGetContext(srcW, srcH, srcFormat, dstW, dstH, dstFormat, flags, srcFilter, dstFilter, param)
+
 }
 
 /**
@@ -344,20 +371,16 @@ func SwsGetContext(srcW, srcH ffcommon.FInt, srcFormat AVPixelFormat,
 //int sws_scale(struct SwsContext *c, const uint8_t *const srcSlice[],
 //const int srcStride[], int srcSliceY, int srcSliceH,
 //uint8_t *const dst[], const int dstStride[]);
-func (c *SwsContext) SwsScale(srcSlice **ffcommon.FUint8T,
-	srcStride *ffcommon.FInt, srcSliceY, srcSliceH ffcommon.FUint,
-	dst **ffcommon.FUint8T, dstStride *ffcommon.FInt) (res ffcommon.FInt) {
-	t, _, _ := ffcommon.GetAvswscaleDll().NewProc("sws_scale").Call(
-		uintptr(unsafe.Pointer(c)),
-		uintptr(unsafe.Pointer(srcSlice)),
-		uintptr(unsafe.Pointer(srcStride)),
-		uintptr(srcSliceY),
-		uintptr(srcSliceH),
-		uintptr(unsafe.Pointer(dst)),
-		uintptr(unsafe.Pointer(dstStride)),
-	)
-	res = ffcommon.FInt(t)
-	return
+var swsScale func(c *SwsContext, srcSlice **ffcommon.FUint8T, srcStride *ffcommon.FInt, srcSliceY, srcSliceH ffcommon.FUint, dst **ffcommon.FUint8T, dstStride *ffcommon.FInt) ffcommon.FInt
+var swsScaleOnce sync.Once
+
+func (c *SwsContext) SwsScale(srcSlice **ffcommon.FUint8T, srcStride *ffcommon.FInt, srcSliceY, srcSliceH ffcommon.FUint, dst **ffcommon.FUint8T, dstStride *ffcommon.FInt) ffcommon.FInt {
+	swsScaleOnce.Do(func() {
+		purego.RegisterLibFunc(&swsScale, ffcommon.GetAvswscaleDll(), "sws_scale")
+	})
+
+	t := uintptr(swsScale(c, srcSlice, srcStride, srcSliceY, srcSliceH, dst, dstStride))
+	return ffcommon.FInt(t)
 }
 
 /**
@@ -373,21 +396,16 @@ func (c *SwsContext) SwsScale(srcSlice **ffcommon.FUint8T,
 //int sws_setColorspaceDetails(struct SwsContext *c, const int inv_table[4],
 //int srcRange, const int table[4], int dstRange,
 //int brightness, int contrast, int saturation);
-func (c *SwsContext) SwsSetColorspaceDetails(inv_table [4]*ffcommon.FInt,
-	srcRange ffcommon.FInt, table [4]ffcommon.FInt, dstRange,
-	brightness, contrast, saturation ffcommon.FInt) (res ffcommon.FInt) {
-	t, _, _ := ffcommon.GetAvswscaleDll().NewProc("sws_setColorspaceDetails").Call(
-		uintptr(unsafe.Pointer(c)),
-		uintptr(unsafe.Pointer(&inv_table)),
-		uintptr(srcRange),
-		uintptr(unsafe.Pointer(&table)),
-		uintptr(dstRange),
-		uintptr(brightness),
-		uintptr(contrast),
-		uintptr(saturation),
-	)
-	res = ffcommon.FInt(t)
-	return
+var swsSetColorspaceDetails func(c *SwsContext, inv_table [4]*ffcommon.FInt, srcRange ffcommon.FInt, table [4]ffcommon.FInt, dstRange, brightness, contrast, saturation ffcommon.FInt) ffcommon.FInt
+var swsSetColorspaceDetailsOnce sync.Once
+
+func (c *SwsContext) SwsSetColorspaceDetails(inv_table [4]*ffcommon.FInt, srcRange ffcommon.FInt, table [4]ffcommon.FInt, dstRange, brightness, contrast, saturation ffcommon.FInt) ffcommon.FInt {
+	swsSetColorspaceDetailsOnce.Do(func() {
+		purego.RegisterLibFunc(&swsSetColorspaceDetails, ffcommon.GetAvswscaleDll(), "sws_setColorspaceDetails")
+	})
+
+	t := uintptr(swsSetColorspaceDetails(c, inv_table, srcRange, table, dstRange, brightness, contrast, saturation))
+	return ffcommon.FInt(t)
 }
 
 /**
@@ -396,33 +414,32 @@ func (c *SwsContext) SwsSetColorspaceDetails(inv_table [4]*ffcommon.FInt,
 //int sws_getColorspaceDetails(struct SwsContext *c, int **inv_table,
 //int *srcRange, int **table, int *dstRange,
 //int *brightness, int *contrast, int *saturation);
-func (c *SwsContext) SwsGetColorspaceDetails(inv_table **ffcommon.FInt,
-	srcRange *ffcommon.FInt, table **ffcommon.FInt, dstRange,
-	brightness, contrast, saturation *ffcommon.FInt) (res ffcommon.FInt) {
-	t, _, _ := ffcommon.GetAvswscaleDll().NewProc("sws_getColorspaceDetails").Call(
-		uintptr(unsafe.Pointer(c)),
-		uintptr(unsafe.Pointer(inv_table)),
-		uintptr(unsafe.Pointer(srcRange)),
-		uintptr(unsafe.Pointer(&table)),
-		uintptr(unsafe.Pointer(dstRange)),
-		uintptr(unsafe.Pointer(brightness)),
-		uintptr(unsafe.Pointer(contrast)),
-		uintptr(unsafe.Pointer(saturation)),
-	)
-	res = ffcommon.FInt(t)
-	return
+var swsGetColorspaceDetails func(c *SwsContext, inv_table **ffcommon.FInt, srcRange *ffcommon.FInt, table **ffcommon.FInt, dstRange, brightness, contrast, saturation *ffcommon.FInt) ffcommon.FInt
+var swsGetColorspaceDetailsOnce sync.Once
+
+func (c *SwsContext) SwsGetColorspaceDetails(inv_table **ffcommon.FInt, srcRange *ffcommon.FInt, table **ffcommon.FInt, dstRange, brightness, contrast, saturation *ffcommon.FInt) ffcommon.FInt {
+	swsGetColorspaceDetailsOnce.Do(func() {
+		purego.RegisterLibFunc(&swsGetColorspaceDetails, ffcommon.GetAvswscaleDll(), "sws_getColorspaceDetails")
+	})
+
+	t := uintptr(swsGetColorspaceDetails(c, inv_table, srcRange, table, dstRange, brightness, contrast, saturation))
+	return ffcommon.FInt(t)
 }
 
 /**
  * Allocate and return an uninitialized vector with length coefficients.
  */
 //SwsVector *sws_allocVec(int length);
-func SwsAllocVec(length ffcommon.FInt) (res *SwsVector) {
-	t, _, _ := ffcommon.GetAvswscaleDll().NewProc("sws_allocVec").Call(
-		uintptr(length),
-	)
-	res = (*SwsVector)(unsafe.Pointer(t))
-	return
+var swsAllocVec func(length ffcommon.FInt) *SwsVector
+var swsAllocVecOnce sync.Once
+
+func SwsAllocVec(length ffcommon.FInt) *SwsVector {
+	swsAllocVecOnce.Do(func() {
+		purego.RegisterLibFunc(&swsAllocVec, ffcommon.GetAvswscaleDll(), "sws_allocVec")
+	})
+
+	return swsAllocVec(length)
+
 }
 
 /**
@@ -430,140 +447,205 @@ func SwsAllocVec(length ffcommon.FInt) (res *SwsVector) {
  * quality = 3 is high quality, lower is lower quality.
  */
 //SwsVector *sws_getGaussianVec(double variance, double quality);
-func SwsGetGaussianVec(variance, quality ffcommon.FDouble) (res *SwsVector) {
-	t, _, _ := ffcommon.GetAvswscaleDll().NewProc("sws_getGaussianVec").Call(
-		uintptr(unsafe.Pointer(&variance)),
-		uintptr(unsafe.Pointer(&quality)),
-	)
-	res = (*SwsVector)(unsafe.Pointer(t))
-	return
+var swsGetGaussianVec func(variance, quality *ffcommon.FDouble) *SwsVector
+var swsGetGaussianVecOnce sync.Once
+
+func SwsGetGaussianVec(variance, quality *ffcommon.FDouble) *SwsVector {
+	swsGetGaussianVecOnce.Do(func() {
+		purego.RegisterLibFunc(&swsGetGaussianVec, ffcommon.GetAvswscaleDll(), "sws_getGaussianVec")
+	})
+
+	return swsGetGaussianVec(variance, quality)
+
 }
 
 /**
  * Scale all the coefficients of a by the scalar value.
  */
 //void sws_scaleVec(SwsVector *a, double scalar);
-func (a *SwsVector) SwsScaleVec(scalar ffcommon.FDouble) {
-	ffcommon.GetAvswscaleDll().NewProc("sws_scaleVec").Call(
-		uintptr(unsafe.Pointer(a)),
-		uintptr(unsafe.Pointer(&scalar)),
-	)
+var swsScaleVec func(a *SwsVector, scalar *ffcommon.FDouble)
+var swsScaleVecOnce sync.Once
+
+func (a *SwsVector) SwsScaleVec(scalar *ffcommon.FDouble) {
+	swsScaleVecOnce.Do(func() {
+		purego.RegisterLibFunc(&swsScaleVec, ffcommon.GetAvswscaleDll(), "sws_scaleVec")
+	})
+
+	swsScaleVec(a, scalar)
 }
 
 /**
  * Scale all the coefficients of a so that their sum equals height.
  */
 //void sws_normalizeVec(SwsVector *a, double height);
-func (a *SwsVector) SwsNormalizeVec(height ffcommon.FDouble) {
-	ffcommon.GetAvswscaleDll().NewProc("sws_normalizeVec").Call(
-		uintptr(unsafe.Pointer(a)),
-		uintptr(unsafe.Pointer(&height)),
-	)
+var swsNormalizeVec func(a *SwsVector, height *ffcommon.FDouble)
+var swsNormalizeVecOnce sync.Once
+
+func (a *SwsVector) SwsNormalizeVec(height *ffcommon.FDouble) {
+	swsNormalizeVecOnce.Do(func() {
+		purego.RegisterLibFunc(&swsNormalizeVec, ffcommon.GetAvswscaleDll(), "sws_normalizeVec")
+	})
+
+	swsNormalizeVec(a, height)
 }
 
 // #if FF_API_SWS_VECTOR
 // attribute_deprecated SwsVector *sws_getConstVec(double c, int length);
-func SwsGetConstVec(c ffcommon.FDouble, length ffcommon.FInt) (res *SwsVector) {
-	t, _, _ := ffcommon.GetAvswscaleDll().NewProc("sws_getConstVec").Call(
-		uintptr(unsafe.Pointer(&c)),
-		uintptr(length),
-	)
-	res = (*SwsVector)(unsafe.Pointer(t))
-	return
+var swsGetConstVec func(c *ffcommon.FDouble, length ffcommon.FInt) *SwsVector
+var swsGetConstVecOnce sync.Once
+
+func SwsGetConstVec(c *ffcommon.FDouble, length ffcommon.FInt) *SwsVector {
+	swsGetConstVecOnce.Do(func() {
+		purego.RegisterLibFunc(&swsGetConstVec, ffcommon.GetAvswscaleDll(), "sws_getConstVec")
+	})
+
+	return swsGetConstVec(c, length)
+	// if t == 0 {
+	// 	return nil
+	// }
+
+	// return (*SwsVector)(unsafe.Pointer(t))
 }
 
 // attribute_deprecated SwsVector *sws_getIdentityVec(void);
-func SwsGetIdentityVec() (res *SwsVector) {
-	t, _, _ := ffcommon.GetAvswscaleDll().NewProc("sws_getIdentityVec").Call()
-	res = (*SwsVector)(unsafe.Pointer(t))
-	return
+var swsGetIdentityVec func() *SwsVector
+var swsGetIdentityVecOnce sync.Once
+
+func SwsGetIdentityVec() *SwsVector {
+	swsGetIdentityVecOnce.Do(func() {
+		purego.RegisterLibFunc(&swsGetIdentityVec, ffcommon.GetAvswscaleDll(), "sws_getIdentityVec")
+	})
+
+	return swsGetIdentityVec()
+	// if t == 0 {
+	// 	return nil
+	// }
+
+	// return (*SwsVector)(unsafe.Pointer(t))
 }
 
 // attribute_deprecated void sws_convVec(SwsVector *a, SwsVector *b);
+var swsConvVec func(a, b *SwsVector)
+var swsConvVecOnce sync.Once
+
 func (a *SwsVector) SwsConvVec(b *SwsVector) {
-	ffcommon.GetAvswscaleDll().NewProc("sws_convVec").Call(
-		uintptr(unsafe.Pointer(a)),
-		uintptr(unsafe.Pointer(b)),
-	)
+	swsConvVecOnce.Do(func() {
+		purego.RegisterLibFunc(&swsConvVec, ffcommon.GetAvswscaleDll(), "sws_convVec")
+	})
+
+	swsConvVec(a, b)
 }
 
 // attribute_deprecated void sws_addVec(SwsVector *a, SwsVector *b);
+var swsAddVec func(a, b *SwsVector)
+var swsAddVecOnce sync.Once
+
 func (a *SwsVector) SwsAddVec(b *SwsVector) {
-	ffcommon.GetAvswscaleDll().NewProc("sws_addVec").Call(
-		uintptr(unsafe.Pointer(a)),
-		uintptr(unsafe.Pointer(b)),
-	)
+	swsAddVecOnce.Do(func() {
+		purego.RegisterLibFunc(&swsAddVec, ffcommon.GetAvswscaleDll(), "sws_addVec")
+	})
+
+	swsAddVec(a, b)
 }
 
 // attribute_deprecated void sws_subVec(SwsVector *a, SwsVector *b);
+var swsSubVec func(a, b *SwsVector)
+var swsSubVecOnce sync.Once
+
 func (a *SwsVector) SwsSubVec(b *SwsVector) {
-	ffcommon.GetAvswscaleDll().NewProc("sws_subVec").Call(
-		uintptr(unsafe.Pointer(a)),
-		uintptr(unsafe.Pointer(b)),
-	)
+	swsSubVecOnce.Do(func() {
+		purego.RegisterLibFunc(&swsSubVec, ffcommon.GetAvswscaleDll(), "sws_subVec")
+	})
+
+	swsSubVec(a, b)
 }
 
 // attribute_deprecated void sws_shiftVec(SwsVector *a, int shift);
+var swsShiftVec func(a *SwsVector, shift ffcommon.FInt)
+var swsShiftVecOnce sync.Once
+
 func (a *SwsVector) SwsShiftVec(shift ffcommon.FInt) {
-	ffcommon.GetAvswscaleDll().NewProc("sws_shiftVec").Call(
-		uintptr(unsafe.Pointer(a)),
-		uintptr(shift),
-	)
+	swsShiftVecOnce.Do(func() {
+		purego.RegisterLibFunc(&swsShiftVec, ffcommon.GetAvswscaleDll(), "sws_shiftVec")
+	})
+
+	swsShiftVec(a, shift)
 }
 
 // attribute_deprecated SwsVector *sws_cloneVec(SwsVector *a);
-func (a *SwsVector) SwsCloneVec() (res *SwsVector) {
-	t, _, _ := ffcommon.GetAvswscaleDll().NewProc("sws_cloneVec").Call(
-		uintptr(unsafe.Pointer(a)),
-	)
-	res = (*SwsVector)(unsafe.Pointer(t))
-	return
+var swsCloneVec func(a *SwsVector) *SwsVector
+var swsCloneVecOnce sync.Once
+
+func (a *SwsVector) SwsCloneVec() *SwsVector {
+	swsCloneVecOnce.Do(func() {
+		purego.RegisterLibFunc(&swsCloneVec, ffcommon.GetAvswscaleDll(), "sws_cloneVec")
+	})
+
+	return swsCloneVec(a)
+	// if t == 0 {
+	// 	return nil
+	// }
+
+	// return (*SwsVector)(unsafe.Pointer(t))
 }
 
 // attribute_deprecated void sws_printVec2(SwsVector *a, AVClass *log_ctx, int log_level);
+var swsPrintVec2 func(a *SwsVector, log_ctx *AVClass, log_level ffcommon.FInt)
+var swsPrintVec2Once sync.Once
+
 func (a *SwsVector) SwsPrintVec2(log_ctx *AVClass, log_level ffcommon.FInt) {
-	ffcommon.GetAvswscaleDll().NewProc("sws_printVec2").Call(
-		uintptr(unsafe.Pointer(a)),
-		uintptr(unsafe.Pointer(log_ctx)),
-		uintptr(log_level),
-	)
+	swsPrintVec2Once.Do(func() {
+		purego.RegisterLibFunc(&swsPrintVec2, ffcommon.GetAvswscaleDll(), "sws_printVec2")
+	})
+
+	swsPrintVec2(a, log_ctx, log_level)
 }
 
 //#endif
 
 // void sws_freeVec(SwsVector *a);
+
+var swsFreeVec func(a *SwsVector)
+var swsFreeVecOnce sync.Once
+
 func (a *SwsVector) SwsFreeVec() {
-	ffcommon.GetAvswscaleDll().NewProc("sws_freeVec").Call(
-		uintptr(unsafe.Pointer(a)),
-	)
+	swsFreeVecOnce.Do(func() {
+		purego.RegisterLibFunc(&swsFreeVec, ffcommon.GetAvswscaleDll(), "sws_freeVec")
+	})
+
+	swsFreeVec(a)
 }
 
 // SwsFilter *sws_getDefaultFilter(float lumaGBlur, float chromaGBlur,
 // float lumaSharpen, float chromaSharpen,
 // float chromaHShift, float chromaVShift,
 // int verbose);
-func SwsGetDefaultFilter(lumaGBlur, chromaGBlur,
-	lumaSharpen, chromaSharpen,
-	chromaHShift, chromaVShift ffcommon.FFloat,
-	verbose ffcommon.FInt) (res *SwsFilter) {
-	t, _, _ := ffcommon.GetAvswscaleDll().NewProc("sws_getDefaultFilter").Call(
-		uintptr(unsafe.Pointer(&lumaGBlur)),
-		uintptr(unsafe.Pointer(&chromaGBlur)),
-		uintptr(unsafe.Pointer(&lumaSharpen)),
-		uintptr(unsafe.Pointer(&chromaSharpen)),
-		uintptr(unsafe.Pointer(&chromaHShift)),
-		uintptr(unsafe.Pointer(&chromaVShift)),
-		uintptr(verbose),
-	)
-	res = (*SwsFilter)(unsafe.Pointer(t))
-	return
+var swsGetDefaultFilter func(lumaGBlur, chromaGBlur, lumaSharpen, chromaSharpen, chromaHShift, chromaVShift *ffcommon.FFloat, verbose ffcommon.FInt) *SwsFilter
+var swsGetDefaultFilterOnce sync.Once
+
+func SwsGetDefaultFilter(lumaGBlur, chromaGBlur, lumaSharpen, chromaSharpen, chromaHShift, chromaVShift *ffcommon.FFloat, verbose ffcommon.FInt) *SwsFilter {
+	swsGetDefaultFilterOnce.Do(func() {
+		purego.RegisterLibFunc(&swsGetDefaultFilter, ffcommon.GetAvswscaleDll(), "sws_getDefaultFilter")
+	})
+
+	return swsGetDefaultFilter(lumaGBlur, chromaGBlur, lumaSharpen, chromaSharpen, chromaHShift, chromaVShift, verbose)
+	// if t == 0 {
+	//     return nil
+	// }
+
+	// return (*SwsFilter)(unsafe.Pointer(t))
 }
 
 // void sws_freeFilter(SwsFilter *filter);
+var swsFreeFilter func(filter *SwsFilter)
+var swsFreeFilterOnce sync.Once
+
 func (filter *SwsFilter) SwsFreeFilter() {
-	ffcommon.GetAvswscaleDll().NewProc("sws_freeFilter").Call(
-		uintptr(unsafe.Pointer(filter)),
-	)
+	swsFreeFilterOnce.Do(func() {
+		purego.RegisterLibFunc(&swsFreeFilter, ffcommon.GetAvswscaleDll(), "sws_freeFilter")
+	})
+
+	swsFreeFilter(filter)
 }
 
 /**
@@ -583,25 +665,20 @@ func (filter *SwsFilter) SwsFreeFilter() {
 //int dstW, int dstH, enum AVPixelFormat dstFormat,
 //int flags, SwsFilter *srcFilter,
 //SwsFilter *dstFilter, const double *param);
-func (context *SwsContext) SwsGetCachedContext(srcW, srcH ffcommon.FInt, srcFormat AVPixelFormat,
-	dstW, dstH ffcommon.FInt, dstFormat AVPixelFormat,
-	flags ffcommon.FInt, srcFilter,
-	dstFilter *SwsFilter, param *ffcommon.FDouble) (res *SwsContext) {
-	t, _, _ := ffcommon.GetAvswscaleDll().NewProc("sws_getCachedContext").Call(
-		uintptr(unsafe.Pointer(context)),
-		uintptr(srcW),
-		uintptr(srcH),
-		uintptr(srcFormat),
-		uintptr(dstW),
-		uintptr(dstH),
-		uintptr(dstFormat),
-		uintptr(flags),
-		uintptr(unsafe.Pointer(srcFilter)),
-		uintptr(unsafe.Pointer(dstFilter)),
-		uintptr(unsafe.Pointer(param)),
-	)
-	res = (*SwsContext)(unsafe.Pointer(t))
-	return
+var swsGetCachedContext func(context *SwsContext, srcW, srcH ffcommon.FInt, srcFormat AVPixelFormat, dstW, dstH ffcommon.FInt, dstFormat AVPixelFormat, flags ffcommon.FInt, srcFilter, dstFilter *SwsFilter, param *ffcommon.FDouble) *SwsContext
+var swsGetCachedContextOnce sync.Once
+
+func (context *SwsContext) SwsGetCachedContext(srcW, srcH ffcommon.FInt, srcFormat AVPixelFormat, dstW, dstH ffcommon.FInt, dstFormat AVPixelFormat, flags ffcommon.FInt, srcFilter, dstFilter *SwsFilter, param *ffcommon.FDouble) *SwsContext {
+	swsGetCachedContextOnce.Do(func() {
+		purego.RegisterLibFunc(&swsGetCachedContext, ffcommon.GetAvswscaleDll(), "sws_getCachedContext")
+	})
+
+	return swsGetCachedContext(context, srcW, srcH, srcFormat, dstW, dstH, dstFormat, flags, srcFilter, dstFilter, param)
+	// if t == 0 {
+	//     return nil
+	// }
+
+	// return (*SwsContext)(unsafe.Pointer(t))
 }
 
 /**
@@ -615,13 +692,15 @@ func (context *SwsContext) SwsGetCachedContext(srcW, srcH ffcommon.FInt, srcForm
  * @param palette    array with [256] entries, which must match color arrangement (RGB or BGR) of src
  */
 //void sws_convertPalette8ToPacked32(const uint8_t *src, uint8_t *dst, int num_pixels, const uint8_t *palette);
+var swsConvertPalette8ToPacked32 func(src, dst *ffcommon.FUint8T, num_pixels ffcommon.FInt, palette *ffcommon.FUint8T)
+var swsConvertPalette8ToPacked32Once sync.Once
+
 func SwsConvertPalette8ToPacked32(src, dst *ffcommon.FUint8T, num_pixels ffcommon.FInt, palette *ffcommon.FUint8T) {
-	ffcommon.GetAvswscaleDll().NewProc("sws_convertPalette8ToPacked32").Call(
-		uintptr(unsafe.Pointer(src)),
-		uintptr(unsafe.Pointer(dst)),
-		uintptr(num_pixels),
-		uintptr(unsafe.Pointer(palette)),
-	)
+	swsConvertPalette8ToPacked32Once.Do(func() {
+		purego.RegisterLibFunc(&swsConvertPalette8ToPacked32, ffcommon.GetAvswscaleDll(), "sws_convertPalette8ToPacked32")
+	})
+
+	swsConvertPalette8ToPacked32(src, dst, num_pixels, palette)
 }
 
 /**
@@ -635,13 +714,15 @@ func SwsConvertPalette8ToPacked32(src, dst *ffcommon.FUint8T, num_pixels ffcommo
  * @param palette    array with [256] entries, which must match color arrangement (RGB or BGR) of src
  */
 //void sws_convertPalette8ToPacked24(const uint8_t *src, uint8_t *dst, int num_pixels, const uint8_t *palette);
+var swsConvertPalette8ToPacked24 func(src, dst *ffcommon.FUint8T, num_pixels ffcommon.FInt, palette *ffcommon.FUint8T)
+var swsConvertPalette8ToPacked24Once sync.Once
+
 func SwsConvertPalette8ToPacked24(src, dst *ffcommon.FUint8T, num_pixels ffcommon.FInt, palette *ffcommon.FUint8T) {
-	ffcommon.GetAvswscaleDll().NewProc("sws_convertPalette8ToPacked24").Call(
-		uintptr(unsafe.Pointer(src)),
-		uintptr(unsafe.Pointer(dst)),
-		uintptr(num_pixels),
-		uintptr(unsafe.Pointer(palette)),
-	)
+	swsConvertPalette8ToPacked24Once.Do(func() {
+		purego.RegisterLibFunc(&swsConvertPalette8ToPacked24, ffcommon.GetAvswscaleDll(), "sws_convertPalette8ToPacked24")
+	})
+
+	swsConvertPalette8ToPacked24(src, dst, num_pixels, palette)
 }
 
 /**
@@ -653,10 +734,20 @@ func SwsConvertPalette8ToPacked24(src, dst *ffcommon.FUint8T, num_pixels ffcommo
 //const AVClass *sws_get_class(void);
 type AVClass = libavutil.AVClass
 
-func SwsGetClass() (res *AVClass) {
-	t, _, _ := ffcommon.GetAvswscaleDll().NewProc("sws_get_class").Call()
-	res = (*AVClass)(unsafe.Pointer(t))
-	return
+var swsGetClass func() *AVClass
+var swsGetClassOnce sync.Once
+
+func SwsGetClass() *AVClass {
+	swsGetClassOnce.Do(func() {
+		purego.RegisterLibFunc(&swsGetClass, ffcommon.GetAvswscaleDll(), "sws_get_class")
+	})
+
+	return swsGetClass()
+	// if t == 0 {
+	// 	return nil
+	// }
+
+	// return (*AVClass)(unsafe.Pointer(t))
 }
 
 /**
