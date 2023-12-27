@@ -1,9 +1,10 @@
 package libavutil
 
 import (
-	"unsafe"
+	"sync"
 
 	"github.com/dwdcth/ffmpeg-go/ffcommon"
+	"github.com/ebitengine/purego"
 )
 
 /*
@@ -215,12 +216,14 @@ const AV_PIX_FMT_FLAG_FLOAT = (1 << 9)
  * not counted.
  */
 //int av_get_bits_per_pixel(const AVPixFmtDescriptor *pixdesc);
-func (pixdesc *AVPixFmtDescriptor) AvGetBitsPerPixel() (res ffcommon.FInt) {
-	t, _, _ := ffcommon.GetAvutilDll().NewProc("av_get_bits_per_pixel").Call(
-		uintptr(unsafe.Pointer(pixdesc)),
-	)
-	res = ffcommon.FInt(t)
-	return
+var avGetBitsPerPixel func(pixdesc *AVPixFmtDescriptor) ffcommon.FInt
+var avGetBitsPerPixelOnce sync.Once
+
+func (pixdesc *AVPixFmtDescriptor) AvGetBitsPerPixel() ffcommon.FInt {
+	avGetBitsPerPixelOnce.Do(func() {
+		purego.RegisterLibFunc(&avGetBitsPerPixel, ffcommon.GetAvutilDll(), "av_get_bits_per_pixel")
+	})
+	return avGetBitsPerPixel(pixdesc)
 }
 
 /**
@@ -228,12 +231,14 @@ func (pixdesc *AVPixFmtDescriptor) AvGetBitsPerPixel() (res ffcommon.FInt) {
  * described by pixdesc, including any padding or unused bits.
  */
 //int av_get_padded_bits_per_pixel(const AVPixFmtDescriptor *pixdesc);
-func (pixdesc *AVPixFmtDescriptor) AvGetPaddedBitsPerPixel() (res ffcommon.FInt) {
-	t, _, _ := ffcommon.GetAvutilDll().NewProc("av_get_padded_bits_per_pixel").Call(
-		uintptr(unsafe.Pointer(pixdesc)),
-	)
-	res = ffcommon.FInt(t)
-	return
+var avGetPaddedBitsPerPixel func(pixdesc *AVPixFmtDescriptor) ffcommon.FInt
+var avGetPaddedBitsPerPixelOnce sync.Once
+
+func (pixdesc *AVPixFmtDescriptor) AvGetPaddedBitsPerPixel() ffcommon.FInt {
+	avGetPaddedBitsPerPixelOnce.Do(func() {
+		purego.RegisterLibFunc(&avGetPaddedBitsPerPixel, ffcommon.GetAvutilDll(), "av_get_padded_bits_per_pixel")
+	})
+	return avGetPaddedBitsPerPixel(pixdesc)
 }
 
 /**
@@ -241,12 +246,14 @@ func (pixdesc *AVPixFmtDescriptor) AvGetPaddedBitsPerPixel() (res ffcommon.FInt)
  * this pixel format is unknown.
  */
 //const AVPixFmtDescriptor *av_pix_fmt_desc_get(enum AVPixelFormat pix_fmt);
-func AvPixFmtDescGet(pix_fmt AVPixelFormat) (res *AVPixFmtDescriptor) {
-	t, _, _ := ffcommon.GetAvutilDll().NewProc("av_pix_fmt_desc_get").Call(
-		uintptr(pix_fmt),
-	)
-	res = (*AVPixFmtDescriptor)(unsafe.Pointer(t))
-	return
+var avPixFmtDescGet func(pix_fmt AVPixelFormat) *AVPixFmtDescriptor
+var avPixFmtDescGetOnce sync.Once
+
+func AvPixFmtDescGet(pix_fmt AVPixelFormat) *AVPixFmtDescriptor {
+	avPixFmtDescGetOnce.Do(func() {
+		purego.RegisterLibFunc(&avPixFmtDescGet, ffcommon.GetAvutilDll(), "av_pix_fmt_desc_get")
+	})
+	return avPixFmtDescGet(pix_fmt)
 }
 
 /**
@@ -257,12 +264,14 @@ func AvPixFmtDescGet(pix_fmt AVPixelFormat) (res *AVPixFmtDescriptor) {
  * @return next descriptor or NULL after the last descriptor
  */
 //const AVPixFmtDescriptor *av_pix_fmt_desc_next(const AVPixFmtDescriptor *prev);
-func (prev *AVPixFmtDescriptor) AvPixFmtDescNext() (res *AVPixFmtDescriptor) {
-	t, _, _ := ffcommon.GetAvutilDll().NewProc("av_pix_fmt_desc_next").Call(
-		uintptr(unsafe.Pointer(prev)),
-	)
-	res = (*AVPixFmtDescriptor)(unsafe.Pointer(t))
-	return
+var avPixFmtDescNext func(prev *AVPixFmtDescriptor) *AVPixFmtDescriptor
+var avPixFmtDescNextOnce sync.Once
+
+func (prev *AVPixFmtDescriptor) AvPixFmtDescNext() *AVPixFmtDescriptor {
+	avPixFmtDescNextOnce.Do(func() {
+		purego.RegisterLibFunc(&avPixFmtDescNext, ffcommon.GetAvutilDll(), "av_pix_fmt_desc_next")
+	})
+	return avPixFmtDescNext(prev)
 }
 
 /**
@@ -270,12 +279,14 @@ func (prev *AVPixFmtDescriptor) AvPixFmtDescNext() (res *AVPixFmtDescriptor) {
  * is not a valid pointer to a pixel format descriptor.
  */
 //enum AVPixelFormat av_pix_fmt_desc_get_id(const AVPixFmtDescriptor *desc);
-func (desc *AVPixFmtDescriptor) AvPixFmtDescGetId() (res AVPixelFormat) {
-	t, _, _ := ffcommon.GetAvutilDll().NewProc("av_pix_fmt_desc_get_id").Call(
-		uintptr(unsafe.Pointer(desc)),
-	)
-	res = AVPixelFormat(t)
-	return
+var avPixFmtDescGetId func(desc *AVPixFmtDescriptor) AVPixelFormat
+var avPixFmtDescGetIdOnce sync.Once
+
+func (desc *AVPixFmtDescriptor) AvPixFmtDescGetId() AVPixelFormat {
+	avPixFmtDescGetIdOnce.Do(func() {
+		purego.RegisterLibFunc(&avPixFmtDescGetId, ffcommon.GetAvutilDll(), "av_pix_fmt_desc_get_id")
+	})
+	return avPixFmtDescGetId(desc)
 }
 
 /**
@@ -290,14 +301,14 @@ func (desc *AVPixFmtDescriptor) AvPixFmtDescGetId() (res AVPixelFormat) {
  */
 //int av_pix_fmt_get_chroma_sub_sample(enum AVPixelFormat pix_fmt,
 //int *h_shift, int *v_shift);
-func AvPixFmtGetChromaSubSample(pix_fmt AVPixelFormat, h_shift, v_shift *ffcommon.FInt) (res ffcommon.FInt) {
-	t, _, _ := ffcommon.GetAvutilDll().NewProc("av_pix_fmt_get_chroma_sub_sample").Call(
-		uintptr(pix_fmt),
-		uintptr(unsafe.Pointer(h_shift)),
-		uintptr(unsafe.Pointer(v_shift)),
-	)
-	res = ffcommon.FInt(t)
-	return
+var avPixFmtGetChromaSubSample func(pix_fmt AVPixelFormat, h_shift, v_shift *ffcommon.FInt) ffcommon.FInt
+var avPixFmtGetChromaSubSampleOnce sync.Once
+
+func AvPixFmtGetChromaSubSample(pix_fmt AVPixelFormat, h_shift, v_shift *ffcommon.FInt) ffcommon.FInt {
+	avPixFmtGetChromaSubSampleOnce.Do(func() {
+		purego.RegisterLibFunc(&avPixFmtGetChromaSubSample, ffcommon.GetAvutilDll(), "av_pix_fmt_get_chroma_sub_sample")
+	})
+	return avPixFmtGetChromaSubSample(pix_fmt, h_shift, v_shift)
 }
 
 /**
@@ -305,132 +316,154 @@ func AvPixFmtGetChromaSubSample(pix_fmt AVPixelFormat, h_shift, v_shift *ffcommo
  * valid pixel format.
  */
 //int av_pix_fmt_count_planes(enum AVPixelFormat pix_fmt);
-func AvPixFmtCountPlanes(pix_fmt AVPixelFormat) (res ffcommon.FInt) {
-	t, _, _ := ffcommon.GetAvutilDll().NewProc("av_pix_fmt_count_planes").Call(
-		uintptr(pix_fmt),
-	)
-	res = ffcommon.FInt(t)
-	return
+var avPixFmtCountPlanes func(pix_fmt AVPixelFormat) ffcommon.FInt
+var avPixFmtCountPlanesOnce sync.Once
+
+func AvPixFmtCountPlanes(pix_fmt AVPixelFormat) ffcommon.FInt {
+	avPixFmtCountPlanesOnce.Do(func() {
+		purego.RegisterLibFunc(&avPixFmtCountPlanes, ffcommon.GetAvutilDll(), "av_pix_fmt_count_planes")
+	})
+	return avPixFmtCountPlanes(pix_fmt)
 }
 
 /**
  * @return the name for provided color range or NULL if unknown.
  */
 //const char *av_color_range_name(enum AVColorRange range);
-func AvColorRangeName(range0 AVColorRange) (res ffcommon.FConstCharP) {
-	t, _, _ := ffcommon.GetAvutilDll().NewProc("av_color_range_name").Call(
-		uintptr(range0),
-	)
-	res = ffcommon.StringFromPtr(t)
-	return
+var avColorRangeName func(range0 AVColorRange) ffcommon.FConstCharP
+var avColorRangeNameOnce sync.Once
+
+func AvColorRangeName(range0 AVColorRange) ffcommon.FConstCharP {
+	avColorRangeNameOnce.Do(func() {
+		purego.RegisterLibFunc(&avColorRangeName, ffcommon.GetAvutilDll(), "av_color_range_name")
+	})
+	return avColorRangeName(range0)
 }
 
 /**
  * @return the AVColorRange value for name or an AVError if not found.
  */
 //int av_color_range_from_name(const char *name);
-func AvColorRangeFromName(name ffcommon.FConstCharP) (res ffcommon.FInt) {
-	t, _, _ := ffcommon.GetAvutilDll().NewProc("av_color_range_from_name").Call(
-		ffcommon.UintPtrFromString(name),
-	)
-	res = ffcommon.FInt(t)
-	return
+var avColorRangeFromName func(name ffcommon.FConstCharP) ffcommon.FInt
+var avColorRangeFromNameOnce sync.Once
+
+func AvColorRangeFromName(name ffcommon.FConstCharP) ffcommon.FInt {
+	avColorRangeFromNameOnce.Do(func() {
+		purego.RegisterLibFunc(&avColorRangeFromName, ffcommon.GetAvutilDll(), "av_color_range_from_name")
+	})
+	return avColorRangeFromName(name)
 }
 
 /**
  * @return the name for provided color primaries or NULL if unknown.
  */
 //const char *av_color_primaries_name(enum AVColorPrimaries primaries);
-func AvColorPrimariesName(primaries AVColorPrimaries) (res ffcommon.FConstCharP) {
-	t, _, _ := ffcommon.GetAvutilDll().NewProc("av_color_primaries_name").Call(
-		uintptr(primaries),
-	)
-	res = ffcommon.StringFromPtr(t)
-	return
+var avColorPrimariesName func(primaries AVColorPrimaries) ffcommon.FConstCharP
+var avColorPrimariesNameOnce sync.Once
+
+func AvColorPrimariesName(primaries AVColorPrimaries) ffcommon.FConstCharP {
+	avColorPrimariesNameOnce.Do(func() {
+		purego.RegisterLibFunc(&avColorPrimariesName, ffcommon.GetAvutilDll(), "av_color_primaries_name")
+	})
+	return avColorPrimariesName(primaries)
 }
 
 /**
  * @return the AVColorPrimaries value for name or an AVError if not found.
  */
 //int av_color_primaries_from_name(const char *name);
-func AvColorPrimariesFromName(name ffcommon.FConstCharP) (res ffcommon.FInt) {
-	t, _, _ := ffcommon.GetAvutilDll().NewProc("av_color_primaries_from_name").Call(
-		ffcommon.UintPtrFromString(name),
-	)
-	res = ffcommon.FInt(t)
-	return
+var avColorPrimariesFromName func(name ffcommon.FConstCharP) ffcommon.FInt
+var avColorPrimariesFromNameOnce sync.Once
+
+func AvColorPrimariesFromName(name ffcommon.FConstCharP) ffcommon.FInt {
+	avColorPrimariesFromNameOnce.Do(func() {
+		purego.RegisterLibFunc(&avColorPrimariesFromName, ffcommon.GetAvutilDll(), "av_color_primaries_from_name")
+	})
+	return avColorPrimariesFromName(name)
 }
 
 /**
  * @return the name for provided color transfer or NULL if unknown.
  */
 //const char *av_color_transfer_name(enum AVColorTransferCharacteristic transfer);
-func AvColorTransferName(transfer AVColorTransferCharacteristic) (res ffcommon.FConstCharP) {
-	t, _, _ := ffcommon.GetAvutilDll().NewProc("av_color_transfer_name").Call(
-		uintptr(transfer),
-	)
-	res = ffcommon.StringFromPtr(t)
-	return
+var avColorTransferName func(transfer AVColorTransferCharacteristic) ffcommon.FConstCharP
+var avColorTransferNameOnce sync.Once
+
+func AvColorTransferName(transfer AVColorTransferCharacteristic) ffcommon.FConstCharP {
+	avColorTransferNameOnce.Do(func() {
+		purego.RegisterLibFunc(&avColorTransferName, ffcommon.GetAvutilDll(), "av_color_transfer_name")
+	})
+	return avColorTransferName(transfer)
 }
 
 /**
  * @return the AVColorTransferCharacteristic value for name or an AVError if not found.
  */
 //int av_color_transfer_from_name(const char *name);
-func AvColorTransferFromName(name ffcommon.FConstCharP) (res ffcommon.FInt) {
-	t, _, _ := ffcommon.GetAvutilDll().NewProc("av_color_transfer_from_name").Call(
-		ffcommon.UintPtrFromString(name),
-	)
-	res = ffcommon.FInt(t)
-	return
+var avColorTransferFromName func(name ffcommon.FConstCharP) ffcommon.FInt
+var avColorTransferFromNameOnce sync.Once
+
+func AvColorTransferFromName(name ffcommon.FConstCharP) ffcommon.FInt {
+	avColorTransferFromNameOnce.Do(func() {
+		purego.RegisterLibFunc(&avColorTransferFromName, ffcommon.GetAvutilDll(), "av_color_transfer_from_name")
+	})
+	return avColorTransferFromName(name)
 }
 
 /**
  * @return the name for provided color space or NULL if unknown.
  */
 //const char *av_color_space_name(enum AVColorSpace space);
-func AvColorSpaceName(space AVColorSpace) (res ffcommon.FConstCharP) {
-	t, _, _ := ffcommon.GetAvutilDll().NewProc("av_color_space_name").Call(
-		uintptr(space),
-	)
-	res = ffcommon.StringFromPtr(t)
-	return
+var avColorSpaceName func(space AVColorSpace) ffcommon.FConstCharP
+var avColorSpaceNameOnce sync.Once
+
+func AvColorSpaceName(space AVColorSpace) ffcommon.FConstCharP {
+	avColorSpaceNameOnce.Do(func() {
+		purego.RegisterLibFunc(&avColorSpaceName, ffcommon.GetAvutilDll(), "av_color_space_name")
+	})
+	return avColorSpaceName(space)
 }
 
 /**
  * @return the AVColorSpace value for name or an AVError if not found.
  */
 //int av_color_space_from_name(const char *name);
-func AvColorSpaceFromName(name ffcommon.FConstCharP) (res ffcommon.FInt) {
-	t, _, _ := ffcommon.GetAvutilDll().NewProc("av_color_space_from_name").Call(
-		ffcommon.UintPtrFromString(name),
-	)
-	res = ffcommon.FInt(t)
-	return
+var avColorSpaceFromName func(name ffcommon.FConstCharP) ffcommon.FInt
+var avColorSpaceFromNameOnce sync.Once
+
+func AvColorSpaceFromName(name ffcommon.FConstCharP) ffcommon.FInt {
+	avColorSpaceFromNameOnce.Do(func() {
+		purego.RegisterLibFunc(&avColorSpaceFromName, ffcommon.GetAvutilDll(), "av_color_space_from_name")
+	})
+	return avColorSpaceFromName(name)
 }
 
 /**
  * @return the name for provided chroma location or NULL if unknown.
  */
 //const char *av_chroma_location_name(enum AVChromaLocation location);
-func AvChromaLocationName(location AVChromaLocation) (res ffcommon.FConstCharP) {
-	t, _, _ := ffcommon.GetAvutilDll().NewProc("av_chroma_location_name").Call(
-		uintptr(location),
-	)
-	res = ffcommon.StringFromPtr(t)
-	return
+var avChromaLocationName func(location AVChromaLocation) ffcommon.FConstCharP
+var avChromaLocationNameOnce sync.Once
+
+func AvChromaLocationName(location AVChromaLocation) ffcommon.FConstCharP {
+	avChromaLocationNameOnce.Do(func() {
+		purego.RegisterLibFunc(&avChromaLocationName, ffcommon.GetAvutilDll(), "av_chroma_location_name")
+	})
+	return avChromaLocationName(location)
 }
 
 /**
  * @return the AVChromaLocation value for name or an AVError if not found.
  */
 //int av_chroma_location_from_name(const char *name);
-func AvChromaLocationFromName(name ffcommon.FConstCharP) (res ffcommon.FInt) {
-	t, _, _ := ffcommon.GetAvutilDll().NewProc("av_chroma_location_from_name").Call(
-		ffcommon.UintPtrFromString(name),
-	)
-	res = ffcommon.FInt(t)
-	return
+var avChromaLocationFromName func(name ffcommon.FConstCharP) ffcommon.FInt
+var avChromaLocationFromNameOnce sync.Once
+
+func AvChromaLocationFromName(name ffcommon.FConstCharP) ffcommon.FInt {
+	avChromaLocationFromNameOnce.Do(func() {
+		purego.RegisterLibFunc(&avChromaLocationFromName, ffcommon.GetAvutilDll(), "av_chroma_location_from_name")
+	})
+	return avChromaLocationFromName(name)
 }
 
 /**
@@ -445,12 +478,14 @@ func AvChromaLocationFromName(name ffcommon.FConstCharP) (res ffcommon.FInt) {
  * Finally if no pixel format has been found, returns AV_PIX_FMT_NONE.
  */
 //enum AVPixelFormat av_get_pix_fmt(const char *name);
-func AvGetPixFmt(name ffcommon.FConstCharP) (res AVPixelFormat) {
-	t, _, _ := ffcommon.GetAvutilDll().NewProc("av_get_pix_fmt").Call(
-		ffcommon.UintPtrFromString(name),
-	)
-	res = AVPixelFormat(t)
-	return
+var avGetPixFmt func(name ffcommon.FConstCharP) AVPixelFormat
+var avGetPixFmtOnce sync.Once
+
+func AvGetPixFmt(name ffcommon.FConstCharP) AVPixelFormat {
+	avGetPixFmtOnce.Do(func() {
+		purego.RegisterLibFunc(&avGetPixFmt, ffcommon.GetAvutilDll(), "av_get_pix_fmt")
+	})
+	return avGetPixFmt(name)
 }
 
 /**
@@ -460,12 +495,14 @@ func AvGetPixFmt(name ffcommon.FConstCharP) (res AVPixelFormat) {
  * @see av_get_pix_fmt(), av_get_pix_fmt_string()
  */
 //const char *av_get_pix_fmt_name(enum AVPixelFormat pix_fmt);
-func AvGetPixFmtName(pix_fmt AVPixelFormat) (res ffcommon.FConstCharP) {
-	t, _, _ := ffcommon.GetAvutilDll().NewProc("av_get_pix_fmt_name").Call(
-		uintptr(pix_fmt),
-	)
-	res = ffcommon.StringFromPtr(t)
-	return
+var avGetPixFmtName func(pix_fmt AVPixelFormat) ffcommon.FConstCharP
+var avGetPixFmtNameOnce sync.Once
+
+func AvGetPixFmtName(pix_fmt AVPixelFormat) ffcommon.FConstCharP {
+	avGetPixFmtNameOnce.Do(func() {
+		purego.RegisterLibFunc(&avGetPixFmtName, ffcommon.GetAvutilDll(), "av_get_pix_fmt_name")
+	})
+	return avGetPixFmtName(pix_fmt)
 }
 
 /**
@@ -480,15 +517,14 @@ func AvGetPixFmtName(pix_fmt AVPixelFormat) (res ffcommon.FConstCharP) {
  */
 //char *av_get_pix_fmt_string(char *buf, int buf_size,
 //enum AVPixelFormat pix_fmt);
-func AvGetPixFmtString(buf ffcommon.FCharP, buf_size ffcommon.FInt,
-	pix_fmt AVPixelFormat) (res ffcommon.FConstCharP) {
-	t, _, _ := ffcommon.GetAvutilDll().NewProc("av_get_pix_fmt_string").Call(
-		ffcommon.UintPtrFromString(buf),
-		uintptr(buf_size),
-		uintptr(pix_fmt),
-	)
-	res = ffcommon.StringFromPtr(t)
-	return
+var avGetPixFmtString func(buf ffcommon.FCharP, buf_size ffcommon.FInt, pix_fmt AVPixelFormat) ffcommon.FConstCharP
+var avGetPixFmtStringOnce sync.Once
+
+func AvGetPixFmtString(buf ffcommon.FCharP, buf_size ffcommon.FInt, pix_fmt AVPixelFormat) ffcommon.FConstCharP {
+	avGetPixFmtStringOnce.Do(func() {
+		purego.RegisterLibFunc(&avGetPixFmtString, ffcommon.GetAvutilDll(), "av_get_pix_fmt_string")
+	})
+	return avGetPixFmtString(buf, buf_size, pix_fmt)
 }
 
 /**
@@ -512,41 +548,49 @@ func AvGetPixFmtString(buf ffcommon.FCharP, buf_size ffcommon.FInt,
 //const int linesize[4], const AVPixFmtDescriptor *desc,
 //int x, int y, int c, int w, int read_pal_component,
 //int dst_element_size);
+var avReadImageLine2 func(dst ffcommon.FVoidP, data [4]*ffcommon.FUint8T,
+	linesize [4]ffcommon.FInt, desc *AVPixFmtDescriptor,
+	x, y, c, w, read_pal_component, dst_element_size ffcommon.FInt)
+
+var avReadImageLine2Once sync.Once
+
 func AvReadImageLine2(dst ffcommon.FVoidP, data [4]*ffcommon.FUint8T,
 	linesize [4]ffcommon.FInt, desc *AVPixFmtDescriptor,
-	x, y, c, w, read_pal_component,
-	dst_element_size ffcommon.FInt) {
-	ffcommon.GetAvutilDll().NewProc("av_read_image_line2").Call(
-		dst,
-		uintptr(unsafe.Pointer(&data)),
-		uintptr(unsafe.Pointer(&linesize)),
-		uintptr(unsafe.Pointer(desc)),
-		uintptr(x),
-		uintptr(y),
-		uintptr(c),
-		uintptr(w),
-		uintptr(read_pal_component),
-		uintptr(dst_element_size),
-	)
+	x, y, c, w, read_pal_component, dst_element_size ffcommon.FInt) {
+	avReadImageLine2Once.Do(func() {
+		purego.RegisterLibFunc(
+			&avReadImageLine2,
+			ffcommon.GetAvutilDll(),
+			"av_read_image_line2",
+		)
+	})
+	if avReadImageLine2 != nil {
+		avReadImageLine2(dst, data, linesize, desc, x, y, c, w, read_pal_component, dst_element_size)
+	}
 }
 
 // void av_read_image_line(uint16_t *dst, const uint8_t *data[4],
 // const int linesize[4], const AVPixFmtDescriptor *desc,
 // int x, int y, int c, int w, int read_pal_component);
+var avReadImageLine func(dst *ffcommon.FUint16T, data [4]*ffcommon.FUint8T,
+	linesize [4]*ffcommon.FInt, desc *AVPixFmtDescriptor,
+	x, y, c, w, read_pal_component ffcommon.FInt)
+
+var avReadImageLineOnce sync.Once
+
 func AvReadImageLine(dst *ffcommon.FUint16T, data [4]*ffcommon.FUint8T,
 	linesize [4]*ffcommon.FInt, desc *AVPixFmtDescriptor,
 	x, y, c, w, read_pal_component ffcommon.FInt) {
-	ffcommon.GetAvutilDll().NewProc("av_read_image_line").Call(
-		uintptr(unsafe.Pointer(dst)),
-		uintptr(unsafe.Pointer(&data)),
-		uintptr(unsafe.Pointer(&linesize)),
-		uintptr(unsafe.Pointer(desc)),
-		uintptr(x),
-		uintptr(y),
-		uintptr(c),
-		uintptr(w),
-		uintptr(read_pal_component),
-	)
+	avReadImageLineOnce.Do(func() {
+		purego.RegisterLibFunc(
+			&avReadImageLine,
+			ffcommon.GetAvutilDll(),
+			"av_read_image_line",
+		)
+	})
+	if avReadImageLine != nil {
+		avReadImageLine(dst, data, linesize, desc, x, y, c, w, read_pal_component)
+	}
 }
 
 /**
@@ -567,38 +611,49 @@ func AvReadImageLine(dst *ffcommon.FUint16T, data [4]*ffcommon.FUint8T,
 //void av_write_image_line2(const void *src, uint8_t *data[4],
 //const int linesize[4], const AVPixFmtDescriptor *desc,
 //int x, int y, int c, int w, int src_element_size);
+var avWriteImageLine2 func(src ffcommon.FConstVoidP, data [4]*ffcommon.FUint8T,
+	linesize [4]ffcommon.FInt, desc *AVPixFmtDescriptor,
+	x, y, c, w, src_element_size ffcommon.FInt)
+
+var avWriteImageLine2Once sync.Once
+
 func AvWriteImageLine2(src ffcommon.FConstVoidP, data [4]*ffcommon.FUint8T,
 	linesize [4]ffcommon.FInt, desc *AVPixFmtDescriptor,
 	x, y, c, w, src_element_size ffcommon.FInt) {
-	ffcommon.GetAvutilDll().NewProc("av_write_image_line2").Call(
-		uintptr(unsafe.Pointer(src)),
-		uintptr(unsafe.Pointer(&data)),
-		uintptr(unsafe.Pointer(&linesize)),
-		uintptr(unsafe.Pointer(desc)),
-		uintptr(x),
-		uintptr(y),
-		uintptr(c),
-		uintptr(w),
-		uintptr(src_element_size),
-	)
+	avWriteImageLine2Once.Do(func() {
+		purego.RegisterLibFunc(
+			&avWriteImageLine2,
+			ffcommon.GetAvutilDll(),
+			"av_write_image_line2",
+		)
+	})
+	if avWriteImageLine2 != nil {
+		avWriteImageLine2(src, data, linesize, desc, x, y, c, w, src_element_size)
+	}
 }
 
 // void av_write_image_line(const uint16_t *src, uint8_t *data[4],
 // const int linesize[4], const AVPixFmtDescriptor *desc,
 // int x, int y, int c, int w);
+var avWriteImageLine func(src *ffcommon.FUint16T, data [4]*ffcommon.FUint8T,
+	linesize [4]ffcommon.FInt, desc *AVPixFmtDescriptor,
+	x, y, c, w ffcommon.FInt)
+
+var avWriteImageLineOnce sync.Once
+
 func AvWriteImageLine(src *ffcommon.FUint16T, data [4]*ffcommon.FUint8T,
 	linesize [4]ffcommon.FInt, desc *AVPixFmtDescriptor,
 	x, y, c, w ffcommon.FInt) {
-	ffcommon.GetAvutilDll().NewProc("av_write_image_line").Call(
-		uintptr(unsafe.Pointer(src)),
-		uintptr(unsafe.Pointer(&data)),
-		uintptr(unsafe.Pointer(&linesize)),
-		uintptr(unsafe.Pointer(desc)),
-		uintptr(x),
-		uintptr(y),
-		uintptr(c),
-		uintptr(w),
-	)
+	avWriteImageLineOnce.Do(func() {
+		purego.RegisterLibFunc(
+			&avWriteImageLine,
+			ffcommon.GetAvutilDll(),
+			"av_write_image_line",
+		)
+	})
+	if avWriteImageLine != nil {
+		avWriteImageLine(src, data, linesize, desc, x, y, c, w)
+	}
 }
 
 /**
@@ -610,12 +665,21 @@ func AvWriteImageLine(src *ffcommon.FUint16T, data [4]*ffcommon.FUint8T,
  * otherwise AV_PIX_FMT_NONE
  */
 //enum AVPixelFormat av_pix_fmt_swap_endianness(enum AVPixelFormat pix_fmt);
-func AvPixFmtSwapEndianness(pix_fmt AVPixelFormat) (res AVPixelFormat) {
-	t, _, _ := ffcommon.GetAvutilDll().NewProc("av_pix_fmt_swap_endianness").Call(
-		uintptr(pix_fmt),
-	)
-	res = AVPixelFormat(t)
-	return
+var avPixFmtSwapEndianness func(pix_fmt AVPixelFormat) AVPixelFormat
+var avPixFmtSwapEndiannessOnce sync.Once
+
+func AvPixFmtSwapEndianness(pix_fmt AVPixelFormat) AVPixelFormat {
+	avPixFmtSwapEndiannessOnce.Do(func() {
+		purego.RegisterLibFunc(
+			&avPixFmtSwapEndianness,
+			ffcommon.GetAvutilDll(),
+			"av_pix_fmt_swap_endianness",
+		)
+	})
+	if avPixFmtSwapEndianness != nil {
+		return avPixFmtSwapEndianness(pix_fmt)
+	}
+	return pix_fmt
 }
 
 const FF_LOSS_RESOLUTION = 0x0001 /**< loss due to resolution change */
@@ -646,16 +710,21 @@ const FF_LOSS_CHROMA = 0x0020     /**< loss of chroma (e.g. RGB to gray conversi
 //int av_get_pix_fmt_loss(enum AVPixelFormat dst_pix_fmt,
 //enum AVPixelFormat src_pix_fmt,
 //int has_alpha);
-func AvGetPixFmtLoss(dst_pix_fmt,
-	src_pix_fmt AVPixelFormat,
-	has_alpha ffcommon.FInt) (res ffcommon.FInt) {
-	t, _, _ := ffcommon.GetAvutilDll().NewProc("av_get_pix_fmt_loss").Call(
-		uintptr(dst_pix_fmt),
-		uintptr(src_pix_fmt),
-		uintptr(has_alpha),
-	)
-	res = ffcommon.FInt(t)
-	return
+var avGetPixFmtLoss func(dst_pix_fmt, src_pix_fmt AVPixelFormat, has_alpha ffcommon.FInt) ffcommon.FInt
+var avGetPixFmtLossOnce sync.Once
+
+func AvGetPixFmtLoss(dst_pix_fmt, src_pix_fmt AVPixelFormat, has_alpha ffcommon.FInt) ffcommon.FInt {
+	avGetPixFmtLossOnce.Do(func() {
+		purego.RegisterLibFunc(
+			&avGetPixFmtLoss,
+			ffcommon.GetAvutilDll(),
+			"av_get_pix_fmt_loss",
+		)
+	})
+	if avGetPixFmtLoss != nil {
+		return avGetPixFmtLoss(dst_pix_fmt, src_pix_fmt, has_alpha)
+	}
+	return ffcommon.FInt(0)
 }
 
 /**
@@ -678,17 +747,21 @@ func AvGetPixFmtLoss(dst_pix_fmt,
  */
 //enum AVPixelFormat av_find_best_pix_fmt_of_2(enum AVPixelFormat dst_pix_fmt1, enum AVPixelFormat dst_pix_fmt2,
 //enum AVPixelFormat src_pix_fmt, int has_alpha, int *loss_ptr);
-func AvFindBestPixFmtOf2(dst_pix_fmt1, dst_pix_fmt2,
-	src_pix_fmt AVPixelFormat, has_alpha ffcommon.FInt, loss_ptr *ffcommon.FInt) (res AVPixelFormat) {
-	t, _, _ := ffcommon.GetAvutilDll().NewProc("av_find_best_pix_fmt_of_2").Call(
-		uintptr(dst_pix_fmt1),
-		uintptr(dst_pix_fmt2),
-		uintptr(src_pix_fmt),
-		uintptr(has_alpha),
-		uintptr(unsafe.Pointer(loss_ptr)),
-	)
-	res = AVPixelFormat(t)
-	return
+var avFindBestPixFmtOf2 func(dst_pix_fmt1, dst_pix_fmt2, src_pix_fmt AVPixelFormat, has_alpha ffcommon.FInt, loss_ptr *ffcommon.FInt) AVPixelFormat
+var avFindBestPixFmtOf2Once sync.Once
+
+func AvFindBestPixFmtOf2(dst_pix_fmt1, dst_pix_fmt2, src_pix_fmt AVPixelFormat, has_alpha ffcommon.FInt, loss_ptr *ffcommon.FInt) AVPixelFormat {
+	avFindBestPixFmtOf2Once.Do(func() {
+		purego.RegisterLibFunc(
+			&avFindBestPixFmtOf2,
+			ffcommon.GetAvutilDll(),
+			"av_find_best_pix_fmt_of_2",
+		)
+	})
+	if avFindBestPixFmtOf2 != nil {
+		return avFindBestPixFmtOf2(dst_pix_fmt1, dst_pix_fmt2, src_pix_fmt, has_alpha, loss_ptr)
+	}
+	return AVPixelFormat(0)
 }
 
 //#endif /* AVUTIL_PIXDESC_H */
