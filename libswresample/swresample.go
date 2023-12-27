@@ -1,10 +1,11 @@
 package libswresample
 
 import (
-	"unsafe"
+	"sync"
 
 	"github.com/dwdcth/ffmpeg-go/ffcommon"
 	"github.com/dwdcth/ffmpeg-go/libavutil"
+	"github.com/ebitengine/purego"
 )
 
 /*
@@ -209,10 +210,15 @@ type AVClass = libavutil.AVClass
  * @return the AVClass of SwrContext
  */
 //const AVClass *swr_get_class(void);
-func SwrGetClass() (res *AVClass) {
-	t, _, _ := ffcommon.GetAvswresampleDll().NewProc("swr_get_class").Call()
-	res = (*AVClass)(unsafe.Pointer(t))
-	return
+var swrGetClass func() *AVClass
+var swrGetClassOnce sync.Once
+
+// SwrGetClass is a purego function to get the AVClass for SwrContext.
+func SwrGetClass() *AVClass {
+	swrGetClassOnce.Do(func() {
+		purego.RegisterLibFunc(&swrGetClass, ffcommon.GetAvswresampleDll(), "swr_get_class")
+	})
+	return swrGetClass()
 }
 
 /**
@@ -230,10 +236,15 @@ func SwrGetClass() (res *AVClass) {
  * @return NULL on error, allocated context otherwise
  */
 //struct SwrContext *swr_alloc(void);
-func SwrAlloc() (res *SwrContext) {
-	t, _, _ := ffcommon.GetAvswresampleDll().NewProc("swr_alloc").Call()
-	res = (*SwrContext)(unsafe.Pointer(t))
-	return
+var swrAlloc func() *SwrContext
+var swrAllocOnce sync.Once
+
+// SwrAlloc is a purego function to allocate a SwrContext.
+func SwrAlloc() *SwrContext {
+	swrAllocOnce.Do(func() {
+		purego.RegisterLibFunc(&swrAlloc, ffcommon.GetAvswresampleDll(), "swr_alloc")
+	})
+	return swrAlloc()
 }
 
 /**
@@ -247,12 +258,15 @@ func SwrAlloc() (res *SwrContext) {
  * @return AVERROR error code in case of failure.
  */
 //int swr_init(struct SwrContext *s);
-func (s *SwrContext) SwrInit() (res ffcommon.FInt) {
-	t, _, _ := ffcommon.GetAvswresampleDll().NewProc("swr_init").Call(
-		uintptr(unsafe.Pointer(s)),
-	)
-	res = ffcommon.FInt(t)
-	return
+var swrInit func(s *SwrContext) ffcommon.FInt
+var swrInitOnce sync.Once
+
+// SwrInit is a purego method to initialize a SwrContext.
+func (s *SwrContext) SwrInit() ffcommon.FInt {
+	swrInitOnce.Do(func() {
+		purego.RegisterLibFunc(&swrInit, ffcommon.GetAvswresampleDll(), "swr_init")
+	})
+	return swrInit(s)
 }
 
 /**
@@ -263,12 +277,15 @@ func (s *SwrContext) SwrInit() (res ffcommon.FInt) {
  * @return positive if it has been initialized, 0 if not initialized
  */
 //int swr_is_initialized(struct SwrContext *s);
-func (s *SwrContext) SwrIsInitialized() (res ffcommon.FInt) {
-	t, _, _ := ffcommon.GetAvswresampleDll().NewProc("swr_is_initialized").Call(
-		uintptr(unsafe.Pointer(s)),
-	)
-	res = ffcommon.FInt(t)
-	return
+var swrIsInitialized func(s *SwrContext) ffcommon.FInt
+var swrIsInitializedOnce sync.Once
+
+// SwrIsInitialized is a purego method to check if a SwrContext is initialized.
+func (s *SwrContext) SwrIsInitialized() ffcommon.FInt {
+	swrIsInitializedOnce.Do(func() {
+		purego.RegisterLibFunc(&swrIsInitialized, ffcommon.GetAvswresampleDll(), "swr_is_initialized")
+	})
+	return swrIsInitialized(s)
 }
 
 /**
@@ -297,22 +314,15 @@ func (s *SwrContext) SwrIsInitialized() (res ffcommon.FInt) {
 //int log_offset, void *log_ctx);
 type AVSampleFormat = libavutil.AVSampleFormat
 
-func (s *SwrContext) SwrAllocSetOpts(out_ch_layout ffcommon.FInt64T, out_sample_fmt AVSampleFormat, out_sample_rate ffcommon.FInt,
-	in_ch_layout ffcommon.FInt64T, in_sample_fmt AVSampleFormat, in_sample_rate,
-	log_offset ffcommon.FInt, log_ctx ffcommon.FVoidP) (res *SwrContext) {
-	t, _, _ := ffcommon.GetAvswresampleDll().NewProc("swr_alloc_set_opts").Call(
-		uintptr(unsafe.Pointer(s)),
-		uintptr(out_ch_layout),
-		uintptr(out_sample_fmt),
-		uintptr(out_sample_rate),
-		uintptr(in_ch_layout),
-		uintptr(in_sample_fmt),
-		uintptr(in_sample_rate),
-		uintptr(log_offset),
-		log_ctx,
-	)
-	res = (*SwrContext)(unsafe.Pointer(t))
-	return
+var swrAllocSetOpts func(s *SwrContext, outChLayout ffcommon.FInt64T, outSampleFmt AVSampleFormat, outSampleRate ffcommon.FInt, inChLayout ffcommon.FInt64T, inSampleFmt AVSampleFormat, inSampleRate, logOffset ffcommon.FInt, logCtx ffcommon.FVoidP) *SwrContext
+var swrAllocSetOptsOnce sync.Once
+
+// SwrAllocSetOpts is a purego method to allocate a SwrContext with options.
+func (s *SwrContext) SwrAllocSetOpts(outChLayout ffcommon.FInt64T, outSampleFmt AVSampleFormat, outSampleRate ffcommon.FInt, inChLayout ffcommon.FInt64T, inSampleFmt AVSampleFormat, inSampleRate, logOffset ffcommon.FInt, logCtx ffcommon.FVoidP) *SwrContext {
+	swrAllocSetOptsOnce.Do(func() {
+		purego.RegisterLibFunc(&swrAllocSetOpts, ffcommon.GetAvswresampleDll(), "swr_alloc_set_opts")
+	})
+	return swrAllocSetOpts(s, outChLayout, outSampleFmt, outSampleRate, inChLayout, inSampleFmt, inSampleRate, logOffset, logCtx)
 }
 
 /**
@@ -328,10 +338,15 @@ func (s *SwrContext) SwrAllocSetOpts(out_ch_layout ffcommon.FInt64T, out_sample_
  * @param[in] s a pointer to a pointer to Swr context
  */
 //void swr_free(struct SwrContext **s);
+var swrFree func(s **SwrContext)
+var swrFreeOnce sync.Once
+
+// SwrFree is a purego function to free a SwrContext.
 func SwrFree(s **SwrContext) {
-	ffcommon.GetAvswresampleDll().NewProc("swr_free").Call(
-		uintptr(unsafe.Pointer(s)),
-	)
+	swrFreeOnce.Do(func() {
+		purego.RegisterLibFunc(&swrFree, ffcommon.GetAvswresampleDll(), "swr_free")
+	})
+	swrFree(s)
 }
 
 /**
@@ -345,10 +360,15 @@ func SwrFree(s **SwrContext) {
  * @param[in,out] s Swr context to be closed
  */
 //void swr_close(struct SwrContext *s);
+var swrClose func(s *SwrContext)
+var swrCloseOnce sync.Once
+
+// SwrClose is a purego method to close a SwrContext.
 func (s *SwrContext) SwrClose() {
-	ffcommon.GetAvswresampleDll().NewProc("swr_close").Call(
-		uintptr(unsafe.Pointer(s)),
-	)
+	swrCloseOnce.Do(func() {
+		purego.RegisterLibFunc(&swrClose, ffcommon.GetAvswresampleDll(), "swr_close")
+	})
+	swrClose(s)
 }
 
 /**
@@ -378,17 +398,15 @@ func (s *SwrContext) SwrClose() {
  */
 //int swr_convert(struct SwrContext *s, uint8_t **out, int out_count,
 //const uint8_t **in , int in_count);
-func (s *SwrContext) SwrConvert(out **ffcommon.FUint8T, out_count ffcommon.FInt,
-	in **ffcommon.FUint8T, in_count ffcommon.FInt) (res ffcommon.FInt) {
-	t, _, _ := ffcommon.GetAvswresampleDll().NewProc("swr_convert").Call(
-		uintptr(unsafe.Pointer(s)),
-		uintptr(unsafe.Pointer(out)),
-		uintptr(out_count),
-		uintptr(unsafe.Pointer(in)),
-		uintptr(in_count),
-	)
-	res = ffcommon.FInt(t)
-	return
+var swrConvert func(s *SwrContext, out **ffcommon.FUint8T, outCount ffcommon.FInt, in **ffcommon.FUint8T, inCount ffcommon.FInt) ffcommon.FInt
+var swrConvertOnce sync.Once
+
+// SwrConvert is a purego method to convert audio samples using SwrContext.
+func (s *SwrContext) SwrConvert(out **ffcommon.FUint8T, outCount ffcommon.FInt, in **ffcommon.FUint8T, inCount ffcommon.FInt) ffcommon.FInt {
+	swrConvertOnce.Do(func() {
+		purego.RegisterLibFunc(&swrConvert, ffcommon.GetAvswresampleDll(), "swr_convert")
+	})
+	return swrConvert(s, out, outCount, in, inCount)
 }
 
 /**
@@ -409,13 +427,15 @@ func (s *SwrContext) SwrConvert(out **ffcommon.FUint8T, out_count ffcommon.FInt,
  * @return the output timestamp for the next output sample
  */
 //int64_t swr_next_pts(struct SwrContext *s, int64_t pts);
-func (s *SwrContext) SwrNextPts(pts ffcommon.FInt64T) (res ffcommon.FInt64T) {
-	t, _, _ := ffcommon.GetAvswresampleDll().NewProc("swr_next_pts").Call(
-		uintptr(unsafe.Pointer(s)),
-		uintptr(pts),
-	)
-	res = ffcommon.FInt64T(t)
-	return
+var swrNextPts func(s *SwrContext, pts ffcommon.FInt64T) ffcommon.FInt64T
+var swrNextPtsOnce sync.Once
+
+// SwrNextPts is a purego method to get the next PTS (presentation timestamp) from SwrContext.
+func (s *SwrContext) SwrNextPts(pts ffcommon.FInt64T) ffcommon.FInt64T {
+	swrNextPtsOnce.Do(func() {
+		purego.RegisterLibFunc(&swrNextPts, ffcommon.GetAvswresampleDll(), "swr_next_pts")
+	})
+	return swrNextPts(s, pts)
 }
 
 /**
@@ -444,14 +464,15 @@ func (s *SwrContext) SwrNextPts(pts ffcommon.FInt64T) (res ffcommon.FInt64T) {
  *            @li swr_init() fails when called.
  */
 //int swr_set_compensation(struct SwrContext *s, int sample_delta, int compensation_distance);
-func (s *SwrContext) SwrSetCompensation(sample_delta, compensation_distance ffcommon.FInt) (res ffcommon.FInt) {
-	t, _, _ := ffcommon.GetAvswresampleDll().NewProc("swr_set_compensation").Call(
-		uintptr(unsafe.Pointer(s)),
-		uintptr(sample_delta),
-		uintptr(compensation_distance),
-	)
-	res = ffcommon.FInt(t)
-	return
+var swrSetCompensation func(s *SwrContext, sampleDelta, compensationDistance ffcommon.FInt) ffcommon.FInt
+var swrSetCompensationOnce sync.Once
+
+// SwrSetCompensation is a purego method to set compensation parameters for SwrContext.
+func (s *SwrContext) SwrSetCompensation(sampleDelta, compensationDistance ffcommon.FInt) ffcommon.FInt {
+	swrSetCompensationOnce.Do(func() {
+		purego.RegisterLibFunc(&swrSetCompensation, ffcommon.GetAvswresampleDll(), "swr_set_compensation")
+	})
+	return swrSetCompensation(s, sampleDelta, compensationDistance)
 }
 
 /**
@@ -463,13 +484,15 @@ func (s *SwrContext) SwrSetCompensation(sample_delta, compensation_distance ffco
  * @return >= 0 on success, or AVERROR error code in case of failure.
  */
 //int swr_set_channel_mapping(struct SwrContext *s, const int *channel_map);
-func (s *SwrContext) SwrSetChannelMapping(channel_map *ffcommon.FInt) (res ffcommon.FInt) {
-	t, _, _ := ffcommon.GetAvswresampleDll().NewProc("swr_set_channel_mapping").Call(
-		uintptr(unsafe.Pointer(s)),
-		uintptr(unsafe.Pointer(channel_map)),
-	)
-	res = ffcommon.FInt(t)
-	return
+var swrSetChannelMapping func(s *SwrContext, channelMap *ffcommon.FInt) ffcommon.FInt
+var swrSetChannelMappingOnce sync.Once
+
+// SwrSetChannelMapping is a purego method to set channel mapping for SwrContext.
+func (s *SwrContext) SwrSetChannelMapping(channelMap *ffcommon.FInt) ffcommon.FInt {
+	swrSetChannelMappingOnce.Do(func() {
+		purego.RegisterLibFunc(&swrSetChannelMapping, ffcommon.GetAvswresampleDll(), "swr_set_channel_mapping")
+	})
+	return swrSetChannelMapping(s, channelMap)
 }
 
 /**
@@ -503,27 +526,15 @@ func (s *SwrContext) SwrSetChannelMapping(channel_map *ffcommon.FInt) (res ffcom
 //void *log_ctx);
 type AVMatrixEncoding = libavutil.AVMatrixEncoding
 
-func SwrBuildMatrix(in_layout, out_layout ffcommon.FUint64T,
-	center_mix_level, surround_mix_level,
-	lfe_mix_level, rematrix_maxval,
-	rematrix_volume ffcommon.FDouble, matrix *ffcommon.FDouble,
-	stride ffcommon.FInt, matrix_encoding AVMatrixEncoding,
-	log_ctx ffcommon.FVoidP) (res ffcommon.FInt) {
-	t, _, _ := ffcommon.GetAvswresampleDll().NewProc("swr_build_matrix").Call(
-		uintptr(in_layout),
-		uintptr(out_layout),
-		uintptr(unsafe.Pointer(&center_mix_level)),
-		uintptr(unsafe.Pointer(&surround_mix_level)),
-		uintptr(unsafe.Pointer(&lfe_mix_level)),
-		uintptr(unsafe.Pointer(&rematrix_maxval)),
-		uintptr(unsafe.Pointer(&rematrix_volume)),
-		uintptr(unsafe.Pointer(matrix)),
-		uintptr(stride),
-		uintptr(matrix_encoding),
-		log_ctx,
-	)
-	res = ffcommon.FInt(t)
-	return
+var swrBuildMatrix func(inLayout, outLayout ffcommon.FUint64T, centerMixLevel, surroundMixLevel, lfeMixLevel, rematrixMaxval, rematrixVolume *ffcommon.FDouble, matrix *ffcommon.FDouble, stride ffcommon.FInt, matrixEncoding AVMatrixEncoding, logCtx ffcommon.FVoidP) ffcommon.FInt
+var swrBuildMatrixOnce sync.Once
+
+// SwrBuildMatrix is a purego function to build a rematrixing matrix.
+func SwrBuildMatrix(inLayout, outLayout ffcommon.FUint64T, centerMixLevel, surroundMixLevel, lfeMixLevel, rematrixMaxval, rematrixVolume *ffcommon.FDouble, matrix *ffcommon.FDouble, stride ffcommon.FInt, matrixEncoding AVMatrixEncoding, logCtx ffcommon.FVoidP) ffcommon.FInt {
+	swrBuildMatrixOnce.Do(func() {
+		purego.RegisterLibFunc(&swrBuildMatrix, ffcommon.GetAvswresampleDll(), "swr_build_matrix")
+	})
+	return swrBuildMatrix(inLayout, outLayout, centerMixLevel, surroundMixLevel, lfeMixLevel, rematrixMaxval, rematrixVolume, matrix, stride, matrixEncoding, logCtx)
 }
 
 /**
@@ -536,14 +547,15 @@ func SwrBuildMatrix(in_layout, out_layout ffcommon.FUint64T,
  * @return  >= 0 on success, or AVERROR error code in case of failure.
  */
 //int swr_set_matrix(struct SwrContext *s, const double *matrix, int stride);
-func (s *SwrContext) SwrSetMatrix(matrix *ffcommon.FDouble, stride ffcommon.FInt) (res ffcommon.FInt) {
-	t, _, _ := ffcommon.GetAvswresampleDll().NewProc("swr_set_matrix").Call(
-		uintptr(unsafe.Pointer(s)),
-		uintptr(unsafe.Pointer(matrix)),
-		uintptr(stride),
-	)
-	res = ffcommon.FInt(t)
-	return
+var swrSetMatrix func(s *SwrContext, matrix *ffcommon.FDouble, stride ffcommon.FInt) ffcommon.FInt
+var swrSetMatrixOnce sync.Once
+
+// SwrSetMatrix is a purego method to set a rematrixing matrix for SwrContext.
+func (s *SwrContext) SwrSetMatrix(matrix *ffcommon.FDouble, stride ffcommon.FInt) ffcommon.FInt {
+	swrSetMatrixOnce.Do(func() {
+		purego.RegisterLibFunc(&swrSetMatrix, ffcommon.GetAvswresampleDll(), "swr_set_matrix")
+	})
+	return swrSetMatrix(s, matrix, stride)
 }
 
 /**
@@ -565,13 +577,15 @@ func (s *SwrContext) SwrSetMatrix(matrix *ffcommon.FDouble, stride ffcommon.FInt
  * @return >= 0 on success, or a negative AVERROR code on failure
  */
 //int swr_drop_output(struct SwrContext *s, int count);
-func (s *SwrContext) SwrDropOutput(count ffcommon.FInt) (res ffcommon.FInt) {
-	t, _, _ := ffcommon.GetAvswresampleDll().NewProc("swr_drop_output").Call(
-		uintptr(unsafe.Pointer(s)),
-		uintptr(count),
-	)
-	res = ffcommon.FInt(t)
-	return
+var swrDropOutput func(s *SwrContext, count ffcommon.FInt) ffcommon.FInt
+var swrDropOutputOnce sync.Once
+
+// SwrDropOutput is a purego method to drop audio output samples from SwrContext.
+func (s *SwrContext) SwrDropOutput(count ffcommon.FInt) ffcommon.FInt {
+	swrDropOutputOnce.Do(func() {
+		purego.RegisterLibFunc(&swrDropOutput, ffcommon.GetAvswresampleDll(), "swr_drop_output")
+	})
+	return swrDropOutput(s, count)
 }
 
 /**
@@ -586,13 +600,15 @@ func (s *SwrContext) SwrDropOutput(count ffcommon.FInt) (res ffcommon.FInt) {
  * @return >= 0 on success, or a negative AVERROR code on failure
  */
 //int swr_inject_silence(struct SwrContext *s, int count);
-func (s *SwrContext) SwrInjectSilence(count ffcommon.FInt) (res ffcommon.FInt) {
-	t, _, _ := ffcommon.GetAvswresampleDll().NewProc("swr_inject_silence").Call(
-		uintptr(unsafe.Pointer(s)),
-		uintptr(count),
-	)
-	res = ffcommon.FInt(t)
-	return
+var swrInjectSilence func(s *SwrContext, count ffcommon.FInt) ffcommon.FInt
+var swrInjectSilenceOnce sync.Once
+
+// SwrInjectSilence is a purego method to inject silence samples into SwrContext.
+func (s *SwrContext) SwrInjectSilence(count ffcommon.FInt) ffcommon.FInt {
+	swrInjectSilenceOnce.Do(func() {
+		purego.RegisterLibFunc(&swrInjectSilence, ffcommon.GetAvswresampleDll(), "swr_inject_silence")
+	})
+	return swrInjectSilence(s, count)
 }
 
 /**
@@ -620,13 +636,15 @@ func (s *SwrContext) SwrInjectSilence(count ffcommon.FInt) (res ffcommon.FInt) {
  * @returns     the delay in 1 / @c base units.
  */
 //int64_t swr_get_delay(struct SwrContext *s, int64_t base);
-func (s *SwrContext) SwrGetDelay(base ffcommon.FInt64T) (res ffcommon.FInt64T) {
-	t, _, _ := ffcommon.GetAvswresampleDll().NewProc("swr_get_delay").Call(
-		uintptr(unsafe.Pointer(s)),
-		uintptr(base),
-	)
-	res = ffcommon.FInt64T(t)
-	return
+var swrGetDelay func(s *SwrContext, base ffcommon.FInt64T) ffcommon.FInt64T
+var swrGetDelayOnce sync.Once
+
+// SwrGetDelay is a purego method to get the delay in samples for SwrContext.
+func (s *SwrContext) SwrGetDelay(base ffcommon.FInt64T) ffcommon.FInt64T {
+	swrGetDelayOnce.Do(func() {
+		purego.RegisterLibFunc(&swrGetDelay, ffcommon.GetAvswresampleDll(), "swr_get_delay")
+	})
+	return swrGetDelay(s, base)
 }
 
 /**
@@ -646,13 +664,15 @@ func (s *SwrContext) SwrGetDelay(base ffcommon.FInt64T) (res ffcommon.FInt64T) {
  *          will output or a negative value to indicate an error
  */
 //int swr_get_out_samples(struct SwrContext *s, int in_samples);
-func (s *SwrContext) SwrGetOutSamples(in_samples ffcommon.FInt) (res ffcommon.FInt) {
-	t, _, _ := ffcommon.GetAvswresampleDll().NewProc("swr_get_out_samples").Call(
-		uintptr(unsafe.Pointer(s)),
-		uintptr(in_samples),
-	)
-	res = ffcommon.FInt(t)
-	return
+var swrGetOutSamples func(s *SwrContext, inSamples ffcommon.FInt) ffcommon.FInt
+var swrGetOutSamplesOnce sync.Once
+
+// SwrGetOutSamples is a purego method to get the number of output samples for a given input sample count in SwrContext.
+func (s *SwrContext) SwrGetOutSamples(inSamples ffcommon.FInt) ffcommon.FInt {
+	swrGetOutSamplesOnce.Do(func() {
+		purego.RegisterLibFunc(&swrGetOutSamples, ffcommon.GetAvswresampleDll(), "swr_get_out_samples")
+	})
+	return swrGetOutSamples(s, inSamples)
 }
 
 /**
@@ -671,10 +691,15 @@ func (s *SwrContext) SwrGetOutSamples(in_samples ffcommon.FInt) (res ffcommon.FI
  * @returns     the unsigned int-typed version
  */
 //unsigned swresample_version(void);
-func SwresampleVersion() (res ffcommon.FUnsigned) {
-	t, _, _ := ffcommon.GetAvswresampleDll().NewProc("swresample_version").Call()
-	res = ffcommon.FUnsigned(t)
-	return
+var swresampleVersion func() ffcommon.FUnsigned
+var swresampleVersionOnce sync.Once
+
+// SwresampleVersion is a purego function to get the swresample library version.
+func SwresampleVersion() ffcommon.FUnsigned {
+	swresampleVersionOnce.Do(func() {
+		purego.RegisterLibFunc(&swresampleVersion, ffcommon.GetAvswresampleDll(), "swresample_version")
+	})
+	return swresampleVersion()
 }
 
 /**
@@ -683,10 +708,15 @@ func SwresampleVersion() (res ffcommon.FUnsigned) {
  * @returns     the build-time @c ./configure flags
  */
 //const char *swresample_configuration(void);
-func SwresampleConfiguration() (res ffcommon.FConstCharP) {
-	t, _, _ := ffcommon.GetAvswresampleDll().NewProc("swresample_configuration").Call()
-	res = ffcommon.StringFromPtr(t)
-	return
+var swresampleConfiguration func() ffcommon.FConstCharP
+var swresampleConfigurationOnce sync.Once
+
+// SwresampleConfiguration is a purego function to get the swresample library configuration.
+func SwresampleConfiguration() ffcommon.FConstCharP {
+	swresampleConfigurationOnce.Do(func() {
+		purego.RegisterLibFunc(&swresampleConfiguration, ffcommon.GetAvswresampleDll(), "swresample_configuration")
+	})
+	return swresampleConfiguration()
 }
 
 /**
@@ -695,10 +725,15 @@ func SwresampleConfiguration() (res ffcommon.FConstCharP) {
  * @returns     the license of libswresample, determined at build-time
  */
 //const char *swresample_license(void);
-func SwresampleLicense() (res ffcommon.FConstCharP) {
-	t, _, _ := ffcommon.GetAvswresampleDll().NewProc("swresample_license").Call()
-	res = ffcommon.StringFromPtr(t)
-	return
+var swresampleLicense func() ffcommon.FConstCharP
+var swresampleLicenseOnce sync.Once
+
+// SwresampleLicense is a purego function to get the swresample library license information.
+func SwresampleLicense() ffcommon.FConstCharP {
+	swresampleLicenseOnce.Do(func() {
+		purego.RegisterLibFunc(&swresampleLicense, ffcommon.GetAvswresampleDll(), "swresample_license")
+	})
+	return swresampleLicense()
 }
 
 /**
@@ -746,14 +781,15 @@ func SwresampleLicense() (res ffcommon.FConstCharP) {
 //AVFrame *output, const AVFrame *input);
 type AVFrame = libavutil.AVFrame
 
-func (swr *SwrContext) SwrConvertFrame(output, input *AVFrame) (res ffcommon.FInt) {
-	t, _, _ := ffcommon.GetAvswresampleDll().NewProc("swr_convert_frame").Call(
-		uintptr(unsafe.Pointer(swr)),
-		uintptr(unsafe.Pointer(output)),
-		uintptr(unsafe.Pointer(input)),
-	)
-	res = ffcommon.FInt(t)
-	return
+var swrConvertFrame func(swr *SwrContext, output, input *AVFrame) ffcommon.FInt
+var swrConvertFrameOnce sync.Once
+
+// SwrConvertFrame is a purego method to convert audio samples from one frame to another using SwrContext.
+func (swr *SwrContext) SwrConvertFrame(output, input *AVFrame) ffcommon.FInt {
+	swrConvertFrameOnce.Do(func() {
+		purego.RegisterLibFunc(&swrConvertFrame, ffcommon.GetAvswresampleDll(), "swr_convert_frame")
+	})
+	return swrConvertFrame(swr, output, input)
 }
 
 /**
@@ -771,14 +807,15 @@ func (swr *SwrContext) SwrConvertFrame(output, input *AVFrame) (res ffcommon.FIn
  * @return                0 on success, AVERROR on failure.
  */
 //int swr_config_frame(SwrContext *swr, const AVFrame *out, const AVFrame *in);
-func (swr *SwrContext) SwrConfigFrame(out, in *AVFrame) (res ffcommon.FInt) {
-	t, _, _ := ffcommon.GetAvswresampleDll().NewProc("swr_config_frame").Call(
-		uintptr(unsafe.Pointer(swr)),
-		uintptr(unsafe.Pointer(out)),
-		uintptr(unsafe.Pointer(in)),
-	)
-	res = ffcommon.FInt(t)
-	return
+var swrConfigFrame func(swr *SwrContext, out, in *AVFrame) ffcommon.FInt
+var swrConfigFrameOnce sync.Once
+
+// SwrConfigFrame is a purego method to configure the SwrContext for the given input and output frames.
+func (swr *SwrContext) SwrConfigFrame(out, in *AVFrame) ffcommon.FInt {
+	swrConfigFrameOnce.Do(func() {
+		purego.RegisterLibFunc(&swrConfigFrame, ffcommon.GetAvswresampleDll(), "swr_config_frame")
+	})
+	return swrConfigFrame(swr, out, in)
 }
 
 /**
