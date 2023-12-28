@@ -1,9 +1,10 @@
 package libavutil
 
 import (
-	"unsafe"
+	"sync"
 
 	"github.com/dwdcth/ffmpeg-go/ffcommon"
+	"github.com/ebitengine/purego"
 )
 
 /*
@@ -154,15 +155,6 @@ const AV_ERROR_MAX_STRING_SIZE = 64
  * cannot be found
  */
 //int av_strerror(int errnum, char *errbuf, size_t errbuf_size);
-func AvStrerror(errnum ffcommon.FInt, errbuf ffcommon.FBuf, errbuf_size ffcommon.FSizeT) (res ffcommon.FInt) {
-	t, _, _ := ffcommon.GetAvutilDll().NewProc("av_strerror").Call(
-		uintptr(errnum),
-		uintptr(unsafe.Pointer(errbuf)),
-		uintptr(errbuf_size),
-	)
-	res = ffcommon.FInt(t)
-	return
-}
 
 /**
  * Fill the provided buffer with a string containing an error string
@@ -179,11 +171,14 @@ func AvStrerror(errnum ffcommon.FInt, errbuf ffcommon.FBuf, errbuf_size ffcommon
 //    av_strerror(errnum, errbuf, errbuf_size);
 //    return errbuf;
 //}
-func AvMakeErrorString(errbuf ffcommon.FBuf, errbuf_size ffcommon.FSizeT, errnum ffcommon.FInt) (res ffcommon.FCharP) {
-	AvStrerror(errnum, errbuf, errbuf_size)
-	res = ffcommon.StringFromPtr(uintptr(unsafe.Pointer(errbuf)))
-	return
+var avStrerror func(errnum ffcommon.FInt, errbuf ffcommon.FBuf, errbuf_size ffcommon.FSizeT) ffcommon.FInt
+var avStrerrorOnce sync.Once
 
+func AvStrerror(errnum ffcommon.FInt, errbuf ffcommon.FBuf, errbuf_size ffcommon.FSizeT) ffcommon.FInt {
+	avStrerrorOnce.Do(func() {
+		purego.RegisterLibFunc(&avStrerror, ffcommon.GetAvutilDll(), "av_strerror")
+	})
+	return avStrerror(errnum, errbuf, errbuf_size)
 }
 
 /**
@@ -192,16 +187,14 @@ func AvMakeErrorString(errbuf ffcommon.FBuf, errbuf_size ffcommon.FSizeT, errnum
  */
 //#define av_err2str(errnum) \
 //    av_make_error_string((char[AV_ERROR_MAX_STRING_SIZE]){0}, AV_ERROR_MAX_STRING_SIZE, errnum)
-func AvErr2str(errnum ffcommon.FInt) (res ffcommon.FCharP) {
+var avMakeErrorString func(errbuf ffcommon.FBuf, errbuf_size ffcommon.FSizeT, errnum ffcommon.FInt) ffcommon.FCharP
+var avMakeErrorStringOnce sync.Once
 
-	b := make([]byte, AV_ERROR_MAX_STRING_SIZE, AV_ERROR_MAX_STRING_SIZE)
-	// AvStrerror(errnum, (*byte)(unsafe.Pointer(&b[0])), AV_ERROR_MAX_STRING_SIZE)
-	// t, _, _ := ffcommon.GetAvutilDll().NewProc("av_err2str").Call()
-	// res = ffcommon.StringFromPtr(t)
-
-	AvMakeErrorString((*byte)(unsafe.Pointer(&b[0])), AV_ERROR_MAX_STRING_SIZE, errnum)
-	res = ffcommon.StringFromPtr(uintptr(unsafe.Pointer(&b[0])))
-	return
+func AvMakeErrorString(errbuf ffcommon.FBuf, errbuf_size ffcommon.FSizeT, errnum ffcommon.FInt) ffcommon.FCharP {
+	avMakeErrorStringOnce.Do(func() {
+		purego.RegisterLibFunc(&avMakeErrorString, ffcommon.GetAvutilDll(), "av_make_error_string")
+	})
+	return avMakeErrorString(errbuf, errbuf_size, errnum)
 }
 
 /**

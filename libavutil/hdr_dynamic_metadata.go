@@ -1,9 +1,10 @@
 package libavutil
 
 import (
-	"unsafe"
+	"sync"
 
 	"github.com/dwdcth/ffmpeg-go/ffcommon"
+	"github.com/ebitengine/purego"
 )
 
 /*
@@ -342,12 +343,15 @@ type AVDynamicHDRPlus struct {
  *         on failure.
  */
 //AVDynamicHDRPlus *av_dynamic_hdr_plus_alloc(size_t *size);
-func AvDynamicHdrPlusAlloc(size *ffcommon.FSizeT) (res *AVDynamicHDRPlus) {
-	t, _, _ := ffcommon.GetAvutilDll().NewProc("av_dynamic_hdr_plus_alloc").Call(
-		uintptr(unsafe.Pointer(size)),
-	)
-	res = (*AVDynamicHDRPlus)(unsafe.Pointer(t))
-	return
+
+var avDynamicHdrPlusAlloc func(size *ffcommon.FSizeT) *AVDynamicHDRPlus
+var avDynamicHdrPlusAllocOnce sync.Once
+
+func AvDynamicHdrPlusAlloc(size *ffcommon.FSizeT) *AVDynamicHDRPlus {
+	avDynamicHdrPlusAllocOnce.Do(func() {
+		purego.RegisterLibFunc(&avDynamicHdrPlusAlloc, ffcommon.GetAvutilDll(), "av_dynamic_hdr_plus_alloc")
+	})
+	return avDynamicHdrPlusAlloc(size)
 }
 
 /**
@@ -358,12 +362,14 @@ func AvDynamicHdrPlusAlloc(size *ffcommon.FSizeT) (res *AVDynamicHDRPlus) {
  *         on failure.
  */
 //AVDynamicHDRPlus *av_dynamic_hdr_plus_create_side_data(AVFrame *frame);
-func (frame *AVFrame) AvDynamicHdrPlusCreateSideData() (res *AVDynamicHDRPlus) {
-	t, _, _ := ffcommon.GetAvutilDll().NewProc("av_dynamic_hdr_plus_create_side_data").Call(
-		uintptr(unsafe.Pointer(frame)),
-	)
-	res = (*AVDynamicHDRPlus)(unsafe.Pointer(t))
-	return
+var avDynamicHdrPlusCreateSideData func(frame *AVFrame) *AVDynamicHDRPlus
+var avDynamicHdrPlusCreateSideDataOnce sync.Once
+
+func (frame *AVFrame) AvDynamicHdrPlusCreateSideData() *AVDynamicHDRPlus {
+	avDynamicHdrPlusCreateSideDataOnce.Do(func() {
+		purego.RegisterLibFunc(&avDynamicHdrPlusCreateSideData, ffcommon.GetAvutilDll(), "av_dynamic_hdr_plus_create_side_data")
+	})
+	return avDynamicHdrPlusCreateSideData(frame)
 }
 
 //#endif /* AVUTIL_HDR_DYNAMIC_METADATA_H */

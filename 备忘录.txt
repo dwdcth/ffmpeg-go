@@ -3,7 +3,8 @@
 问题记录
 char指针类型的返回
 宏，之间用go改写？
-
+^(.*):0
+mv $1 libavutil
 
 golang binding for ffmpeg
 win10 x64

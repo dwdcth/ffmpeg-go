@@ -1,9 +1,10 @@
 package libavutil
 
 import (
-	"unsafe"
+	"sync"
 
 	"github.com/dwdcth/ffmpeg-go/ffcommon"
+	"github.com/ebitengine/purego"
 )
 
 /*
@@ -168,12 +169,14 @@ type AVFilmGrainParams struct {
  *         on failure.
  */
 //AVFilmGrainParams *av_film_grain_params_alloc(size_t *size);
-func AvFilmGrainParamsAlloc(size *ffcommon.FSizeT) (res *AVFilmGrainParams) {
-	t, _, _ := ffcommon.GetAvutilDll().NewProc("av_film_grain_params_alloc").Call(
-		uintptr(unsafe.Pointer(size)),
-	)
-	res = (*AVFilmGrainParams)(unsafe.Pointer(t))
-	return
+var avFilmGrainParamsAlloc func(size *ffcommon.FSizeT) *AVFilmGrainParams
+var avFilmGrainParamsAllocOnce sync.Once
+
+func AvFilmGrainParamsAlloc(size *ffcommon.FSizeT) *AVFilmGrainParams {
+	avFilmGrainParamsAllocOnce.Do(func() {
+		purego.RegisterLibFunc(&avFilmGrainParamsAlloc, ffcommon.GetAvutilDll(), "av_film_grain_params_alloc")
+	})
+	return avFilmGrainParamsAlloc(size)
 }
 
 /**
@@ -184,12 +187,14 @@ func AvFilmGrainParamsAlloc(size *ffcommon.FSizeT) (res *AVFilmGrainParams) {
  * @return The AVFilmGrainParams structure to be filled by caller.
  */
 //AVFilmGrainParams *av_film_grain_params_create_side_data(AVFrame *frame);
-func (frame *AVFrame) AvFilmGrainParamsCreateSideData() (res *AVFilmGrainParams) {
-	t, _, _ := ffcommon.GetAvutilDll().NewProc("av_film_grain_params_create_side_data").Call(
-		uintptr(unsafe.Pointer(frame)),
-	)
-	res = (*AVFilmGrainParams)(unsafe.Pointer(t))
-	return
+var avFilmGrainParamsCreateSideData func(frame *AVFrame) *AVFilmGrainParams
+var avFilmGrainParamsCreateSideDataOnce sync.Once
+
+func (frame *AVFrame) AvFilmGrainParamsCreateSideData() *AVFilmGrainParams {
+	avFilmGrainParamsCreateSideDataOnce.Do(func() {
+		purego.RegisterLibFunc(&avFilmGrainParamsCreateSideData, ffcommon.GetAvutilDll(), "av_film_grain_params_create_side_data")
+	})
+	return avFilmGrainParamsCreateSideData(frame)
 }
 
 //#endif /* AVUTIL_FILM_GRAIN_PARAMS_H */

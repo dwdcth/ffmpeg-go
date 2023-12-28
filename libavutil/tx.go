@@ -1,9 +1,10 @@
 package libavutil
 
 import (
-	"unsafe"
+	"sync"
 
 	"github.com/dwdcth/ffmpeg-go/ffcommon"
+	"github.com/ebitengine/purego"
 )
 
 /*
@@ -139,29 +140,28 @@ const (
  */
 //int av_tx_init(AVTXContext **ctx, av_tx_fn *tx, enum AVTXType type,
 //int inv, int len, const void *scale, uint64_t flags);
-func AvTxInit(ctx **AVTXContext, tx AvTxFn, type0 AVTXType,
-	inv, len0 ffcommon.FInt, scale ffcommon.FVoidP, flags ffcommon.FUint64T) (res ffcommon.FInt) {
-	t, _, _ := ffcommon.GetAvutilDll().NewProc("av_tx_init").Call(
-		uintptr(unsafe.Pointer(ctx)),
-		ffcommon.NewCallback(tx),
-		uintptr(type0),
-		uintptr(inv),
-		uintptr(len0),
-		scale,
-		uintptr(flags),
-	)
-	res = ffcommon.FInt(t)
-	return
+var avTxInit func(ctx **AVTXContext, tx AvTxFn, type0 AVTXType, inv, len0 ffcommon.FInt, scale ffcommon.FVoidP, flags ffcommon.FUint64T) ffcommon.FInt
+var avTxInitOnce sync.Once
+
+func AvTxInit(ctx **AVTXContext, tx AvTxFn, type0 AVTXType, inv, len0 ffcommon.FInt, scale ffcommon.FVoidP, flags ffcommon.FUint64T) ffcommon.FInt {
+	avTxInitOnce.Do(func() {
+		purego.RegisterLibFunc(&avTxInit, ffcommon.GetAvutilDll(), "av_tx_init")
+	})
+	return avTxInit(ctx, tx, type0, inv, len0, scale, flags)
 }
 
 /**
  * Frees a context and sets ctx to NULL, does nothing when ctx == NULL
  */
 //void av_tx_uninit(AVTXContext **ctx);
+var avTxUninit func(ctx **AVTXContext)
+var avTxUninitOnce sync.Once
+
 func AvTxUninit(ctx **AVTXContext) {
-	ffcommon.GetAvutilDll().NewProc("av_tx_uninit").Call(
-		uintptr(unsafe.Pointer(ctx)),
-	)
+	avTxUninitOnce.Do(func() {
+		purego.RegisterLibFunc(&avTxUninit, ffcommon.GetAvutilDll(), "av_tx_uninit")
+	})
+	avTxUninit(ctx)
 }
 
 //#endif /* AVUTIL_TX_H */

@@ -2,8 +2,10 @@ package libavutil
 
 import (
 	"fmt"
+	"sync"
 
 	"github.com/dwdcth/ffmpeg-go/ffcommon"
+	"github.com/ebitengine/purego"
 )
 
 /*
@@ -55,28 +57,21 @@ const AV_TS_MAX_STRING_SIZE = 32
 //return buf;
 //}
 //todo
-// func AvTsMakeString(buf ffcommon.FBuf, ts ffcommon.FInt64T) (res ffcommon.FCharP) {
-// 	t, _, _ := ffcommon.GetAvutilDll().NewProc("av_ts_make_string").Call()
-// 	if t == 0 {
+var avTsMakeString func(buf ffcommon.FBuf, ts ffcommon.FInt64T) ffcommon.FCharP
+var avTsMakeStringOnce sync.Once
 
-// 	}
-// 	res = ffcommon.StringFromPtr(t)
-// 	return
-// }
+func AvTsMakeString(buf ffcommon.FBuf, ts ffcommon.FInt64T) ffcommon.FCharP {
+	avTsMakeStringOnce.Do(func() {
+		purego.RegisterLibFunc(&avTsMakeString, ffcommon.GetAvutilDll(), "av_ts_make_string")
+	})
+	return avTsMakeString(buf, ts)
+}
 
 /**
  * Convenience macro, the return value should be used only directly in
  * function arguments but never stand-alone.
  */
 //#define av_ts2str(ts) av_ts_make_string((char[AV_TS_MAX_STRING_SIZE]){0}, ts)
-func AvTs2str(ts ffcommon.FInt64T) (res ffcommon.FCharP) {
-	if ts == AV_NOPTS_VALUE {
-		res = "NOPTS"
-	} else {
-		res = fmt.Sprint(ts)
-	}
-	return
-}
 
 /**
  * Fill the provided buffer with a string containing a timestamp time
@@ -94,14 +89,15 @@ func AvTs2str(ts ffcommon.FInt64T) (res ffcommon.FCharP) {
 //return buf;
 //}
 //todo
-// func AvTsMakeTimeString() (res ffcommon.FCharP) {
-// 	t, _, _ := ffcommon.GetAvutilDll().NewProc("av_ts_make_time_string").Call()
-// 	if t == 0 {
+var avTsMakeTimeString func() ffcommon.FCharP
+var avTsMakeTimeStringOnce sync.Once
 
-// 	}
-// 	res = ffcommon.StringFromPtr(t)
-// 	return
-// }
+func AvTsMakeTimeString() ffcommon.FCharP {
+	avTsMakeTimeStringOnce.Do(func() {
+		purego.RegisterLibFunc(&avTsMakeTimeString, ffcommon.GetAvutilDll(), "av_ts_make_time_string")
+	})
+	return avTsMakeTimeString()
+}
 
 /**
  * Convenience macro, the return value should be used only directly in
