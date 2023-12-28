@@ -1,9 +1,10 @@
 package libavutil
 
 import (
-	"unsafe"
+	"sync"
 
 	"github.com/dwdcth/ffmpeg-go/ffcommon"
+	"github.com/ebitengine/purego"
 )
 
 /*
@@ -44,11 +45,14 @@ type AVLFG struct {
 }
 
 // void av_lfg_init(AVLFG *c, unsigned int seed);
+var avLfgInit func(c *AVLFG, seed ffcommon.FUnsignedInt)
+var avLfgInitOnce sync.Once
+
 func (c *AVLFG) AvLfgInit(seed ffcommon.FUnsignedInt) {
-	ffcommon.GetAvutilDll().NewProc("av_lfg_init").Call(
-		uintptr(unsafe.Pointer(c)),
-		uintptr(seed),
-	)
+	avLfgInitOnce.Do(func() {
+		purego.RegisterLibFunc(&avLfgInit, ffcommon.GetAvutilDll(), "av_lfg_init")
+	})
+	avLfgInit(c, seed)
 }
 
 /**
@@ -57,14 +61,14 @@ func (c *AVLFG) AvLfgInit(seed ffcommon.FUnsignedInt) {
  * Return value: 0 on success, negative value (AVERROR) on failure.
  */
 //int av_lfg_init_from_data(AVLFG *c, const uint8_t *data, unsigned int length);
-func (c *AVLFG) AvLfgInitFromData(data *ffcommon.FUint8T, length ffcommon.FUnsignedInt) (res ffcommon.FInt) {
-	t, _, _ := ffcommon.GetAvutilDll().NewProc("av_lfg_init_from_data").Call(
-		uintptr(unsafe.Pointer(c)),
-		uintptr(unsafe.Pointer(data)),
-		uintptr(length),
-	)
-	res = ffcommon.FInt(t)
-	return
+var avLfgInitFromData func(c *AVLFG, data *ffcommon.FUint8T, length ffcommon.FUnsignedInt) ffcommon.FInt
+var avLfgInitFromDataOnce sync.Once
+
+func (c *AVLFG) AvLfgInitFromData(data *ffcommon.FUint8T, length ffcommon.FUnsignedInt) ffcommon.FInt {
+	avLfgInitFromDataOnce.Do(func() {
+		purego.RegisterLibFunc(&avLfgInitFromData, ffcommon.GetAvutilDll(), "av_lfg_init_from_data")
+	})
+	return avLfgInitFromData(c, data, length)
 }
 
 /**
@@ -79,11 +83,14 @@ func (c *AVLFG) AvLfgInitFromData(data *ffcommon.FUint8T, length ffcommon.FUnsig
 //return a;
 //}
 //}
-func (c *AVLFG) AvLfgGet() (res ffcommon.FUnsignedInt) {
-	c.State[c.Index&63] = c.State[(c.Index-24)&63] + c.State[(c.Index-55)&63]
-	res = c.State[c.Index&63]
-	c.Index += 1
-	return
+var avLfgGet func(c *AVLFG) ffcommon.FUnsignedInt
+var avLfgGetOnce sync.Once
+
+func (c *AVLFG) AvLfgGet() ffcommon.FUnsignedInt {
+	avLfgGetOnce.Do(func() {
+		purego.RegisterLibFunc(&avLfgGet, ffcommon.GetAvutilDll(), "av_lfg_get")
+	})
+	return avLfgGet(c)
 }
 
 /**
@@ -114,11 +121,14 @@ func (c *AVLFG) AvMlfgGet() (res ffcommon.FUnsignedInt) {
  * @param out array where the two generated numbers are placed
  */
 //void av_bmg_get(AVLFG *lfg, double out[2]);
+var avBmgGet func(lfg *AVLFG, out *[2]ffcommon.FDouble)
+var avBmgGetOnce sync.Once
+
 func (lfg *AVLFG) AvBmgGet(out [2]ffcommon.FDouble) {
-	ffcommon.GetAvutilDll().NewProc("av_bmg_get").Call(
-		uintptr(unsafe.Pointer(lfg)),
-		uintptr(unsafe.Pointer(&out)),
-	)
+	avBmgGetOnce.Do(func() {
+		purego.RegisterLibFunc(&avBmgGet, ffcommon.GetAvutilDll(), "av_bmg_get")
+	})
+	avBmgGet(lfg, &out)
 }
 
 //#endif /* AVUTIL_LFG_H */

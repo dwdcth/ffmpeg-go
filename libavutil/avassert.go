@@ -1,6 +1,11 @@
 package libavutil
 
-import "github.com/dwdcth/ffmpeg-go/ffcommon"
+import (
+	"sync"
+
+	"github.com/dwdcth/ffmpeg-go/ffcommon"
+	"github.com/ebitengine/purego"
+)
 
 /*
  * copyright (c) 2010 Michael Niedermayer <michaelni@gmx.at>
@@ -75,8 +80,14 @@ import "github.com/dwdcth/ffmpeg-go/ffcommon"
  * This will av_assert0() that the cpu is not in MMX state on X86
  */
 //void av_assert0_fpu(void);
+var avAssert0Fpu func()
+var avAssert0FpuOnce sync.Once
+
 func AvAssert0Fpu() {
-	ffcommon.GetAvutilDll().NewProc("av_assert0_fpu").Call()
+	avAssert0FpuOnce.Do(func() {
+		purego.RegisterLibFunc(&avAssert0Fpu, ffcommon.GetAvutilDll(), "av_assert0_fpu")
+	})
+	avAssert0Fpu()
 }
 
 //#endif /* AVUTIL_AVASSERT_H */

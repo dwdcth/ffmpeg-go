@@ -1,9 +1,10 @@
 package libavutil
 
 import (
-	"unsafe"
+	"sync"
 
 	"github.com/dwdcth/ffmpeg-go/ffcommon"
+	"github.com/ebitengine/purego"
 )
 
 /*
@@ -57,16 +58,14 @@ type AvPixelutilsSadFn = func(src1 *ffcommon.FUint8T, stride1 ffcommon.FPtrdiffT
  */
 //av_pixelutils_sad_fn av_pixelutils_get_sad_fn(int w_bits, int h_bits,
 //int aligned, void *log_ctx);
-func AvPixelutilsGetSadFn(w_bits, h_bits,
-	aligned ffcommon.FInt, log_ctx ffcommon.FVoidP) (res AvPixelutilsSadFn) {
-	t, _, _ := ffcommon.GetAvutilDll().NewProc("av_pixelutils_get_sad_fn").Call(
-		uintptr(w_bits),
-		uintptr(h_bits),
-		uintptr(aligned),
-		log_ctx,
-	)
-	res = *(*AvPixelutilsSadFn)(unsafe.Pointer(t))
-	return
+var avPixelutilsGetSadFn func(w_bits, h_bits, aligned ffcommon.FInt, log_ctx ffcommon.FVoidP) *AvPixelutilsSadFn
+var avPixelutilsGetSadFnOnce sync.Once
+
+func AvPixelutilsGetSadFn(w_bits, h_bits, aligned ffcommon.FInt, log_ctx ffcommon.FVoidP) *AvPixelutilsSadFn {
+	avPixelutilsGetSadFnOnce.Do(func() {
+		purego.RegisterLibFunc(&avPixelutilsGetSadFn, ffcommon.GetAvutilDll(), "av_pixelutils_get_sad_fn")
+	})
+	return avPixelutilsGetSadFn(w_bits, h_bits, aligned, log_ctx)
 }
 
 //#endif /* AVUTIL_PIXELUTILS_H */

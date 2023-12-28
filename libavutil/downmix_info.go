@@ -1,9 +1,10 @@
 package libavutil
 
 import (
-	"unsafe"
+	"sync"
 
 	"github.com/dwdcth/ffmpeg-go/ffcommon"
+	"github.com/ebitengine/purego"
 )
 
 /*
@@ -114,12 +115,14 @@ type AVDownmixInfo struct {
  *         the structure cannot be allocated.
  */
 //AVDownmixInfo *av_downmix_info_update_side_data(AVFrame *frame);
-func (frame *AVFrame) AvDownmixInfoUpdateSideData() (res *AVDownmixInfo) {
-	t, _, _ := ffcommon.GetAvutilDll().NewProc("av_downmix_info_update_side_data").Call(
-		uintptr(unsafe.Pointer(frame)),
-	)
-	res = (*AVDownmixInfo)(unsafe.Pointer(t))
-	return
+var avDownmixInfoUpdateSideData func(frame *AVFrame) *AVDownmixInfo
+var avDownmixInfoUpdateSideDataOnce sync.Once
+
+func (frame *AVFrame) AvDownmixInfoUpdateSideData() *AVDownmixInfo {
+	avDownmixInfoUpdateSideDataOnce.Do(func() {
+		purego.RegisterLibFunc(&avDownmixInfoUpdateSideData, ffcommon.GetAvutilDll(), "av_downmix_info_update_side_data")
+	})
+	return avDownmixInfoUpdateSideData(frame)
 }
 
 /**

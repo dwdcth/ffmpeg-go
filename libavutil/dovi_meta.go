@@ -1,9 +1,10 @@
 package libavutil
 
 import (
-	"unsafe"
+	"sync"
 
 	"github.com/dwdcth/ffmpeg-go/ffcommon"
+	"github.com/ebitengine/purego"
 )
 
 /*
@@ -74,10 +75,14 @@ type AVDOVIDecoderConfigurationRecord struct {
  * @return the newly allocated struct or NULL on failure
  */
 //AVDOVIDecoderConfigurationRecord *av_dovi_alloc(size_t *size);
-func AvDoviAlloc() (res *AVDOVIDecoderConfigurationRecord) {
-	t, _, _ := ffcommon.GetAvutilDll().NewProc("av_dovi_alloc").Call()
-	res = (*AVDOVIDecoderConfigurationRecord)(unsafe.Pointer(t))
-	return
+var avDoviAlloc func() *AVDOVIDecoderConfigurationRecord
+var avDoviAllocOnce sync.Once
+
+func AvDoviAlloc() *AVDOVIDecoderConfigurationRecord {
+	avDoviAllocOnce.Do(func() {
+		purego.RegisterLibFunc(&avDoviAlloc, ffcommon.GetAvutilDll(), "av_dovi_alloc")
+	})
+	return avDoviAlloc()
 }
 
 //#endif /* AVUTIL_DOVI_META_H */

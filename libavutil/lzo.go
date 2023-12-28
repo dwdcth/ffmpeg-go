@@ -1,9 +1,10 @@
 package libavutil
 
 import (
-	"unsafe"
+	"sync"
 
 	"github.com/dwdcth/ffmpeg-go/ffcommon"
+	"github.com/ebitengine/purego"
 )
 
 /*
@@ -70,15 +71,14 @@ const AV_LZO_OUTPUT_PADDING = 12
  * AV_LZO_INPUT_PADDING, out must provide AV_LZO_OUTPUT_PADDING additional bytes.
  */
 //int av_lzo1x_decode(void *out, int *outlen, const void *in, int *inlen);
-func AvLzo1xDecode(out ffcommon.FVoidP, outlen *ffcommon.FInt, in ffcommon.FConstVoidP, inlen *ffcommon.FInt) (res ffcommon.FInt) {
-	t, _, _ := ffcommon.GetAvutilDll().NewProc("av_lzo1x_decode").Call(
-		out,
-		uintptr(unsafe.Pointer(outlen)),
-		in,
-		uintptr(unsafe.Pointer(inlen)),
-	)
-	res = ffcommon.FInt(t)
-	return
+var avLzo1xDecode func(out ffcommon.FVoidP, outlen *ffcommon.FInt, in ffcommon.FConstVoidP, inlen *ffcommon.FInt) ffcommon.FInt
+var avLzo1xDecodeOnce sync.Once
+
+func AvLzo1xDecode(out ffcommon.FVoidP, outlen *ffcommon.FInt, in ffcommon.FConstVoidP, inlen *ffcommon.FInt) ffcommon.FInt {
+	avLzo1xDecodeOnce.Do(func() {
+		purego.RegisterLibFunc(&avLzo1xDecode, ffcommon.GetAvutilDll(), "av_lzo1x_decode")
+	})
+	return avLzo1xDecode(out, outlen, in, inlen)
 }
 
 /**

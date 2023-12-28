@@ -1,9 +1,10 @@
 package libavutil
 
 import (
-	"unsafe"
+	"sync"
 
 	"github.com/dwdcth/ffmpeg-go/ffcommon"
+	"github.com/ebitengine/purego"
 )
 
 /*
@@ -72,16 +73,14 @@ import (
 //#else
 //size_t len) av_pure;
 //#endif
-func AvAdler32Update(adler ffcommon.FAVAdler,
-	buf *ffcommon.FUint8T,
-	av_pure ffcommon.FUnsignedIntOrSizeT) (res ffcommon.FAVAdler) {
-	t, _, _ := ffcommon.GetAvutilDll().NewProc("av_adler32_update").Call(
-		uintptr(adler),
-		uintptr(unsafe.Pointer(buf)),
-		uintptr(av_pure),
-	)
-	res = ffcommon.FAVAdler(t)
-	return
+var avAdler32Update func(adler ffcommon.FAVAdler, buf *ffcommon.FUint8T, av_pure ffcommon.FUnsignedIntOrSizeT) ffcommon.FAVAdler
+var avAdler32UpdateOnce sync.Once
+
+func AvAdler32Update(adler ffcommon.FAVAdler, buf *ffcommon.FUint8T, av_pure ffcommon.FUnsignedIntOrSizeT) ffcommon.FAVAdler {
+	avAdler32UpdateOnce.Do(func() {
+		purego.RegisterLibFunc(&avAdler32Update, ffcommon.GetAvutilDll(), "av_adler32_update")
+	})
+	return avAdler32Update(adler, buf, av_pure)
 }
 
 /**

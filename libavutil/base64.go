@@ -1,9 +1,10 @@
 package libavutil
 
 import (
-	"unsafe"
+	"sync"
 
 	"github.com/dwdcth/ffmpeg-go/ffcommon"
+	"github.com/ebitengine/purego"
 )
 
 /*
@@ -48,14 +49,14 @@ import (
  *                 invalid input
  */
 //int av_base64_decode(uint8_t *out, const char *in, int out_size);
-func AvBase64Decode(out *ffcommon.FUint8T, in ffcommon.FConstCharP, out_size ffcommon.FInt) (res ffcommon.FInt) {
-	t, _, _ := ffcommon.GetAvutilDll().NewProc("av_base64_decode").Call(
-		uintptr(unsafe.Pointer(out)),
-		ffcommon.UintPtrFromString(in),
-		uintptr(out_size),
-	)
-	res = ffcommon.FInt(t)
-	return
+var avBase64Decode func(out *ffcommon.FUint8T, in ffcommon.FConstCharP, out_size ffcommon.FInt) ffcommon.FInt
+var avBase64DecodeOnce sync.Once
+
+func AvBase64Decode(out *ffcommon.FUint8T, in ffcommon.FConstCharP, out_size ffcommon.FInt) ffcommon.FInt {
+	avBase64DecodeOnce.Do(func() {
+		purego.RegisterLibFunc(&avBase64Decode, ffcommon.GetAvutilDll(), "av_base64_decode")
+	})
+	return avBase64Decode(out, in, out_size)
 }
 
 /**
@@ -79,15 +80,14 @@ func AV_BASE64_DECODE_SIZE(x int64) (res int64) {
  * @return         out or NULL in case of error
  */
 //char *av_base64_encode(char *out, int out_size, const uint8_t *in, int in_size);
-func AvBase64Encode(out ffcommon.FCharP, out_size ffcommon.FInt, in *ffcommon.FUint8T, in_size ffcommon.FInt) (res ffcommon.FCharP) {
-	t, _, _ := ffcommon.GetAvutilDll().NewProc("av_base64_encode").Call(
-		ffcommon.UintPtrFromString(out),
-		uintptr(out_size),
-		uintptr(unsafe.Pointer(in)),
-		uintptr(in_size),
-	)
-	res = ffcommon.StringFromPtr(t)
-	return
+var avBase64Encode func(out ffcommon.FCharP, out_size ffcommon.FInt, in *ffcommon.FUint8T, in_size ffcommon.FInt) ffcommon.FCharP
+var avBase64EncodeOnce sync.Once
+
+func AvBase64Encode(out ffcommon.FCharP, out_size ffcommon.FInt, in *ffcommon.FUint8T, in_size ffcommon.FInt) ffcommon.FCharP {
+	avBase64EncodeOnce.Do(func() {
+		purego.RegisterLibFunc(&avBase64Encode, ffcommon.GetAvutilDll(), "av_base64_encode")
+	})
+	return avBase64Encode(out, out_size, in, in_size)
 }
 
 /**

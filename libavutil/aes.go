@@ -1,9 +1,10 @@
 package libavutil
 
 import (
-	"unsafe"
+	"sync"
 
 	"github.com/dwdcth/ffmpeg-go/ffcommon"
+	"github.com/ebitengine/purego"
 )
 
 /*
@@ -50,10 +51,14 @@ type AVAES struct {
  * Allocate an AVAES context.
  */
 //struct AVAES *av_aes_alloc(void);
-func AvAesAlloc() (res *AVAES) {
-	t, _, _ := ffcommon.GetAvutilDll().NewProc("av_aes_alloc").Call()
-	res = (*AVAES)(unsafe.Pointer(t))
-	return
+var avAesAlloc func() *AVAES
+var avAesAllocOnce sync.Once
+
+func AvAesAlloc() *AVAES {
+	avAesAllocOnce.Do(func() {
+		purego.RegisterLibFunc(&avAesAlloc, ffcommon.GetAvutilDll(), "av_aes_alloc")
+	})
+	return avAesAlloc()
 }
 
 /**
@@ -62,15 +67,14 @@ func AvAesAlloc() (res *AVAES) {
  * @param decrypt 0 for encryption, 1 for decryption
  */
 //int av_aes_init(struct AVAES *a, const uint8_t *key, int key_bits, int decrypt);
-func (a *AVAES) AvAesInit(key *ffcommon.FUint8T, key_bits, decrypt ffcommon.FUint) (res ffcommon.FInt) {
-	t, _, _ := ffcommon.GetAvutilDll().NewProc("av_aes_init").Call(
-		uintptr(unsafe.Pointer(a)),
-		uintptr(unsafe.Pointer(key)),
-		uintptr(key_bits),
-		uintptr(decrypt),
-	)
-	res = ffcommon.FInt(t)
-	return
+var avAesInit func(a *AVAES, key *ffcommon.FUint8T, key_bits, decrypt ffcommon.FUint) ffcommon.FInt
+var avAesInitOnce sync.Once
+
+func (a *AVAES) AvAesInit(key *ffcommon.FUint8T, key_bits, decrypt ffcommon.FUint) ffcommon.FInt {
+	avAesInitOnce.Do(func() {
+		purego.RegisterLibFunc(&avAesInit, ffcommon.GetAvutilDll(), "av_aes_init")
+	})
+	return avAesInit(a, key, key_bits, decrypt)
 }
 
 /**
@@ -82,15 +86,14 @@ func (a *AVAES) AvAesInit(key *ffcommon.FUint8T, key_bits, decrypt ffcommon.FUin
  * @param decrypt 0 for encryption, 1 for decryption
  */
 //void av_aes_crypt(struct AVAES *a, uint8_t *dst, const uint8_t *src, int count, uint8_t *iv, int decrypt);
+var avAesCrypt func(a *AVAES, dst, src *ffcommon.FUint8T, count ffcommon.FInt, iv *ffcommon.FUint8T, decrypt ffcommon.FInt)
+var avAesCryptOnce sync.Once
+
 func (a *AVAES) AvAesCrypt(dst, src *ffcommon.FUint8T, count ffcommon.FInt, iv *ffcommon.FUint8T, decrypt ffcommon.FInt) {
-	ffcommon.GetAvutilDll().NewProc("av_aes_crypt").Call(
-		uintptr(unsafe.Pointer(a)),
-		uintptr(unsafe.Pointer(dst)),
-		uintptr(unsafe.Pointer(src)),
-		uintptr(count),
-		uintptr(unsafe.Pointer(iv)),
-		uintptr(decrypt),
-	)
+	avAesCryptOnce.Do(func() {
+		purego.RegisterLibFunc(&avAesCrypt, ffcommon.GetAvutilDll(), "av_aes_crypt")
+	})
+	avAesCrypt(a, dst, src, count, iv, decrypt)
 }
 
 /**

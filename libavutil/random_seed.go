@@ -1,6 +1,11 @@
 package libavutil
 
-import "github.com/dwdcth/ffmpeg-go/ffcommon"
+import (
+	"sync"
+
+	"github.com/dwdcth/ffmpeg-go/ffcommon"
+	"github.com/ebitengine/purego"
+)
 
 /*
  * Copyright (c) 2009 Baptiste Coudurier <baptiste.coudurier@gmail.com>
@@ -39,10 +44,14 @@ import "github.com/dwdcth/ffmpeg-go/ffcommon"
  * PRNG. The quality of the seed depends on the platform.
  */
 //uint32_t av_get_random_seed(void);
-func AvGetRandomSeed() (res ffcommon.FUint32T) {
-	t, _, _ := ffcommon.GetAvutilDll().NewProc("av_get_random_seed").Call()
-	res = ffcommon.FUint32T(t)
-	return
+var avGetRandomSeed func() ffcommon.FUint32T
+var avGetRandomSeedOnce sync.Once
+
+func AvGetRandomSeed() ffcommon.FUint32T {
+	avGetRandomSeedOnce.Do(func() {
+		purego.RegisterLibFunc(&avGetRandomSeed, ffcommon.GetAvutilDll(), "av_get_random_seed")
+	})
+	return avGetRandomSeed()
 }
 
 /**
