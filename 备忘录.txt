@@ -3,8 +3,13 @@
 问题记录
 char指针类型的返回
 宏，之间用go改写？
-^(.*):0
-mv $1 libavutil
+
+单文件
+grep -r -c 'NewProc' libavutil_bak/*.go | sort -t ':' -k 2n
+
+总数
+find . -type d -name "lib*" -exec bash -c 'echo -n "{}: "; grep -ohr "NewProc" {}/ | wc -l' \
+; | sort -t: -k2 -n
 
 golang binding for ffmpeg
 win10 x64
