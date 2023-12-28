@@ -1,10 +1,11 @@
 package libavcodec
 
 import (
-	"unsafe"
+	"sync"
 
 	"github.com/dwdcth/ffmpeg-go/ffcommon"
 	"github.com/dwdcth/ffmpeg-go/libavutil"
+	"github.com/ebitengine/purego"
 )
 
 /*
@@ -467,10 +468,14 @@ const (
  * @see av_new_packet
  */
 //AVPacket *av_packet_alloc(void);
-func AvPacketAlloc() (res *AVPacket) {
-	t, _, _ := ffcommon.GetAvcodecDll().NewProc("av_packet_alloc").Call()
-	res = (*AVPacket)(unsafe.Pointer(t))
-	return
+var avPacketAlloc func() *AVPacket
+var avPacketAllocOnce sync.Once
+
+func AvPacketAlloc() *AVPacket {
+	avPacketAllocOnce.Do(func() {
+		purego.RegisterLibFunc(&avPacketAlloc, ffcommon.GetAvcodecDll(), "av_packet_alloc")
+	})
+	return avPacketAlloc()
 }
 
 /**
@@ -484,12 +489,14 @@ func AvPacketAlloc() (res *AVPacket) {
  * @see av_packet_ref
  */
 //AVPacket *av_packet_clone(const AVPacket *src);
-func (src *AVPacket) AvPacketClone() (res *AVPacket) {
-	t, _, _ := ffcommon.GetAvcodecDll().NewProc("av_packet_clone").Call(
-		uintptr(unsafe.Pointer(src)),
-	)
-	res = (*AVPacket)(unsafe.Pointer(t))
-	return
+var avPacketClone func(src *AVPacket) *AVPacket
+var avPacketCloneOnce sync.Once
+
+func (src *AVPacket) AvPacketClone() *AVPacket {
+	avPacketCloneOnce.Do(func() {
+		purego.RegisterLibFunc(&avPacketClone, ffcommon.GetAvcodecDll(), "av_packet_clone")
+	})
+	return avPacketClone(src)
 }
 
 /**
@@ -500,10 +507,14 @@ func (src *AVPacket) AvPacketClone() (res *AVPacket) {
  * @note passing NULL is a no-op.
  */
 //void av_packet_free(AVPacket **pkt);
+var avPacketFree func(pkt **AVPacket)
+var avPacketFreeOnce sync.Once
+
 func AvPacketFree(pkt **AVPacket) {
-	ffcommon.GetAvcodecDll().NewProc("av_packet_free").Call(
-		uintptr(unsafe.Pointer(pkt)),
-	)
+	avPacketFreeOnce.Do(func() {
+		purego.RegisterLibFunc(&avPacketFree, ffcommon.GetAvcodecDll(), "av_packet_free")
+	})
+	avPacketFree(pkt)
 }
 
 //#if FF_API_INIT_PACKET
@@ -523,10 +534,14 @@ func AvPacketFree(pkt **AVPacket) {
 */
 //attribute_deprecated
 //void av_init_packet(AVPacket *pkt);
+var avInitPacket func(pkt *AVPacket)
+var avInitPacketOnce sync.Once
+
 func (pkt *AVPacket) AvInitPacket() {
-	ffcommon.GetAvcodecDll().NewProc("av_init_packet").Call(
-		uintptr(unsafe.Pointer(pkt)),
-	)
+	avInitPacketOnce.Do(func() {
+		purego.RegisterLibFunc(&avInitPacket, ffcommon.GetAvcodecDll(), "av_init_packet")
+	})
+	avInitPacket(pkt)
 }
 
 //#endif
@@ -540,13 +555,14 @@ func (pkt *AVPacket) AvInitPacket() {
  * @return 0 if OK, AVERROR_xxx otherwise
  */
 //int av_new_packet(AVPacket *pkt, int size);
-func (pkt *AVPacket) AvNewPacket(size ffcommon.FInt) (res ffcommon.FInt) {
-	t, _, _ := ffcommon.GetAvcodecDll().NewProc("av_new_packet").Call(
-		uintptr(unsafe.Pointer(pkt)),
-		uintptr(size),
-	)
-	res = ffcommon.FInt(t)
-	return
+var avNewPacket func(pkt *AVPacket, size ffcommon.FInt) ffcommon.FInt
+var avNewPacketOnce sync.Once
+
+func (pkt *AVPacket) AvNewPacket(size ffcommon.FInt) ffcommon.FInt {
+	avNewPacketOnce.Do(func() {
+		purego.RegisterLibFunc(&avNewPacket, ffcommon.GetAvcodecDll(), "av_new_packet")
+	})
+	return avNewPacket(pkt, size)
 }
 
 /**
@@ -556,11 +572,14 @@ func (pkt *AVPacket) AvNewPacket(size ffcommon.FInt) (res ffcommon.FInt) {
  * @param size new size
  */
 //void av_shrink_packet(AVPacket *pkt, int size);
+var avShrinkPacket func(pkt *AVPacket, size ffcommon.FInt)
+var avShrinkPacketOnce sync.Once
+
 func (pkt *AVPacket) AvShrinkPacket(size ffcommon.FInt) {
-	ffcommon.GetAvcodecDll().NewProc("av_shrink_packet").Call(
-		uintptr(unsafe.Pointer(pkt)),
-		uintptr(size),
-	)
+	avShrinkPacketOnce.Do(func() {
+		purego.RegisterLibFunc(&avShrinkPacket, ffcommon.GetAvcodecDll(), "av_shrink_packet")
+	})
+	avShrinkPacket(pkt, size)
 }
 
 /**
@@ -570,13 +589,14 @@ func (pkt *AVPacket) AvShrinkPacket(size ffcommon.FInt) {
  * @param grow_by number of bytes by which to increase the size of the packet
  */
 //int av_grow_packet(AVPacket *pkt, int grow_by);
-func (pkt *AVPacket) AvGrowPacket(size ffcommon.FInt) (res ffcommon.FInt) {
-	t, _, _ := ffcommon.GetAvcodecDll().NewProc("av_grow_packet").Call(
-		uintptr(unsafe.Pointer(pkt)),
-		uintptr(size),
-	)
-	res = ffcommon.FInt(t)
-	return
+var avGrowPacket func(pkt *AVPacket, size ffcommon.FInt) ffcommon.FInt
+var avGrowPacketOnce sync.Once
+
+func (pkt *AVPacket) AvGrowPacket(size ffcommon.FInt) ffcommon.FInt {
+	avGrowPacketOnce.Do(func() {
+		purego.RegisterLibFunc(&avGrowPacket, ffcommon.GetAvcodecDll(), "av_grow_packet")
+	})
+	return avGrowPacket(pkt, size)
 }
 
 /**
@@ -593,14 +613,14 @@ func (pkt *AVPacket) AvGrowPacket(size ffcommon.FInt) (res ffcommon.FInt) {
  * @return 0 on success, a negative AVERROR on error
  */
 //int av_packet_from_data(AVPacket *pkt, uint8_t *data, int size);
-func (pkt *AVPacket) AvPacketFromData(data *ffcommon.FUint8T, size ffcommon.FInt) (res ffcommon.FInt) {
-	t, _, _ := ffcommon.GetAvcodecDll().NewProc("av_packet_from_data").Call(
-		uintptr(unsafe.Pointer(pkt)),
-		uintptr(unsafe.Pointer(data)),
-		uintptr(size),
-	)
-	res = ffcommon.FInt(t)
-	return
+var avPacketFromData func(pkt *AVPacket, data *ffcommon.FUint8T, size ffcommon.FInt) ffcommon.FInt
+var avPacketFromDataOnce sync.Once
+
+func (pkt *AVPacket) AvPacketFromData(data *ffcommon.FUint8T, size ffcommon.FInt) ffcommon.FInt {
+	avPacketFromDataOnce.Do(func() {
+		purego.RegisterLibFunc(&avPacketFromData, ffcommon.GetAvcodecDll(), "av_packet_from_data")
+	})
+	return avPacketFromData(pkt, data, size)
 }
 
 //#if FF_API_AVPACKET_OLD_API
@@ -612,12 +632,14 @@ func (pkt *AVPacket) AvPacketFromData(data *ffcommon.FUint8T, size ffcommon.FInt
  */
 //attribute_deprecated
 //int av_dup_packet(AVPacket *pkt);
-func (pkt *AVPacket) AvDupPacket() (res ffcommon.FInt) {
-	t, _, _ := ffcommon.GetAvcodecDll().NewProc("av_dup_packet").Call(
-		uintptr(unsafe.Pointer(pkt)),
-	)
-	res = ffcommon.FInt(t)
-	return
+var avDupPacket func(pkt *AVPacket) ffcommon.FInt
+var avDupPacketOnce sync.Once
+
+func (pkt *AVPacket) AvDupPacket() ffcommon.FInt {
+	avDupPacketOnce.Do(func() {
+		purego.RegisterLibFunc(&avDupPacket, ffcommon.GetAvcodecDll(), "av_dup_packet")
+	})
+	return avDupPacket(pkt)
 }
 
 /**
@@ -629,13 +651,14 @@ func (pkt *AVPacket) AvDupPacket() (res ffcommon.FInt) {
  */
 //attribute_deprecated
 //int av_copy_packet(AVPacket *dst, const AVPacket *src);
-func (dst *AVPacket) AvCopyPacket(src *AVPacket) (res ffcommon.FInt) {
-	t, _, _ := ffcommon.GetAvcodecDll().NewProc("av_copy_packet").Call(
-		uintptr(unsafe.Pointer(dst)),
-		uintptr(unsafe.Pointer(src)),
-	)
-	res = ffcommon.FInt(t)
-	return
+var avCopyPacket func(dst, src *AVPacket) ffcommon.FInt
+var avCopyPacketOnce sync.Once
+
+func (dst *AVPacket) AvCopyPacket(src *AVPacket) ffcommon.FInt {
+	avCopyPacketOnce.Do(func() {
+		purego.RegisterLibFunc(&avCopyPacket, ffcommon.GetAvcodecDll(), "av_copy_packet")
+	})
+	return avCopyPacket(dst, src)
 }
 
 /**
@@ -647,13 +670,14 @@ func (dst *AVPacket) AvCopyPacket(src *AVPacket) (res ffcommon.FInt) {
  */
 //attribute_deprecated
 //int av_copy_packet_side_data(AVPacket *dst, const AVPacket *src);
-func (dst *AVPacket) AvCopyPacketSideData(src *AVPacket) (res ffcommon.FInt) {
-	t, _, _ := ffcommon.GetAvcodecDll().NewProc("av_copy_packet_side_data").Call(
-		uintptr(unsafe.Pointer(dst)),
-		uintptr(unsafe.Pointer(src)),
-	)
-	res = ffcommon.FInt(t)
-	return
+var avCopyPacketSideData func(dst, src *AVPacket) ffcommon.FInt
+var avCopyPacketSideDataOnce sync.Once
+
+func (dst *AVPacket) AvCopyPacketSideData(src *AVPacket) ffcommon.FInt {
+	avCopyPacketSideDataOnce.Do(func() {
+		purego.RegisterLibFunc(&avCopyPacketSideData, ffcommon.GetAvcodecDll(), "av_copy_packet_side_data")
+	})
+	return avCopyPacketSideData(dst, src)
 }
 
 /**
@@ -665,10 +689,14 @@ func (dst *AVPacket) AvCopyPacketSideData(src *AVPacket) (res ffcommon.FInt) {
  */
 //attribute_deprecated
 //void av_free_packet(AVPacket *pkt);
+var avFreePacket func(pkt *AVPacket)
+var avFreePacketOnce sync.Once
+
 func (pkt *AVPacket) AvFreePacket() {
-	ffcommon.GetAvcodecDll().NewProc("av_free_packet").Call(
-		uintptr(unsafe.Pointer(pkt)),
-	)
+	avFreePacketOnce.Do(func() {
+		purego.RegisterLibFunc(&avFreePacket, ffcommon.GetAvcodecDll(), "av_free_packet")
+	})
+	avFreePacket(pkt)
 }
 
 //#endif
@@ -686,14 +714,14 @@ func (pkt *AVPacket) AvFreePacket() {
 //#else
 //size_t size);
 //#endif
-func (pkt *AVPacket) AvPacketNewSideData(type0 AVPacketSideDataType, size ffcommon.FIntOrSizeT) (res ffcommon.FInt) {
-	t, _, _ := ffcommon.GetAvcodecDll().NewProc("av_packet_new_side_data").Call(
-		uintptr(unsafe.Pointer(pkt)),
-		uintptr(type0),
-		uintptr(size),
-	)
-	res = ffcommon.FInt(t)
-	return
+var avPacketNewSideData func(pkt *AVPacket, type0 AVPacketSideDataType, size ffcommon.FIntOrSizeT) ffcommon.FInt
+var avPacketNewSideDataOnce sync.Once
+
+func (pkt *AVPacket) AvPacketNewSideData(type0 AVPacketSideDataType, size ffcommon.FIntOrSizeT) ffcommon.FInt {
+	avPacketNewSideDataOnce.Do(func() {
+		purego.RegisterLibFunc(&avPacketNewSideData, ffcommon.GetAvcodecDll(), "av_packet_new_side_data")
+	})
+	return avPacketNewSideData(pkt, type0, size)
 }
 
 /**
@@ -711,15 +739,14 @@ func (pkt *AVPacket) AvPacketNewSideData(type0 AVPacketSideDataType, size ffcomm
  */
 //int av_packet_add_side_data(AVPacket *pkt, enum AVPacketSideDataType type,
 //uint8_t *data, size_t size);
-func (pkt *AVPacket) AvPacketAddSideData(type0 AVPacketSideDataType, data *ffcommon.FUint8T, size ffcommon.FSizeT) (res ffcommon.FInt) {
-	t, _, _ := ffcommon.GetAvcodecDll().NewProc("av_packet_add_side_data").Call(
-		uintptr(unsafe.Pointer(pkt)),
-		uintptr(type0),
-		uintptr(unsafe.Pointer(data)),
-		uintptr(size),
-	)
-	res = ffcommon.FInt(t)
-	return
+var avPacketAddSideData func(pkt *AVPacket, type0 AVPacketSideDataType, data *ffcommon.FUint8T, size ffcommon.FSizeT) ffcommon.FInt
+var avPacketAddSideDataOnce sync.Once
+
+func (pkt *AVPacket) AvPacketAddSideData(type0 AVPacketSideDataType, data *ffcommon.FUint8T, size ffcommon.FSizeT) ffcommon.FInt {
+	avPacketAddSideDataOnce.Do(func() {
+		purego.RegisterLibFunc(&avPacketAddSideData, ffcommon.GetAvcodecDll(), "av_packet_add_side_data")
+	})
+	return avPacketAddSideData(pkt, type0, data, size)
 }
 
 /**
@@ -736,15 +763,14 @@ func (pkt *AVPacket) AvPacketAddSideData(type0 AVPacketSideDataType, data *ffcom
 //#else
 //size_t size);
 //#endif
-func (pkt *AVPacket) AvPacketShrinkSideData(type0 AVPacketSideDataType, data *ffcommon.FUint8T, size ffcommon.FIntOrSizeT) (res ffcommon.FInt) {
-	t, _, _ := ffcommon.GetAvcodecDll().NewProc("av_packet_shrink_side_data").Call(
-		uintptr(unsafe.Pointer(pkt)),
-		uintptr(type0),
-		uintptr(unsafe.Pointer(data)),
-		uintptr(size),
-	)
-	res = ffcommon.FInt(t)
-	return
+var avPacketShrinkSideData func(pkt *AVPacket, type0 AVPacketSideDataType, data *ffcommon.FUint8T, size ffcommon.FIntOrSizeT) ffcommon.FInt
+var avPacketShrinkSideDataOnce sync.Once
+
+func (pkt *AVPacket) AvPacketShrinkSideData(type0 AVPacketSideDataType, data *ffcommon.FUint8T, size ffcommon.FIntOrSizeT) ffcommon.FInt {
+	avPacketShrinkSideDataOnce.Do(func() {
+		purego.RegisterLibFunc(&avPacketShrinkSideData, ffcommon.GetAvcodecDll(), "av_packet_shrink_side_data")
+	})
+	return avPacketShrinkSideData(pkt, type0, data, size)
 }
 
 /**
@@ -761,15 +787,14 @@ func (pkt *AVPacket) AvPacketShrinkSideData(type0 AVPacketSideDataType, data *ff
 //int *size);
 //#else
 //size_t *size);
-func (pkt *AVPacket) AvPacketGetSideData(type0 AVPacketSideDataType, data *ffcommon.FUint8T, size *ffcommon.FIntOrSizeT) (res ffcommon.FInt) {
-	t, _, _ := ffcommon.GetAvcodecDll().NewProc("av_packet_get_side_data").Call(
-		uintptr(unsafe.Pointer(pkt)),
-		uintptr(type0),
-		uintptr(unsafe.Pointer(data)),
-		uintptr(unsafe.Pointer(size)),
-	)
-	res = ffcommon.FInt(t)
-	return
+var avPacketGetSideData func(pkt *AVPacket, type0 AVPacketSideDataType, data *ffcommon.FUint8T, size *ffcommon.FIntOrSizeT) ffcommon.FInt
+var avPacketGetSideDataOnce sync.Once
+
+func (pkt *AVPacket) AvPacketGetSideData(type0 AVPacketSideDataType, data *ffcommon.FUint8T, size *ffcommon.FIntOrSizeT) ffcommon.FInt {
+	avPacketGetSideDataOnce.Do(func() {
+		purego.RegisterLibFunc(&avPacketGetSideData, ffcommon.GetAvcodecDll(), "av_packet_get_side_data")
+	})
+	return avPacketGetSideData(pkt, type0, data, size)
 }
 
 //#endif
@@ -777,33 +802,39 @@ func (pkt *AVPacket) AvPacketGetSideData(type0 AVPacketSideDataType, data *ffcom
 // #if FF_API_MERGE_SD_API
 // attribute_deprecated
 // int av_packet_merge_side_data(AVPacket *pkt);
-func (pkt *AVPacket) AvPacketMergeSideData() (res ffcommon.FInt) {
-	t, _, _ := ffcommon.GetAvcodecDll().NewProc("av_packet_merge_side_data").Call(
-		uintptr(unsafe.Pointer(pkt)),
-	)
-	res = ffcommon.FInt(t)
-	return
+var avPacketMergeSideData func(pkt *AVPacket) ffcommon.FInt
+var avPacketMergeSideDataOnce sync.Once
+
+func (pkt *AVPacket) AvPacketMergeSideData() ffcommon.FInt {
+	avPacketMergeSideDataOnce.Do(func() {
+		purego.RegisterLibFunc(&avPacketMergeSideData, ffcommon.GetAvcodecDll(), "av_packet_merge_side_data")
+	})
+	return avPacketMergeSideData(pkt)
 }
 
 // attribute_deprecated
 // int av_packet_split_side_data(AVPacket *pkt);
-func (pkt *AVPacket) AvPacketSplitSideData() (res ffcommon.FInt) {
-	t, _, _ := ffcommon.GetAvcodecDll().NewProc("av_packet_split_side_data").Call(
-		uintptr(unsafe.Pointer(pkt)),
-	)
-	res = ffcommon.FInt(t)
-	return
+var avPacketSplitSideData func(pkt *AVPacket) ffcommon.FInt
+var avPacketSplitSideDataOnce sync.Once
+
+func (pkt *AVPacket) AvPacketSplitSideData() ffcommon.FInt {
+	avPacketSplitSideDataOnce.Do(func() {
+		purego.RegisterLibFunc(&avPacketSplitSideData, ffcommon.GetAvcodecDll(), "av_packet_split_side_data")
+	})
+	return avPacketSplitSideData(pkt)
 }
 
 //#endif
 
 // const char *av_packet_side_data_name(enum AVPacketSideDataType type);
-func AvPacketSideDataName(type0 AVPacketSideDataType) (res ffcommon.FCharP) {
-	t, _, _ := ffcommon.GetAvcodecDll().NewProc("av_packet_side_data_name").Call(
-		uintptr(type0),
-	)
-	res = ffcommon.StringFromPtr(t)
-	return
+var avPacketSideDataName func(type0 AVPacketSideDataType) string
+var avPacketSideDataNameOnce sync.Once
+
+func AvPacketSideDataName(type0 AVPacketSideDataType) string {
+	avPacketSideDataNameOnce.Do(func() {
+		purego.RegisterLibFunc(&avPacketSideDataName, ffcommon.GetAvcodecDll(), "av_packet_side_data_name")
+	})
+	return avPacketSideDataName(type0)
 }
 
 /**
@@ -818,13 +849,14 @@ func AvPacketSideDataName(type0 AVPacketSideDataType) (res ffcommon.FCharP) {
 //#else
 //uint8_t *av_packet_pack_dictionary(AVDictionary *dict, size_t *size);
 //#endif
-func AvPacketPackDictionary(dict *AVDictionary, size *ffcommon.FIntOrSizeT) (res *ffcommon.FUint8T) {
-	t, _, _ := ffcommon.GetAvcodecDll().NewProc("av_packet_pack_dictionary").Call(
-		uintptr(unsafe.Pointer(dict)),
-		uintptr(unsafe.Pointer(size)),
-	)
-	res = (*ffcommon.FUint8T)(unsafe.Pointer(t))
-	return
+var avPacketPackDictionary func(dict *AVDictionary, size *ffcommon.FIntOrSizeT) *ffcommon.FUint8T
+var avPacketPackDictionaryOnce sync.Once
+
+func AvPacketPackDictionary(dict *AVDictionary, size *ffcommon.FIntOrSizeT) *ffcommon.FUint8T {
+	avPacketPackDictionaryOnce.Do(func() {
+		purego.RegisterLibFunc(&avPacketPackDictionary, ffcommon.GetAvcodecDll(), "av_packet_pack_dictionary")
+	})
+	return avPacketPackDictionary(dict, size)
 }
 
 /**
@@ -841,14 +873,14 @@ func AvPacketPackDictionary(dict *AVDictionary, size *ffcommon.FIntOrSizeT) (res
 //int av_packet_unpack_dictionary(const uint8_t *data, size_t size,
 //AVDictionary **dict);
 //#endif
-func AvPacketUnpackDictionary(data *ffcommon.FUint8T, size ffcommon.FIntOrSizeT, dict **AVDictionary) (res ffcommon.FInt) {
-	t, _, _ := ffcommon.GetAvcodecDll().NewProc("av_packet_unpack_dictionary").Call(
-		uintptr(unsafe.Pointer(data)),
-		uintptr(size),
-		uintptr(unsafe.Pointer(dict)),
-	)
-	res = ffcommon.FInt(t)
-	return
+var avPacketUnpackDictionary func(data *ffcommon.FUint8T, size ffcommon.FIntOrSizeT, dict **AVDictionary) ffcommon.FInt
+var avPacketUnpackDictionaryOnce sync.Once
+
+func AvPacketUnpackDictionary(data *ffcommon.FUint8T, size ffcommon.FIntOrSizeT, dict **AVDictionary) ffcommon.FInt {
+	avPacketUnpackDictionaryOnce.Do(func() {
+		purego.RegisterLibFunc(&avPacketUnpackDictionary, ffcommon.GetAvcodecDll(), "av_packet_unpack_dictionary")
+	})
+	return avPacketUnpackDictionary(data, size, dict)
 }
 
 /**
@@ -858,10 +890,14 @@ func AvPacketUnpackDictionary(data *ffcommon.FUint8T, size ffcommon.FIntOrSizeT,
  * @param pkt packet
  */
 //void av_packet_free_side_data(AVPacket *pkt);
+var avPacketFreeSideData func(pkt *AVPacket)
+var avPacketFreeSideDataOnce sync.Once
+
 func (pkt *AVPacket) AvPacketFreeSideData() {
-	ffcommon.GetAvcodecDll().NewProc("av_packet_free_side_data").Call(
-		uintptr(unsafe.Pointer(pkt)),
-	)
+	avPacketFreeSideDataOnce.Do(func() {
+		purego.RegisterLibFunc(&avPacketFreeSideData, ffcommon.GetAvcodecDll(), "av_packet_free_side_data")
+	})
+	avPacketFreeSideData(pkt)
 }
 
 /**
@@ -882,13 +918,14 @@ func (pkt *AVPacket) AvPacketFreeSideData() {
  *         will be blank (as if returned by av_packet_alloc()).
  */
 //int av_packet_ref(AVPacket *dst, const AVPacket *src);
-func AvPacketRef(dst, src *AVPacket) (res ffcommon.FInt) {
-	t, _, _ := ffcommon.GetAvcodecDll().NewProc("av_packet_ref").Call(
-		uintptr(unsafe.Pointer(dst)),
-		uintptr(unsafe.Pointer(src)),
-	)
-	res = ffcommon.FInt(t)
-	return
+var avPacketRef func(dst, src *AVPacket) ffcommon.FInt
+var avPacketRefOnce sync.Once
+
+func AvPacketRef(dst, src *AVPacket) ffcommon.FInt {
+	avPacketRefOnce.Do(func() {
+		purego.RegisterLibFunc(&avPacketRef, ffcommon.GetAvcodecDll(), "av_packet_ref")
+	})
+	return avPacketRef(dst, src)
 }
 
 /**
@@ -900,10 +937,14 @@ func AvPacketRef(dst, src *AVPacket) (res ffcommon.FInt) {
  * @param pkt The packet to be unreferenced.
  */
 //void av_packet_unref(AVPacket *pkt);
+var avPacketUnref func(pkt *AVPacket)
+var avPacketUnrefOnce sync.Once
+
 func (pkt *AVPacket) AvPacketUnref() {
-	ffcommon.GetAvcodecDll().NewProc("av_packet_unref").Call(
-		uintptr(unsafe.Pointer(pkt)),
-	)
+	avPacketUnrefOnce.Do(func() {
+		purego.RegisterLibFunc(&avPacketUnref, ffcommon.GetAvcodecDll(), "av_packet_unref")
+	})
+	avPacketUnref(pkt)
 }
 
 /**
@@ -915,11 +956,14 @@ func (pkt *AVPacket) AvPacketUnref() {
  * @param dst Destination packet
  */
 //void av_packet_move_ref(AVPacket *dst, AVPacket *src);
+var avPacketMoveRef func(dst, src *AVPacket)
+var avPacketMoveRefOnce sync.Once
+
 func AvPacketMoveRef(dst, src *AVPacket) {
-	ffcommon.GetAvcodecDll().NewProc("av_packet_move_ref").Call(
-		uintptr(unsafe.Pointer(dst)),
-		uintptr(unsafe.Pointer(src)),
-	)
+	avPacketMoveRefOnce.Do(func() {
+		purego.RegisterLibFunc(&avPacketMoveRef, ffcommon.GetAvcodecDll(), "av_packet_move_ref")
+	})
+	avPacketMoveRef(dst, src)
 }
 
 /**
@@ -934,13 +978,14 @@ func AvPacketMoveRef(dst, src *AVPacket) {
  * @return 0 on success AVERROR on failure.
  */
 //int av_packet_copy_props(AVPacket *dst, const AVPacket *src);
-func AvPacketCopyProps(dst, src *AVPacket) (res ffcommon.FInt) {
-	t, _, _ := ffcommon.GetAvcodecDll().NewProc("av_packet_move_ref").Call(
-		uintptr(unsafe.Pointer(dst)),
-		uintptr(unsafe.Pointer(src)),
-	)
-	res = ffcommon.FInt(t)
-	return
+var avPacketCopyProps func(dst, src *AVPacket) ffcommon.FInt
+var avPacketCopyPropsOnce sync.Once
+
+func AvPacketCopyProps(dst, src *AVPacket) ffcommon.FInt {
+	avPacketCopyPropsOnce.Do(func() {
+		purego.RegisterLibFunc(&avPacketCopyProps, ffcommon.GetAvcodecDll(), "av_packet_copy_props")
+	})
+	return avPacketCopyProps(dst, src)
 }
 
 /**
@@ -958,12 +1003,14 @@ func AvPacketCopyProps(dst, src *AVPacket) (res ffcommon.FInt) {
  *         packet is unchanged.
  */
 //int av_packet_make_refcounted(AVPacket *pkt);
-func (pkt *AVPacket) AvPacketMakeRefcounted() (res ffcommon.FInt) {
-	t, _, _ := ffcommon.GetAvcodecDll().NewProc("av_packet_make_refcounted").Call(
-		uintptr(unsafe.Pointer(pkt)),
-	)
-	res = ffcommon.FInt(t)
-	return
+var avPacketMakeRefcounted func(pkt *AVPacket) ffcommon.FInt
+var avPacketMakeRefcountedOnce sync.Once
+
+func (pkt *AVPacket) AvPacketMakeRefcounted() ffcommon.FInt {
+	avPacketMakeRefcountedOnce.Do(func() {
+		purego.RegisterLibFunc(&avPacketMakeRefcounted, ffcommon.GetAvcodecDll(), "av_packet_make_refcounted")
+	})
+	return avPacketMakeRefcounted(pkt)
 }
 
 /**
@@ -976,12 +1023,14 @@ func (pkt *AVPacket) AvPacketMakeRefcounted() (res ffcommon.FInt) {
  *         packet is unchanged.
  */
 //int av_packet_make_writable(AVPacket *pkt);
-func (pkt *AVPacket) AvPacketMakeWritable() (res ffcommon.FInt) {
-	t, _, _ := ffcommon.GetAvcodecDll().NewProc("av_packet_make_writable").Call(
-		uintptr(unsafe.Pointer(pkt)),
-	)
-	res = ffcommon.FInt(t)
-	return
+var avPacketMakeWritable func(pkt *AVPacket) ffcommon.FInt
+var avPacketMakeWritableOnce sync.Once
+
+func (pkt *AVPacket) AvPacketMakeWritable() ffcommon.FInt {
+	avPacketMakeWritableOnce.Do(func() {
+		purego.RegisterLibFunc(&avPacketMakeWritable, ffcommon.GetAvcodecDll(), "av_packet_make_writable")
+	})
+	return avPacketMakeWritable(pkt)
 }
 
 /**
@@ -996,12 +1045,14 @@ func (pkt *AVPacket) AvPacketMakeWritable() (res ffcommon.FInt) {
  *               converted
  */
 //void av_packet_rescale_ts(AVPacket *pkt, AVRational tb_src, AVRational tb_dst);
+var avPacketRescaleTs func(pkt *AVPacket, tb_src, tb_dst AVRational)
+var avPacketRescaleTsOnce sync.Once
+
 func (pkt *AVPacket) AvPacketRescaleTs(tb_src, tb_dst AVRational) {
-	ffcommon.GetAvcodecDll().NewProc("av_packet_rescale_ts").Call(
-		uintptr(unsafe.Pointer(pkt)),
-		uintptr(unsafe.Pointer(&tb_src)),
-		uintptr(unsafe.Pointer(&tb_dst)),
-	)
+	avPacketRescaleTsOnce.Do(func() {
+		purego.RegisterLibFunc(&avPacketRescaleTs, ffcommon.GetAvcodecDll(), "av_packet_rescale_ts")
+	})
+	avPacketRescaleTs(pkt, tb_src, tb_dst)
 }
 
 /**

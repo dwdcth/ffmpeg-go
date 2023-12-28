@@ -1,10 +1,11 @@
 package libavcodec
 
 import (
-	"unsafe"
+	"sync"
 
 	"github.com/dwdcth/ffmpeg-go/ffcommon"
 	"github.com/dwdcth/ffmpeg-go/libavutil"
+	"github.com/ebitengine/purego"
 )
 
 /*
@@ -121,12 +122,14 @@ const AV_CODEC_PROP_TEXT_SUB = (1 << 17)
  * @return descriptor for given codec ID or NULL if no descriptor exists.
  */
 //const AVCodecDescriptor *avcodec_descriptor_get(enum AVCodecID id);
-func AvcodecDescriptorGet(id AVCodecID) (res *AVCodecDescriptor) {
-	t, _, _ := ffcommon.GetAvcodecDll().NewProc("avcodec_descriptor_get").Call(
-		uintptr(id),
-	)
-	res = (*AVCodecDescriptor)(unsafe.Pointer(t))
-	return
+var avcodecDescriptorGet func(id AVCodecID) *AVCodecDescriptor
+var avcodecDescriptorGetOnce sync.Once
+
+func AvcodecDescriptorGet(id AVCodecID) *AVCodecDescriptor {
+	avcodecDescriptorGetOnce.Do(func() {
+		purego.RegisterLibFunc(&avcodecDescriptorGet, ffcommon.GetAvcodecDll(), "avcodec_descriptor_get")
+	})
+	return avcodecDescriptorGet(id)
 }
 
 /**
@@ -137,12 +140,14 @@ func AvcodecDescriptorGet(id AVCodecID) (res *AVCodecDescriptor) {
  * @return next descriptor or NULL after the last descriptor
  */
 //const AVCodecDescriptor *avcodec_descriptor_next(const AVCodecDescriptor *prev);
-func (prev *AVCodecDescriptor) AvcodecDescriptorNext(id AVCodecID) (res *AVCodecDescriptor) {
-	t, _, _ := ffcommon.GetAvcodecDll().NewProc("avcodec_descriptor_next").Call(
-		uintptr(unsafe.Pointer(prev)),
-	)
-	res = (*AVCodecDescriptor)(unsafe.Pointer(t))
-	return
+var avcodecDescriptorNext func(prev *AVCodecDescriptor) *AVCodecDescriptor
+var avcodecDescriptorNextOnce sync.Once
+
+func (prev *AVCodecDescriptor) AvcodecDescriptorNext() *AVCodecDescriptor {
+	avcodecDescriptorNextOnce.Do(func() {
+		purego.RegisterLibFunc(&avcodecDescriptorNext, ffcommon.GetAvcodecDll(), "avcodec_descriptor_next")
+	})
+	return avcodecDescriptorNext(prev)
 }
 
 /**
@@ -150,12 +155,14 @@ func (prev *AVCodecDescriptor) AvcodecDescriptorNext(id AVCodecID) (res *AVCodec
  *         exists.
  */
 //const AVCodecDescriptor *avcodec_descriptor_get_by_name(const char *name);
-func AvcodecDescriptorGetByName(name ffcommon.FConstCharP) (res *AVCodecDescriptor) {
-	t, _, _ := ffcommon.GetAvcodecDll().NewProc("avcodec_descriptor_get_by_name").Call(
-		ffcommon.UintPtrFromString(name),
-	)
-	res = (*AVCodecDescriptor)(unsafe.Pointer(t))
-	return
+var avcodecDescriptorGetByName func(name ffcommon.FConstCharP) *AVCodecDescriptor
+var avcodecDescriptorGetByNameOnce sync.Once
+
+func AvcodecDescriptorGetByName(name ffcommon.FConstCharP) *AVCodecDescriptor {
+	avcodecDescriptorGetByNameOnce.Do(func() {
+		purego.RegisterLibFunc(&avcodecDescriptorGetByName, ffcommon.GetAvcodecDll(), "avcodec_descriptor_get_by_name")
+	})
+	return avcodecDescriptorGetByName(name)
 }
 
 /**

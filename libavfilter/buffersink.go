@@ -1,10 +1,11 @@
 package libavfilter
 
 import (
-	"unsafe"
+	"sync"
 
 	"github.com/dwdcth/ffmpeg-go/ffcommon"
 	"github.com/dwdcth/ffmpeg-go/libavutil"
+	"github.com/ebitengine/purego"
 )
 
 /*
@@ -89,14 +90,15 @@ import (
  * @return  >= 0 in for success, a negative AVERROR code for failure.
  */
 //int av_buffersink_get_frame_flags(AVFilterContext *ctx, AVFrame *frame, int flags);
-func (ctx *AVFilterContext) AvBuffersinkGetFrameFlags(frame *AVFrame, flags ffcommon.FInt) (res ffcommon.FInt) {
-	t, _, _ := ffcommon.GetAvfilterDll().NewProc("av_buffersink_get_frame_flags").Call(
-		uintptr(unsafe.Pointer(ctx)),
-		uintptr(unsafe.Pointer(frame)),
-		uintptr(flags),
-	)
-	res = ffcommon.FInt(t)
-	return
+func (ctx *AVFilterContext) AvBuffersinkGetFrameFlags(frame *AVFrame, flags ffcommon.FInt) ffcommon.FInt {
+	var avBuffersinkGetFrameFlags func(*AVFilterContext, *AVFrame, ffcommon.FInt) ffcommon.FInt
+	var avBuffersinkGetFrameFlagsOnce sync.Once
+
+	avBuffersinkGetFrameFlagsOnce.Do(func() {
+		purego.RegisterLibFunc(&avBuffersinkGetFrameFlags, ffcommon.GetAvfilterDll(), "av_buffersink_get_frame_flags")
+	})
+
+	return avBuffersinkGetFrameFlags(ctx, frame, flags)
 }
 
 /**
@@ -130,10 +132,16 @@ type AVBufferSinkParams struct {
 //attribute_deprecated
 //AVBufferSinkParams *av_buffersink_params_alloc(void);
 //todo
-func av_buffersink_params_alloc() (res ffcommon.FCharP) {
-	t, _, _ := ffcommon.GetAvfilterDll().NewProc("av_buffersink_params_alloc").Call()
-	res = ffcommon.StringFromPtr(t)
-	return
+var avBuffersinkParamsAlloc func() uintptr
+var avBuffersinkParamsAllocOnce sync.Once
+
+func AvBuffersinkParamsAlloc() string {
+	avBuffersinkParamsAllocOnce.Do(func() {
+		purego.RegisterLibFunc(&avBuffersinkParamsAlloc, ffcommon.GetAvfilterDll(), "av_buffersink_params_alloc")
+	})
+
+	t := avBuffersinkParamsAlloc()
+	return ffcommon.StringFromPtr(t)
 }
 
 /**
@@ -155,10 +163,14 @@ type AVABufferSinkParams struct {
  */
 //attribute_deprecated
 //AVABufferSinkParams *av_abuffersink_params_alloc(void);
-func AvAbuffersinkParamsAlloc() (res *AVABufferSinkParams) {
-	t, _, _ := ffcommon.GetAvfilterDll().NewProc("av_abuffersink_params_alloc").Call()
-	res = (*AVABufferSinkParams)(unsafe.Pointer(t))
-	return
+var avBuffersinkSetFrameSize func(ctx *AVFilterContext, frame_size ffcommon.FUnsigned)
+var avBuffersinkSetFrameSizeOnce sync.Once
+
+func (ctx *AVFilterContext) AvBuffersinkSetFrameSize(frame_size ffcommon.FUnsigned) {
+	avBuffersinkSetFrameSizeOnce.Do(func() {
+		purego.RegisterLibFunc(&avBuffersinkSetFrameSize, ffcommon.GetAvfilterDll(), "av_buffersink_set_frame_size")
+	})
+	avBuffersinkSetFrameSize(ctx, frame_size)
 }
 
 //#endif
@@ -171,12 +183,6 @@ func AvAbuffersinkParamsAlloc() (res *AVABufferSinkParams) {
  * not enough. The last buffer at EOF will be padded with 0.
  */
 //void av_buffersink_set_frame_size(AVFilterContext *ctx, unsigned frame_size);
-func (ctx *AVFilterContext) AvBuffersinkSetFrameSize(frame_size ffcommon.FUnsigned) {
-	ffcommon.GetAvfilterDll().NewProc("av_buffersink_set_frame_size").Call(
-		uintptr(unsafe.Pointer(ctx)),
-		uintptr(frame_size),
-	)
-}
 
 /**
  * @defgroup lavfi_buffersink_accessors Buffer sink accessors
@@ -185,102 +191,124 @@ func (ctx *AVFilterContext) AvBuffersinkSetFrameSize(frame_size ffcommon.FUnsign
  */
 
 // enum AVMediaType av_buffersink_get_type                (const AVFilterContext *ctx);
-func (ctx *AVFilterContext) AvBuffersinkGetType() (res AVMediaType) {
-	t, _, _ := ffcommon.GetAvfilterDll().NewProc("av_buffersink_get_type").Call(
-		uintptr(unsafe.Pointer(ctx)),
-	)
-	res = AVMediaType(t)
-	return
+var avBuffersinkGetType func(ctx *AVFilterContext) AVMediaType
+var avBuffersinkGetTypeOnce sync.Once
+
+func (ctx *AVFilterContext) AvBuffersinkGetType() AVMediaType {
+	avBuffersinkGetTypeOnce.Do(func() {
+		purego.RegisterLibFunc(&avBuffersinkGetType, ffcommon.GetAvfilterDll(), "av_buffersink_get_type")
+	})
+	return avBuffersinkGetType(ctx)
 }
 
 // AVRational       av_buffersink_get_time_base           (const AVFilterContext *ctx);
-func (ctx *AVFilterContext) AvBuffersinkGetTimeBase() (res AVRational) {
-	t, _, _ := ffcommon.GetAvfilterDll().NewProc("av_buffersink_get_time_base").Call(
-		uintptr(unsafe.Pointer(ctx)),
-	)
-	res = *(*AVRational)(unsafe.Pointer(t))
-	return
+var avBuffersinkGetTimeBase func(ctx *AVFilterContext) AVRational
+var avBuffersinkGetTimeBaseOnce sync.Once
+
+func (ctx *AVFilterContext) AvBuffersinkGetTimeBase() AVRational {
+	avBuffersinkGetTimeBaseOnce.Do(func() {
+		purego.RegisterLibFunc(&avBuffersinkGetTimeBase, ffcommon.GetAvfilterDll(), "av_buffersink_get_time_base")
+	})
+	return avBuffersinkGetTimeBase(ctx)
 }
 
 // int              av_buffersink_get_format              (const AVFilterContext *ctx);
-func (ctx *AVFilterContext) AvBuffersinkGetFormat() (res ffcommon.FInt) {
-	t, _, _ := ffcommon.GetAvfilterDll().NewProc("av_buffersink_get_format").Call(
-		uintptr(unsafe.Pointer(ctx)),
-	)
-	res = ffcommon.FInt(t)
-	return
+var avBuffersinkGetFormat func(ctx *AVFilterContext) ffcommon.FInt
+var avBuffersinkGetFormatOnce sync.Once
+
+func (ctx *AVFilterContext) AvBuffersinkGetFormat() ffcommon.FInt {
+	avBuffersinkGetFormatOnce.Do(func() {
+		purego.RegisterLibFunc(&avBuffersinkGetFormat, ffcommon.GetAvfilterDll(), "av_buffersink_get_format")
+	})
+	return avBuffersinkGetFormat(ctx)
 }
 
 // AVRational       av_buffersink_get_frame_rate          (const AVFilterContext *ctx);
-func (ctx *AVFilterContext) AvBuffersinkGetFrameRate() (res AVRational) {
-	t, _, _ := ffcommon.GetAvfilterDll().NewProc("av_buffersink_get_frame_rate").Call(
-		uintptr(unsafe.Pointer(ctx)),
-	)
-	res = *(*AVRational)(unsafe.Pointer(t))
-	return
+var avBuffersinkGetFrameRate func(ctx *AVFilterContext) AVRational
+var avBuffersinkGetFrameRateOnce sync.Once
+
+func (ctx *AVFilterContext) AvBuffersinkGetFrameRate() AVRational {
+	avBuffersinkGetFrameRateOnce.Do(func() {
+		purego.RegisterLibFunc(&avBuffersinkGetFrameRate, ffcommon.GetAvfilterDll(), "av_buffersink_get_frame_rate")
+	})
+	return avBuffersinkGetFrameRate(ctx)
 }
 
 // int              av_buffersink_get_w                   (const AVFilterContext *ctx);
-func (ctx *AVFilterContext) AvBuffersinkGetW() (res ffcommon.FInt) {
-	t, _, _ := ffcommon.GetAvfilterDll().NewProc("av_buffersink_get_w").Call(
-		uintptr(unsafe.Pointer(ctx)),
-	)
-	res = ffcommon.FInt(t)
-	return
+var avBuffersinkGetW func(ctx *AVFilterContext) ffcommon.FInt
+var avBuffersinkGetWOnce sync.Once
+
+func (ctx *AVFilterContext) AvBuffersinkGetW() ffcommon.FInt {
+	avBuffersinkGetWOnce.Do(func() {
+		purego.RegisterLibFunc(&avBuffersinkGetW, ffcommon.GetAvfilterDll(), "av_buffersink_get_w")
+	})
+	return avBuffersinkGetW(ctx)
 }
 
 // int              av_buffersink_get_h                   (const AVFilterContext *ctx);
-func (ctx *AVFilterContext) AvBuffersinkGetH() (res ffcommon.FInt) {
-	t, _, _ := ffcommon.GetAvfilterDll().NewProc("av_buffersink_get_h").Call(
-		uintptr(unsafe.Pointer(ctx)),
-	)
-	res = ffcommon.FInt(t)
-	return
+var avBuffersinkGetH func(ctx *AVFilterContext) ffcommon.FInt
+var avBuffersinkGetHOnce sync.Once
+
+func (ctx *AVFilterContext) AvBuffersinkGetH() ffcommon.FInt {
+	avBuffersinkGetHOnce.Do(func() {
+		purego.RegisterLibFunc(&avBuffersinkGetH, ffcommon.GetAvfilterDll(), "av_buffersink_get_h")
+	})
+	return avBuffersinkGetH(ctx)
 }
 
 // AVRational       av_buffersink_get_sample_aspect_ratio (const AVFilterContext *ctx);
-func (ctx *AVFilterContext) AvBuffersinkGetSampleAspectRatio() (res AVRational) {
-	t, _, _ := ffcommon.GetAvfilterDll().NewProc("av_buffersink_get_sample_aspect_ratio").Call(
-		uintptr(unsafe.Pointer(ctx)),
-	)
-	res = *(*AVRational)(unsafe.Pointer(t))
-	return
+var avBuffersinkGetSampleAspectRatio func(ctx *AVFilterContext) AVRational
+var avBuffersinkGetSampleAspectRatioOnce sync.Once
+
+func (ctx *AVFilterContext) AvBuffersinkGetSampleAspectRatio() AVRational {
+	avBuffersinkGetSampleAspectRatioOnce.Do(func() {
+		purego.RegisterLibFunc(&avBuffersinkGetSampleAspectRatio, ffcommon.GetAvfilterDll(), "av_buffersink_get_sample_aspect_ratio")
+	})
+	return avBuffersinkGetSampleAspectRatio(ctx)
 }
 
 // int              av_buffersink_get_channels            (const AVFilterContext *ctx);
-func (ctx *AVFilterContext) AvBuffersinkGetChannels() (res ffcommon.FInt) {
-	t, _, _ := ffcommon.GetAvfilterDll().NewProc("av_buffersink_get_channels").Call(
-		uintptr(unsafe.Pointer(ctx)),
-	)
-	res = ffcommon.FInt(t)
-	return
+var avBuffersinkGetChannels func(ctx *AVFilterContext) ffcommon.FInt
+var avBuffersinkGetChannelsOnce sync.Once
+
+func (ctx *AVFilterContext) AvBuffersinkGetChannels() ffcommon.FInt {
+	avBuffersinkGetChannelsOnce.Do(func() {
+		purego.RegisterLibFunc(&avBuffersinkGetChannels, ffcommon.GetAvfilterDll(), "av_buffersink_get_channels")
+	})
+	return avBuffersinkGetChannels(ctx)
 }
 
 // uint64_t         av_buffersink_get_channel_layout      (const AVFilterContext *ctx);
-func (ctx *AVFilterContext) AvBuffersinkGetChannelLayout() (res ffcommon.FUint64T) {
-	t, _, _ := ffcommon.GetAvfilterDll().NewProc("av_buffersink_get_channel_layout").Call(
-		uintptr(unsafe.Pointer(ctx)),
-	)
-	res = ffcommon.FUint64T(t)
-	return
+var avBuffersinkGetChannelLayout func(ctx *AVFilterContext) ffcommon.FUint64T
+var avBuffersinkGetChannelLayoutOnce sync.Once
+
+func (ctx *AVFilterContext) AvBuffersinkGetChannelLayout() ffcommon.FUint64T {
+	avBuffersinkGetChannelLayoutOnce.Do(func() {
+		purego.RegisterLibFunc(&avBuffersinkGetChannelLayout, ffcommon.GetAvfilterDll(), "av_buffersink_get_channel_layout")
+	})
+	return avBuffersinkGetChannelLayout(ctx)
 }
 
 // int              av_buffersink_get_sample_rate         (const AVFilterContext *ctx);
-func (ctx *AVFilterContext) AvBuffersinkGetSampleRate() (res ffcommon.FInt) {
-	t, _, _ := ffcommon.GetAvfilterDll().NewProc("av_buffersink_get_sample_rate").Call(
-		uintptr(unsafe.Pointer(ctx)),
-	)
-	res = ffcommon.FInt(t)
-	return
+var avBuffersinkGetSampleRate func(ctx *AVFilterContext) ffcommon.FInt
+var avBuffersinkGetSampleRateOnce sync.Once
+
+func (ctx *AVFilterContext) AvBuffersinkGetSampleRate() ffcommon.FInt {
+	avBuffersinkGetSampleRateOnce.Do(func() {
+		purego.RegisterLibFunc(&avBuffersinkGetSampleRate, ffcommon.GetAvfilterDll(), "av_buffersink_get_sample_rate")
+	})
+	return avBuffersinkGetSampleRate(ctx)
 }
 
 // AVBufferRef *    av_buffersink_get_hw_frames_ctx       (const AVFilterContext *ctx);
-func (ctx *AVFilterContext) AvBuffersinkGetHwFramesCtx() (res *AVBufferRef) {
-	t, _, _ := ffcommon.GetAvfilterDll().NewProc("av_buffersink_get_hw_frames_ctx").Call(
-		uintptr(unsafe.Pointer(ctx)),
-	)
-	res = (*AVBufferRef)(unsafe.Pointer(t))
-	return
+var avBuffersinkGetHwFramesCtx func(ctx *AVFilterContext) *AVBufferRef
+var avBuffersinkGetHwFramesCtxOnce sync.Once
+
+func (ctx *AVFilterContext) AvBuffersinkGetHwFramesCtx() *AVBufferRef {
+	avBuffersinkGetHwFramesCtxOnce.Do(func() {
+		purego.RegisterLibFunc(&avBuffersinkGetHwFramesCtx, ffcommon.GetAvfilterDll(), "av_buffersink_get_hw_frames_ctx")
+	})
+	return avBuffersinkGetHwFramesCtx(ctx)
 }
 
 /** @} */
@@ -300,13 +328,14 @@ func (ctx *AVFilterContext) AvBuffersinkGetHwFramesCtx() (res *AVBufferRef) {
  *         - A different negative AVERROR code in other failure cases.
  */
 //int av_buffersink_get_frame(AVFilterContext *ctx, AVFrame *frame);
-func (ctx *AVFilterContext) AvBuffersinkGetFrame(frame *AVFrame) (res ffcommon.FInt) {
-	t, _, _ := ffcommon.GetAvfilterDll().NewProc("av_buffersink_get_frame").Call(
-		uintptr(unsafe.Pointer(ctx)),
-		uintptr(unsafe.Pointer(frame)),
-	)
-	res = ffcommon.FInt(t)
-	return
+var avBuffersinkGetFrame func(ctx *AVFilterContext, frame *AVFrame) ffcommon.FInt
+var avBuffersinkGetFrameOnce sync.Once
+
+func (ctx *AVFilterContext) AvBuffersinkGetFrame(frame *AVFrame) ffcommon.FInt {
+	avBuffersinkGetFrameOnce.Do(func() {
+		purego.RegisterLibFunc(&avBuffersinkGetFrame, ffcommon.GetAvfilterDll(), "av_buffersink_get_frame")
+	})
+	return avBuffersinkGetFrame(ctx, frame)
 }
 
 /**
@@ -327,14 +356,14 @@ func (ctx *AVFilterContext) AvBuffersinkGetFrame(frame *AVFrame) (res ffcommon.F
  * the other with a single sink, not both.
  */
 //int av_buffersink_get_samples(AVFilterContext *ctx, AVFrame *frame, int nb_samples);
-func (ctx *AVFilterContext) AvBuffersinkGetSamples(frame *AVFrame, nb_samples ffcommon.FInt) (res ffcommon.FInt) {
-	t, _, _ := ffcommon.GetAvfilterDll().NewProc("av_buffersink_get_samples").Call(
-		uintptr(unsafe.Pointer(ctx)),
-		uintptr(unsafe.Pointer(frame)),
-		uintptr(nb_samples),
-	)
-	res = ffcommon.FInt(t)
-	return
+var avBuffersinkGetSamples func(ctx *AVFilterContext, frame *AVFrame, nb_samples ffcommon.FInt) ffcommon.FInt
+var avBuffersinkGetSamplesOnce sync.Once
+
+func (ctx *AVFilterContext) AvBuffersinkGetSamples(frame *AVFrame, nb_samples ffcommon.FInt) ffcommon.FInt {
+	avBuffersinkGetSamplesOnce.Do(func() {
+		purego.RegisterLibFunc(&avBuffersinkGetSamples, ffcommon.GetAvfilterDll(), "av_buffersink_get_samples")
+	})
+	return avBuffersinkGetSamples(ctx, frame, nb_samples)
 }
 
 /**

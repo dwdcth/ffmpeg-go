@@ -1,9 +1,10 @@
 package libavutil
 
 import (
-	"unsafe"
+	"sync"
 
 	"github.com/dwdcth/ffmpeg-go/ffcommon"
+	"github.com/ebitengine/purego"
 )
 
 /*
@@ -89,12 +90,14 @@ const (
  * recognized.
  */
 //const char *av_get_sample_fmt_name(enum AVSampleFormat sample_fmt);
-func AvGetSampleFmtName(sample_fmt AVSampleFormat) (res ffcommon.FConstCharP) {
-	t, _, _ := ffcommon.GetAvutilDll().NewProc("av_get_sample_fmt_name").Call(
-		uintptr(sample_fmt),
-	)
-	res = ffcommon.StringFromPtr(t)
-	return
+var avGetSampleFmtName func(sample_fmt AVSampleFormat) ffcommon.FConstCharP
+var avGetSampleFmtNameOnce sync.Once
+
+func AvGetSampleFmtName(sample_fmt AVSampleFormat) ffcommon.FConstCharP {
+	avGetSampleFmtNameOnce.Do(func() {
+		purego.RegisterLibFunc(&avGetSampleFmtName, ffcommon.GetAvutilDll(), "av_get_sample_fmt_name")
+	})
+	return avGetSampleFmtName(sample_fmt)
 }
 
 /**
@@ -102,12 +105,14 @@ func AvGetSampleFmtName(sample_fmt AVSampleFormat) (res ffcommon.FConstCharP) {
  * on error.
  */
 //enum AVSampleFormat av_get_sample_fmt(const char *name);
-func AvGetSampleFmt(name ffcommon.FConstCharP) (res AVSampleFormat) {
-	t, _, _ := ffcommon.GetAvutilDll().NewProc("av_get_sample_fmt").Call(
-		ffcommon.UintPtrFromString(name),
-	)
-	res = AVSampleFormat(t)
-	return
+var avGetSampleFmt func(name ffcommon.FConstCharP) AVSampleFormat
+var avGetSampleFmtOnce sync.Once
+
+func AvGetSampleFmt(name ffcommon.FConstCharP) AVSampleFormat {
+	avGetSampleFmtOnce.Do(func() {
+		purego.RegisterLibFunc(&avGetSampleFmt, ffcommon.GetAvutilDll(), "av_get_sample_fmt")
+	})
+	return avGetSampleFmt(name)
 }
 
 /**
@@ -117,13 +122,14 @@ func AvGetSampleFmt(name ffcommon.FConstCharP) (res AVSampleFormat) {
  * input.
  */
 //enum AVSampleFormat av_get_alt_sample_fmt(enum AVSampleFormat sample_fmt, int planar);
-func AvGetAltSampleFmt(sample_fmt AVSampleFormat, planar ffcommon.FInt) (res AVSampleFormat) {
-	t, _, _ := ffcommon.GetAvutilDll().NewProc("av_get_alt_sample_fmt").Call(
-		uintptr(sample_fmt),
-		uintptr(planar),
-	)
-	res = AVSampleFormat(t)
-	return
+var avGetAltSampleFmt func(sample_fmt AVSampleFormat, planar ffcommon.FInt) AVSampleFormat
+var avGetAltSampleFmtOnce sync.Once
+
+func AvGetAltSampleFmt(sample_fmt AVSampleFormat, planar ffcommon.FInt) AVSampleFormat {
+	avGetAltSampleFmtOnce.Do(func() {
+		purego.RegisterLibFunc(&avGetAltSampleFmt, ffcommon.GetAvutilDll(), "av_get_alt_sample_fmt")
+	})
+	return avGetAltSampleFmt(sample_fmt, planar)
 }
 
 /**
@@ -136,12 +142,14 @@ func AvGetAltSampleFmt(sample_fmt AVSampleFormat, planar ffcommon.FInt) (res AVS
            AV_SAMPLE_FMT_NONE on error.
 */
 //enum AVSampleFormat av_get_packed_sample_fmt(enum AVSampleFormat sample_fmt);
-func AvGetPackedSampleFmt(sample_fmt AVSampleFormat) (res AVSampleFormat) {
-	t, _, _ := ffcommon.GetAvutilDll().NewProc("av_get_packed_sample_fmt").Call(
-		uintptr(sample_fmt),
-	)
-	res = AVSampleFormat(t)
-	return
+var avGetPackedSampleFmt func(sample_fmt AVSampleFormat) AVSampleFormat
+var avGetPackedSampleFmtOnce sync.Once
+
+func AvGetPackedSampleFmt(sample_fmt AVSampleFormat) AVSampleFormat {
+	avGetPackedSampleFmtOnce.Do(func() {
+		purego.RegisterLibFunc(&avGetPackedSampleFmt, ffcommon.GetAvutilDll(), "av_get_packed_sample_fmt")
+	})
+	return avGetPackedSampleFmt(sample_fmt)
 }
 
 /**
@@ -154,12 +162,14 @@ func AvGetPackedSampleFmt(sample_fmt AVSampleFormat) (res AVSampleFormat) {
            AV_SAMPLE_FMT_NONE on error.
 */
 //enum AVSampleFormat av_get_planar_sample_fmt(enum AVSampleFormat sample_fmt);
-func AvGetPlanarSampleFmt(sample_fmt AVSampleFormat) (res AVSampleFormat) {
-	t, _, _ := ffcommon.GetAvutilDll().NewProc("av_get_planar_sample_fmt").Call(
-		uintptr(sample_fmt),
-	)
-	res = AVSampleFormat(t)
-	return
+var avGetPlanarSampleFmt func(sample_fmt AVSampleFormat) AVSampleFormat
+var avGetPlanarSampleFmtOnce sync.Once
+
+func AvGetPlanarSampleFmt(sample_fmt AVSampleFormat) AVSampleFormat {
+	avGetPlanarSampleFmtOnce.Do(func() {
+		purego.RegisterLibFunc(&avGetPlanarSampleFmt, ffcommon.GetAvutilDll(), "av_get_planar_sample_fmt")
+	})
+	return avGetPlanarSampleFmt(sample_fmt)
 }
 
 /**
@@ -175,14 +185,14 @@ func AvGetPlanarSampleFmt(sample_fmt AVSampleFormat) (res AVSampleFormat) {
  * unknown or in case of other errors
  */
 //char *av_get_sample_fmt_string(char *buf, int buf_size, enum AVSampleFormat sample_fmt);
-func AvGetSampleFmtString(buf ffcommon.FCharP, buf_size ffcommon.FInt, sample_fmt AVSampleFormat) (res ffcommon.FCharP) {
-	t, _, _ := ffcommon.GetAvutilDll().NewProc("av_get_sample_fmt_string").Call(
-		ffcommon.UintPtrFromString(buf),
-		uintptr(buf_size),
-		uintptr(sample_fmt),
-	)
-	res = ffcommon.StringFromPtr(t)
-	return
+var avGetSampleFmtString func(buf ffcommon.FCharP, buf_size ffcommon.FInt, sample_fmt AVSampleFormat) ffcommon.FCharP
+var avGetSampleFmtStringOnce sync.Once
+
+func AvGetSampleFmtString(buf ffcommon.FCharP, buf_size ffcommon.FInt, sample_fmt AVSampleFormat) ffcommon.FCharP {
+	avGetSampleFmtStringOnce.Do(func() {
+		purego.RegisterLibFunc(&avGetSampleFmtString, ffcommon.GetAvutilDll(), "av_get_sample_fmt_string")
+	})
+	return avGetSampleFmtString(buf, buf_size, sample_fmt)
 }
 
 /**
@@ -193,12 +203,14 @@ func AvGetSampleFmtString(buf ffcommon.FCharP, buf_size ffcommon.FInt, sample_fm
  * sample format
  */
 //int av_get_bytes_per_sample(enum AVSampleFormat sample_fmt);
-func AvGetBytesPerSample(sample_fmt AVSampleFormat) (res ffcommon.FInt) {
-	t, _, _ := ffcommon.GetAvutilDll().NewProc("av_get_bytes_per_sample").Call(
-		uintptr(sample_fmt),
-	)
-	res = ffcommon.FInt(t)
-	return
+var avGetBytesPerSample func(sample_fmt AVSampleFormat) ffcommon.FInt
+var avGetBytesPerSampleOnce sync.Once
+
+func AvGetBytesPerSample(sample_fmt AVSampleFormat) ffcommon.FInt {
+	avGetBytesPerSampleOnce.Do(func() {
+		purego.RegisterLibFunc(&avGetBytesPerSample, ffcommon.GetAvutilDll(), "av_get_bytes_per_sample")
+	})
+	return avGetBytesPerSample(sample_fmt)
 }
 
 /**
@@ -208,12 +220,14 @@ func AvGetBytesPerSample(sample_fmt AVSampleFormat) (res ffcommon.FInt) {
  * @return 1 if the sample format is planar, 0 if it is interleaved
  */
 //int av_sample_fmt_is_planar(enum AVSampleFormat sample_fmt);
-func AvSampleFmtIsPlanar(sample_fmt AVSampleFormat) (res ffcommon.FInt) {
-	t, _, _ := ffcommon.GetAvutilDll().NewProc("av_sample_fmt_is_planar").Call(
-		uintptr(sample_fmt),
-	)
-	res = ffcommon.FInt(t)
-	return
+var avSampleFmtIsPlanar func(sample_fmt AVSampleFormat) ffcommon.FInt
+var avSampleFmtIsPlanarOnce sync.Once
+
+func AvSampleFmtIsPlanar(sample_fmt AVSampleFormat) ffcommon.FInt {
+	avSampleFmtIsPlanarOnce.Do(func() {
+		purego.RegisterLibFunc(&avSampleFmtIsPlanar, ffcommon.GetAvutilDll(), "av_sample_fmt_is_planar")
+	})
+	return avSampleFmtIsPlanar(sample_fmt)
 }
 
 /**
@@ -228,17 +242,14 @@ func AvSampleFmtIsPlanar(sample_fmt AVSampleFormat) (res ffcommon.FInt) {
  */
 //int av_samples_get_buffer_size(int *linesize, int nb_channels, int nb_samples,
 //enum AVSampleFormat sample_fmt, int align);
-func AvSamplesGetBufferSize(linesize *ffcommon.FInt, nb_channels, nb_samples ffcommon.FInt,
-	sample_fmt AVSampleFormat, align ffcommon.FInt) (res ffcommon.FInt) {
-	t, _, _ := ffcommon.GetAvutilDll().NewProc("av_samples_get_buffer_size").Call(
-		uintptr(unsafe.Pointer(linesize)),
-		uintptr(nb_channels),
-		uintptr(nb_samples),
-		uintptr(sample_fmt),
-		uintptr(align),
-	)
-	res = ffcommon.FInt(t)
-	return
+var avSamplesGetBufferSize func(linesize *ffcommon.FInt, nb_channels, nb_samples ffcommon.FInt, sample_fmt AVSampleFormat, align ffcommon.FInt) ffcommon.FInt
+var avSamplesGetBufferSizeOnce sync.Once
+
+func AvSamplesGetBufferSize(linesize *ffcommon.FInt, nb_channels, nb_samples ffcommon.FInt, sample_fmt AVSampleFormat, align ffcommon.FInt) ffcommon.FInt {
+	avSamplesGetBufferSizeOnce.Do(func() {
+		purego.RegisterLibFunc(&avSamplesGetBufferSize, ffcommon.GetAvutilDll(), "av_samples_get_buffer_size")
+	})
+	return avSamplesGetBufferSize(linesize, nb_channels, nb_samples, sample_fmt, align)
 }
 
 /**
@@ -284,21 +295,14 @@ func AvSamplesGetBufferSize(linesize *ffcommon.FInt, nb_channels, nb_samples ffc
 //const uint8_t *buf,
 //int nb_channels, int nb_samples,
 //enum AVSampleFormat sample_fmt, int align);
-func AvSamplesFillArrays(audio_data **ffcommon.FUint8T, linesize *ffcommon.FInt,
-	buf *ffcommon.FUint8T,
-	nb_channels, nb_samples ffcommon.FInt,
-	sample_fmt AVSampleFormat, align ffcommon.FInt) (res ffcommon.FInt) {
-	t, _, _ := ffcommon.GetAvutilDll().NewProc("av_samples_fill_arrays").Call(
-		uintptr(unsafe.Pointer(audio_data)),
-		uintptr(unsafe.Pointer(linesize)),
-		uintptr(unsafe.Pointer(buf)),
-		uintptr(nb_channels),
-		uintptr(nb_samples),
-		uintptr(sample_fmt),
-		uintptr(align),
-	)
-	res = ffcommon.FInt(t)
-	return
+var avSamplesFillArrays func(audio_data **ffcommon.FUint8T, linesize *ffcommon.FInt, buf *ffcommon.FUint8T, nb_channels, nb_samples ffcommon.FInt, sample_fmt AVSampleFormat, align ffcommon.FInt) ffcommon.FInt
+var avSamplesFillArraysOnce sync.Once
+
+func AvSamplesFillArrays(audio_data **ffcommon.FUint8T, linesize *ffcommon.FInt, buf *ffcommon.FUint8T, nb_channels, nb_samples ffcommon.FInt, sample_fmt AVSampleFormat, align ffcommon.FInt) ffcommon.FInt {
+	avSamplesFillArraysOnce.Do(func() {
+		purego.RegisterLibFunc(&avSamplesFillArrays, ffcommon.GetAvutilDll(), "av_samples_fill_arrays")
+	})
+	return avSamplesFillArrays(audio_data, linesize, buf, nb_channels, nb_samples, sample_fmt, align)
 }
 
 /**
@@ -322,18 +326,14 @@ func AvSamplesFillArrays(audio_data **ffcommon.FUint8T, linesize *ffcommon.FInt,
  */
 //int av_samples_alloc(uint8_t **audio_data, int *linesize, int nb_channels,
 //int nb_samples, enum AVSampleFormat sample_fmt, int align);
-func AvSamplesAlloc(audio_data **ffcommon.FUint8T, linesize *ffcommon.FInt, nb_channels ffcommon.FInt,
-	nb_samples ffcommon.FInt, sample_fmt AVSampleFormat, align ffcommon.FInt) (res ffcommon.FInt) {
-	t, _, _ := ffcommon.GetAvutilDll().NewProc("av_samples_alloc").Call(
-		uintptr(unsafe.Pointer(audio_data)),
-		uintptr(unsafe.Pointer(linesize)),
-		uintptr(nb_channels),
-		uintptr(nb_samples),
-		uintptr(sample_fmt),
-		uintptr(align),
-	)
-	res = ffcommon.FInt(t)
-	return
+var avSamplesAlloc func(audio_data **ffcommon.FUint8T, linesize *ffcommon.FInt, nb_channels ffcommon.FInt, nb_samples ffcommon.FInt, sample_fmt AVSampleFormat, align ffcommon.FInt) ffcommon.FInt
+var avSamplesAllocOnce sync.Once
+
+func AvSamplesAlloc(audio_data **ffcommon.FUint8T, linesize *ffcommon.FInt, nb_channels ffcommon.FInt, nb_samples ffcommon.FInt, sample_fmt AVSampleFormat, align ffcommon.FInt) ffcommon.FInt {
+	avSamplesAllocOnce.Do(func() {
+		purego.RegisterLibFunc(&avSamplesAlloc, ffcommon.GetAvutilDll(), "av_samples_alloc")
+	})
+	return avSamplesAlloc(audio_data, linesize, nb_channels, nb_samples, sample_fmt, align)
 }
 
 /**
@@ -347,18 +347,14 @@ func AvSamplesAlloc(audio_data **ffcommon.FUint8T, linesize *ffcommon.FInt, nb_c
  */
 //int av_samples_alloc_array_and_samples(uint8_t ***audio_data, int *linesize, int nb_channels,
 //int nb_samples, enum AVSampleFormat sample_fmt, int align);
-func AvSamplesAllocArrayAndSamples(audio_data ***ffcommon.FUint8T, linesize *ffcommon.FInt, nb_channels ffcommon.FInt,
-	nb_samples ffcommon.FInt, sample_fmt AVSampleFormat, align ffcommon.FInt) (res ffcommon.FInt) {
-	t, _, _ := ffcommon.GetAvutilDll().NewProc("av_samples_alloc_array_and_samples").Call(
-		uintptr(unsafe.Pointer(audio_data)),
-		uintptr(unsafe.Pointer(linesize)),
-		uintptr(nb_channels),
-		uintptr(nb_samples),
-		uintptr(sample_fmt),
-		uintptr(align),
-	)
-	res = ffcommon.FInt(t)
-	return
+var avSamplesAllocArrayAndSamples func(audio_data ***ffcommon.FUint8T, linesize *ffcommon.FInt, nb_channels ffcommon.FInt, nb_samples ffcommon.FInt, sample_fmt AVSampleFormat, align ffcommon.FInt) ffcommon.FInt
+var avSamplesAllocArrayAndSamplesOnce sync.Once
+
+func AvSamplesAllocArrayAndSamples(audio_data ***ffcommon.FUint8T, linesize *ffcommon.FInt, nb_channels ffcommon.FInt, nb_samples ffcommon.FInt, sample_fmt AVSampleFormat, align ffcommon.FInt) ffcommon.FInt {
+	avSamplesAllocArrayAndSamplesOnce.Do(func() {
+		purego.RegisterLibFunc(&avSamplesAllocArrayAndSamples, ffcommon.GetAvutilDll(), "av_samples_alloc_array_and_samples")
+	})
+	return avSamplesAllocArrayAndSamples(audio_data, linesize, nb_channels, nb_samples, sample_fmt, align)
 }
 
 /**
@@ -375,19 +371,14 @@ func AvSamplesAllocArrayAndSamples(audio_data ***ffcommon.FUint8T, linesize *ffc
 //int av_samples_copy(uint8_t **dst, uint8_t * const *src, int dst_offset,
 //int src_offset, int nb_samples, int nb_channels,
 //enum AVSampleFormat sample_fmt);
-func AvSamplesCopy(dst **ffcommon.FUint8T, src **ffcommon.FUint8T, dst_offset, src_offset ffcommon.FInt,
-	nb_samples, nb_channels ffcommon.FInt, sample_fmt AVSampleFormat) (res ffcommon.FInt) {
-	t, _, _ := ffcommon.GetAvutilDll().NewProc("av_samples_copy").Call(
-		uintptr(unsafe.Pointer(dst)),
-		uintptr(unsafe.Pointer(src)),
-		uintptr(dst_offset),
-		uintptr(src_offset),
-		uintptr(nb_samples),
-		uintptr(nb_channels),
-		uintptr(sample_fmt),
-	)
-	res = ffcommon.FInt(t)
-	return
+var avSamplesCopy func(dst **ffcommon.FUint8T, src **ffcommon.FUint8T, dst_offset, src_offset ffcommon.FInt, nb_samples, nb_channels ffcommon.FInt, sample_fmt AVSampleFormat) ffcommon.FInt
+var avSamplesCopyOnce sync.Once
+
+func AvSamplesCopy(dst **ffcommon.FUint8T, src **ffcommon.FUint8T, dst_offset, src_offset ffcommon.FInt, nb_samples, nb_channels ffcommon.FInt, sample_fmt AVSampleFormat) ffcommon.FInt {
+	avSamplesCopyOnce.Do(func() {
+		purego.RegisterLibFunc(&avSamplesCopy, ffcommon.GetAvutilDll(), "av_samples_copy")
+	})
+	return avSamplesCopy(dst, src, dst_offset, src_offset, nb_samples, nb_channels, sample_fmt)
 }
 
 /**
@@ -401,17 +392,14 @@ func AvSamplesCopy(dst **ffcommon.FUint8T, src **ffcommon.FUint8T, dst_offset, s
  */
 //int av_samples_set_silence(uint8_t **audio_data, int offset, int nb_samples,
 //int nb_channels, enum AVSampleFormat sample_fmt);
-func AvSamplesSetSilence(audio_data **ffcommon.FUint8T, offset ffcommon.FInt,
-	nb_samples, nb_channels ffcommon.FInt, sample_fmt AVSampleFormat) (res ffcommon.FInt) {
-	t, _, _ := ffcommon.GetAvutilDll().NewProc("av_samples_set_silence").Call(
-		uintptr(unsafe.Pointer(audio_data)),
-		uintptr(offset),
-		uintptr(nb_samples),
-		uintptr(nb_channels),
-		uintptr(sample_fmt),
-	)
-	res = ffcommon.FInt(t)
-	return
+var avSamplesSetSilence func(audio_data **ffcommon.FUint8T, offset ffcommon.FInt, nb_samples, nb_channels ffcommon.FInt, sample_fmt AVSampleFormat) ffcommon.FInt
+var avSamplesSetSilenceOnce sync.Once
+
+func AvSamplesSetSilence(audio_data **ffcommon.FUint8T, offset ffcommon.FInt, nb_samples, nb_channels ffcommon.FInt, sample_fmt AVSampleFormat) ffcommon.FInt {
+	avSamplesSetSilenceOnce.Do(func() {
+		purego.RegisterLibFunc(&avSamplesSetSilence, ffcommon.GetAvutilDll(), "av_samples_set_silence")
+	})
+	return avSamplesSetSilence(audio_data, offset, nb_samples, nb_channels, sample_fmt)
 }
 
 /**

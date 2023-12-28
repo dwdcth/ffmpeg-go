@@ -1,9 +1,10 @@
 package libavcodec
 
 import (
-	"unsafe"
+	"sync"
 
 	"github.com/dwdcth/ffmpeg-go/ffcommon"
+	"github.com/ebitengine/purego"
 )
 
 /*
@@ -113,10 +114,14 @@ type AVQSVContext struct {
  * It must be freed by the caller with av_free().
  */
 //AVQSVContext *av_qsv_alloc_context(void);
-func AvQsvAllocContext() (res *AVQSVContext) {
-	t, _, _ := ffcommon.GetAvcodecDll().NewProc("av_qsv_alloc_context").Call()
-	res = (*AVQSVContext)(unsafe.Pointer(t))
-	return
+var avQsvAllocContext func() *AVQSVContext
+var avQsvAllocContextOnce sync.Once
+
+func AvQsvAllocContext() *AVQSVContext {
+	avQsvAllocContextOnce.Do(func() {
+		purego.RegisterLibFunc(&avQsvAllocContext, ffcommon.GetAvcodecDll(), "av_qsv_alloc_context")
+	})
+	return avQsvAllocContext()
 }
 
 //#endif /* AVCODEC_QSV_H */

@@ -1,4 +1,10 @@
 # github.com/dwdcth/ffmpeg-go
+
+问题记录
+char指针类型的返回
+宏，之间用go改写？
+
+
 golang binding for ffmpeg
 win10 x64
 

@@ -1,9 +1,10 @@
 package libavutil
 
 import (
-	"unsafe"
+	"sync"
 
 	"github.com/dwdcth/ffmpeg-go/ffcommon"
+	"github.com/ebitengine/purego"
 )
 
 /*
@@ -255,12 +256,14 @@ type AVHWFramesContext struct {
  *         not found.
  */
 //enum AVHWDeviceType av_hwdevice_find_type_by_name(const char *name);
-func AvHwdeviceFindTypeByName(name ffcommon.FConstCharP) (res AVHWDeviceType) {
-	t, _, _ := ffcommon.GetAvutilDll().NewProc("av_hwdevice_find_type_by_name").Call(
-		ffcommon.UintPtrFromString(name),
-	)
-	res = AVHWDeviceType(t)
-	return
+var avHwdeviceFindTypeByName func(name ffcommon.FConstCharP) AVHWDeviceType
+var avHwdeviceFindTypeByNameOnce sync.Once
+
+func AvHwdeviceFindTypeByName(name ffcommon.FConstCharP) AVHWDeviceType {
+	avHwdeviceFindTypeByNameOnce.Do(func() {
+		purego.RegisterLibFunc(&avHwdeviceFindTypeByName, ffcommon.GetAvutilDll(), "av_hwdevice_find_type_by_name")
+	})
+	return avHwdeviceFindTypeByName(name)
 }
 
 /** Get the string name of an AVHWDeviceType.
@@ -270,12 +273,14 @@ func AvHwdeviceFindTypeByName(name ffcommon.FConstCharP) (res AVHWDeviceType) {
  *         is not valid.
  */
 //const char *av_hwdevice_get_type_name(enum AVHWDeviceType type);
-func AvHwdeviceGetTypeName(type0 AVHWDeviceType) (res ffcommon.FCharP) {
-	t, _, _ := ffcommon.GetAvutilDll().NewProc("av_hwdevice_get_type_name").Call(
-		uintptr(type0),
-	)
-	res = ffcommon.StringFromPtr(t)
-	return
+var avHwdeviceGetTypeName func(type0 AVHWDeviceType) ffcommon.FCharP
+var avHwdeviceGetTypeNameOnce sync.Once
+
+func AvHwdeviceGetTypeName(type0 AVHWDeviceType) ffcommon.FCharP {
+	avHwdeviceGetTypeNameOnce.Do(func() {
+		purego.RegisterLibFunc(&avHwdeviceGetTypeName, ffcommon.GetAvutilDll(), "av_hwdevice_get_type_name")
+	})
+	return avHwdeviceGetTypeName(type0)
 }
 
 /**
@@ -287,12 +292,14 @@ func AvHwdeviceGetTypeName(type0 AVHWDeviceType) (res ffcommon.FCharP) {
  *         AV_HWDEVICE_TYPE_NONE if there are no more.
  */
 //enum AVHWDeviceType av_hwdevice_iterate_types(enum AVHWDeviceType prev);
-func AvHwdeviceIterateTypes(prev AVHWDeviceType) (res AVHWDeviceType) {
-	t, _, _ := ffcommon.GetAvutilDll().NewProc("av_hwdevice_iterate_types").Call(
-		uintptr(prev),
-	)
-	res = AVHWDeviceType(t)
-	return
+var avHwdeviceIterateTypes func(prev AVHWDeviceType) AVHWDeviceType
+var avHwdeviceIterateTypesOnce sync.Once
+
+func AvHwdeviceIterateTypes(prev AVHWDeviceType) AVHWDeviceType {
+	avHwdeviceIterateTypesOnce.Do(func() {
+		purego.RegisterLibFunc(&avHwdeviceIterateTypes, ffcommon.GetAvutilDll(), "av_hwdevice_iterate_types")
+	})
+	return avHwdeviceIterateTypes(prev)
 }
 
 /**
@@ -303,12 +310,14 @@ func AvHwdeviceIterateTypes(prev AVHWDeviceType) (res AVHWDeviceType) {
  *         on failure.
  */
 //AVBufferRef *av_hwdevice_ctx_alloc(enum AVHWDeviceType type);
-func AvHwdeviceCtxAlloc(type0 AVHWDeviceType) (res *AVBufferRef) {
-	t, _, _ := ffcommon.GetAvutilDll().NewProc("av_hwdevice_ctx_alloc").Call(
-		uintptr(type0),
-	)
-	res = (*AVBufferRef)(unsafe.Pointer(t))
-	return
+var avHwdeviceCtxAlloc func(type0 AVHWDeviceType) *AVBufferRef
+var avHwdeviceCtxAllocOnce sync.Once
+
+func AvHwdeviceCtxAlloc(type0 AVHWDeviceType) *AVBufferRef {
+	avHwdeviceCtxAllocOnce.Do(func() {
+		purego.RegisterLibFunc(&avHwdeviceCtxAlloc, ffcommon.GetAvutilDll(), "av_hwdevice_ctx_alloc")
+	})
+	return avHwdeviceCtxAlloc(type0)
 }
 
 /**
@@ -320,12 +329,14 @@ func AvHwdeviceCtxAlloc(type0 AVHWDeviceType) (res *AVBufferRef) {
  * @return 0 on success, a negative AVERROR code on failure
  */
 //int av_hwdevice_ctx_init(AVBufferRef *ref);
-func (ref *AVBufferRef) AvHwdeviceCtxInit() (res ffcommon.FInt) {
-	t, _, _ := ffcommon.GetAvutilDll().NewProc("av_hwdevice_ctx_init").Call(
-		uintptr(unsafe.Pointer(ref)),
-	)
-	res = ffcommon.FInt(t)
-	return
+var avHwdeviceCtxInit func(ref *AVBufferRef) ffcommon.FInt
+var avHwdeviceCtxInitOnce sync.Once
+
+func (ref *AVBufferRef) AvHwdeviceCtxInit() ffcommon.FInt {
+	avHwdeviceCtxInitOnce.Do(func() {
+		purego.RegisterLibFunc(&avHwdeviceCtxInit, ffcommon.GetAvutilDll(), "av_hwdevice_ctx_init")
+	})
+	return avHwdeviceCtxInit(ref)
 }
 
 /**
@@ -355,14 +366,16 @@ func (ref *AVBufferRef) AvHwdeviceCtxInit() (res ffcommon.FInt) {
  */
 //int av_hwdevice_ctx_create(AVBufferRef **device_ctx, enum AVHWDeviceType type,
 //const char *device, AVDictionary *opts, int flags);
+var avHwdeviceCtxCreate func(device_ctx **AVBufferRef, type0 AVHWDeviceType,
+	device ffcommon.FConstCharP, opts *AVDictionary, flags ffcommon.FInt) ffcommon.FInt
+var avHwdeviceCtxCreateOnce sync.Once
+
 func AvHwdeviceCtxCreate(device_ctx **AVBufferRef, type0 AVHWDeviceType,
-	device ffcommon.FConstCharP, opts *AVDictionary, flags ffcommon.FInt) (res ffcommon.FInt) {
-	t, _, _ := ffcommon.GetAvutilDll().NewProc("av_hwdevice_ctx_create").Call(
-		uintptr(unsafe.Pointer(device_ctx)),
-		uintptr(type0),
-	)
-	res = ffcommon.FInt(t)
-	return
+	device ffcommon.FConstCharP, opts *AVDictionary, flags ffcommon.FInt) ffcommon.FInt {
+	avHwdeviceCtxCreateOnce.Do(func() {
+		purego.RegisterLibFunc(&avHwdeviceCtxCreate, ffcommon.GetAvutilDll(), "av_hwdevice_ctx_create")
+	})
+	return avHwdeviceCtxCreate(device_ctx, type0, device, opts, flags)
 }
 
 /**
@@ -389,17 +402,14 @@ func AvHwdeviceCtxCreate(device_ctx **AVBufferRef, type0 AVHWDeviceType,
 //int av_hwdevice_ctx_create_derived(AVBufferRef **dst_ctx,
 //enum AVHWDeviceType type,
 //AVBufferRef *src_ctx, int flags);
-func AvHwdeviceCtxCreateDerived(ctx **AVBufferRef,
-	type0 AVHWDeviceType,
-	src_ctx *AVBufferRef, flags ffcommon.FInt) (res ffcommon.FInt) {
-	t, _, _ := ffcommon.GetAvutilDll().NewProc("av_hwdevice_ctx_create_derived").Call(
-		uintptr(unsafe.Pointer(ctx)),
-		uintptr(type0),
-		uintptr(unsafe.Pointer(src_ctx)),
-		uintptr(flags),
-	)
-	res = ffcommon.FInt(t)
-	return
+var avHwdeviceCtxCreateDerived func(ctx **AVBufferRef, type0 AVHWDeviceType, src_ctx *AVBufferRef, flags ffcommon.FInt) ffcommon.FInt
+var avHwdeviceCtxCreateDerivedOnce sync.Once
+
+func AvHwdeviceCtxCreateDerived(ctx **AVBufferRef, type0 AVHWDeviceType, src_ctx *AVBufferRef, flags ffcommon.FInt) ffcommon.FInt {
+	avHwdeviceCtxCreateDerivedOnce.Do(func() {
+		purego.RegisterLibFunc(&avHwdeviceCtxCreateDerived, ffcommon.GetAvutilDll(), "av_hwdevice_ctx_create_derived")
+	})
+	return avHwdeviceCtxCreateDerived(ctx, type0, src_ctx, flags)
 }
 
 /**
@@ -422,19 +432,14 @@ func AvHwdeviceCtxCreateDerived(ctx **AVBufferRef,
 //enum AVHWDeviceType type,
 //AVBufferRef *src_ctx,
 //AVDictionary *options, int flags);
-func AvHwdeviceCtxCreateDerivedOpts(dst_ctx **AVBufferRef,
-	type0 AVHWDeviceType,
-	src_ctx *AVBufferRef,
-	options *AVDictionary, flags ffcommon.FInt) (res ffcommon.FInt) {
-	t, _, _ := ffcommon.GetAvutilDll().NewProc("av_hwdevice_ctx_create_derived_opts").Call(
-		uintptr(unsafe.Pointer(dst_ctx)),
-		uintptr(type0),
-		uintptr(unsafe.Pointer(src_ctx)),
-		uintptr(unsafe.Pointer(options)),
-		uintptr(flags),
-	)
-	res = ffcommon.FInt(t)
-	return
+var avHwdeviceCtxCreateDerivedOpts func(dst_ctx **AVBufferRef, type0 AVHWDeviceType, src_ctx *AVBufferRef, options *AVDictionary, flags ffcommon.FInt) ffcommon.FInt
+var avHwdeviceCtxCreateDerivedOptsOnce sync.Once
+
+func AvHwdeviceCtxCreateDerivedOpts(dst_ctx **AVBufferRef, type0 AVHWDeviceType, src_ctx *AVBufferRef, options *AVDictionary, flags ffcommon.FInt) ffcommon.FInt {
+	avHwdeviceCtxCreateDerivedOptsOnce.Do(func() {
+		purego.RegisterLibFunc(&avHwdeviceCtxCreateDerivedOpts, ffcommon.GetAvutilDll(), "av_hwdevice_ctx_create_derived_opts")
+	})
+	return avHwdeviceCtxCreateDerivedOpts(dst_ctx, type0, src_ctx, options, flags)
 }
 
 /**
@@ -447,12 +452,14 @@ func AvHwdeviceCtxCreateDerivedOpts(dst_ctx **AVBufferRef,
  *         on failure.
  */
 //AVBufferRef *av_hwframe_ctx_alloc(AVBufferRef *device_ctx);
-func (device_ctx *AVBufferRef) AvHwframeCtxAlloc() (res *AVBufferRef) {
-	t, _, _ := ffcommon.GetAvutilDll().NewProc("av_hwframe_ctx_alloc").Call(
-		uintptr(unsafe.Pointer(device_ctx)),
-	)
-	res = (*AVBufferRef)(unsafe.Pointer(t))
-	return
+var avHwframeCtxAlloc func(device_ctx *AVBufferRef) *AVBufferRef
+var avHwframeCtxAllocOnce sync.Once
+
+func (device_ctx *AVBufferRef) AvHwframeCtxAlloc() *AVBufferRef {
+	avHwframeCtxAllocOnce.Do(func() {
+		purego.RegisterLibFunc(&avHwframeCtxAlloc, ffcommon.GetAvutilDll(), "av_hwframe_ctx_alloc")
+	})
+	return avHwframeCtxAlloc(device_ctx)
 }
 
 /**
@@ -464,12 +471,15 @@ func (device_ctx *AVBufferRef) AvHwframeCtxAlloc() (res *AVBufferRef) {
  * @return 0 on success, a negative AVERROR code on failure
  */
 //int av_hwframe_ctx_init(AVBufferRef *ref);
-func (ref *AVBufferRef) AvHwframeCtxInit() (res ffcommon.FInt) {
-	t, _, _ := ffcommon.GetAvutilDll().NewProc("av_hwframe_ctx_init").Call(
-		uintptr(unsafe.Pointer(ref)),
-	)
-	res = ffcommon.FInt(t)
-	return
+
+var avHwframeCtxInit func(ref *AVBufferRef) ffcommon.FInt
+var avHwframeCtxInitOnce sync.Once
+
+func (ref *AVBufferRef) AvHwframeCtxInit() ffcommon.FInt {
+	avHwframeCtxInitOnce.Do(func() {
+		purego.RegisterLibFunc(&avHwframeCtxInit, ffcommon.GetAvutilDll(), "av_hwframe_ctx_init")
+	})
+	return avHwframeCtxInit(ref)
 }
 
 /**
@@ -482,14 +492,14 @@ func (ref *AVBufferRef) AvHwframeCtxInit() (res ffcommon.FInt) {
  * @return 0 on success, a negative AVERROR code on failure
  */
 //int av_hwframe_get_buffer(AVBufferRef *hwframe_ctx, AVFrame *frame, int flags);
-func (hwframe_ctx *AVBufferRef) AvHwframeGetBuffer(frame *AVFrame, flags ffcommon.FInt) (res ffcommon.FInt) {
-	t, _, _ := ffcommon.GetAvutilDll().NewProc("av_hwframe_get_buffer").Call(
-		uintptr(unsafe.Pointer(hwframe_ctx)),
-		uintptr(unsafe.Pointer(frame)),
-		uintptr(flags),
-	)
-	res = ffcommon.FInt(t)
-	return
+var avHwframeGetBuffer func(hwframe_ctx *AVBufferRef, frame *AVFrame, flags ffcommon.FInt) ffcommon.FInt
+var avHwframeGetBufferOnce sync.Once
+
+func (hwframe_ctx *AVBufferRef) AvHwframeGetBuffer(frame *AVFrame, flags ffcommon.FInt) ffcommon.FInt {
+	avHwframeGetBufferOnce.Do(func() {
+		purego.RegisterLibFunc(&avHwframeGetBuffer, ffcommon.GetAvutilDll(), "av_hwframe_get_buffer")
+	})
+	return avHwframeGetBuffer(hwframe_ctx, frame, flags)
 }
 
 /**
@@ -522,14 +532,14 @@ func (hwframe_ctx *AVBufferRef) AvHwframeGetBuffer(frame *AVFrame, flags ffcommo
  * @return 0 on success, a negative AVERROR error code on failure.
  */
 //int av_hwframe_transfer_data(AVFrame *dst, const AVFrame *src, int flags);
-func AvHwframeTransferData(dst, src *AVFrame, flags ffcommon.FInt) (res ffcommon.FInt) {
-	t, _, _ := ffcommon.GetAvutilDll().NewProc("av_hwframe_transfer_data").Call(
-		uintptr(unsafe.Pointer(dst)),
-		uintptr(unsafe.Pointer(src)),
-		uintptr(flags),
-	)
-	res = ffcommon.FInt(t)
-	return
+var avHwframeTransferData func(dst, src *AVFrame, flags ffcommon.FInt) ffcommon.FInt
+var avHwframeTransferDataOnce sync.Once
+
+func AvHwframeTransferData(dst, src *AVFrame, flags ffcommon.FInt) ffcommon.FInt {
+	avHwframeTransferDataOnce.Do(func() {
+		purego.RegisterLibFunc(&avHwframeTransferData, ffcommon.GetAvutilDll(), "av_hwframe_transfer_data")
+	})
+	return avHwframeTransferData(dst, src, flags)
 }
 
 type AVHWFrameTransferDirection int32
@@ -564,16 +574,16 @@ const (
 //int av_hwframe_transfer_get_formats(AVBufferRef *hwframe_ctx,
 //enum AVHWFrameTransferDirection dir,
 //enum AVPixelFormat **formats, int flags);
+var avHwframeTransferGetFormats func(hwframe_ctx *AVBufferRef, dir AVHWFrameTransferDirection,
+	formats **AVPixelFormat, flags ffcommon.FInt) ffcommon.FInt
+var avHwframeTransferGetFormatsOnce sync.Once
+
 func (hwframe_ctx *AVBufferRef) AvHwframeTransferGetFormats(dir AVHWFrameTransferDirection,
-	formats **AVPixelFormat, flags ffcommon.FInt) (res ffcommon.FInt) {
-	t, _, _ := ffcommon.GetAvutilDll().NewProc("av_hwframe_transfer_get_formats").Call(
-		uintptr(unsafe.Pointer(hwframe_ctx)),
-		uintptr(dir),
-		uintptr(unsafe.Pointer(formats)),
-		uintptr(flags),
-	)
-	res = ffcommon.FInt(t)
-	return
+	formats **AVPixelFormat, flags ffcommon.FInt) ffcommon.FInt {
+	avHwframeTransferGetFormatsOnce.Do(func() {
+		purego.RegisterLibFunc(&avHwframeTransferGetFormats, ffcommon.GetAvutilDll(), "av_hwframe_transfer_get_formats")
+	})
+	return avHwframeTransferGetFormats(hwframe_ctx, dir, formats, flags)
 }
 
 /**
@@ -623,12 +633,14 @@ type AVHWFramesConstraints struct {
  *         success or NULL on failure.
  */
 //void *av_hwdevice_hwconfig_alloc(AVBufferRef *device_ctx);
-func (device_ctx *AVBufferRef) AvHwdeviceHwconfigAlloc() (res ffcommon.FVoidP) {
-	t, _, _ := ffcommon.GetAvutilDll().NewProc("av_hwdevice_hwconfig_alloc").Call(
-		uintptr(unsafe.Pointer(device_ctx)),
-	)
-	res = t
-	return
+var avHwdeviceHwconfigAlloc func(device_ctx *AVBufferRef) ffcommon.FVoidP
+var avHwdeviceHwconfigAllocOnce sync.Once
+
+func (device_ctx *AVBufferRef) AvHwdeviceHwconfigAlloc() ffcommon.FVoidP {
+	avHwdeviceHwconfigAllocOnce.Do(func() {
+		purego.RegisterLibFunc(&avHwdeviceHwconfigAlloc, ffcommon.GetAvutilDll(), "av_hwdevice_hwconfig_alloc")
+	})
+	return avHwdeviceHwconfigAlloc(device_ctx)
 }
 
 /**
@@ -645,13 +657,14 @@ func (device_ctx *AVBufferRef) AvHwdeviceHwconfigAlloc() (res ffcommon.FVoidP) {
  */
 //AVHWFramesConstraints *av_hwdevice_get_hwframe_constraints(AVBufferRef *ref,
 //const void *hwconfig);
-func (ref *AVBufferRef) AvHwdeviceGetHwframeConstraints(hwconfig ffcommon.FConstVoidP) (res *AVHWFramesConstraints) {
-	t, _, _ := ffcommon.GetAvutilDll().NewProc("av_hwdevice_get_hwframe_constraints").Call(
-		uintptr(unsafe.Pointer(ref)),
-		hwconfig,
-	)
-	res = (*AVHWFramesConstraints)(unsafe.Pointer(t))
-	return
+var avHwdeviceGetHwframeConstraints func(ref *AVBufferRef, hwconfig ffcommon.FConstVoidP) *AVHWFramesConstraints
+var avHwdeviceGetHwframeConstraintsOnce sync.Once
+
+func (ref *AVBufferRef) AvHwdeviceGetHwframeConstraints(hwconfig ffcommon.FConstVoidP) *AVHWFramesConstraints {
+	avHwdeviceGetHwframeConstraintsOnce.Do(func() {
+		purego.RegisterLibFunc(&avHwdeviceGetHwframeConstraints, ffcommon.GetAvutilDll(), "av_hwdevice_get_hwframe_constraints")
+	})
+	return avHwdeviceGetHwframeConstraints(ref, hwconfig)
 }
 
 /**
@@ -660,10 +673,14 @@ func (ref *AVBufferRef) AvHwdeviceGetHwframeConstraints(hwconfig ffcommon.FConst
  * @param constraints The (filled or unfilled) AVHWFrameConstraints structure.
  */
 //void av_hwframe_constraints_free(AVHWFramesConstraints **constraints);
+var avHwframeConstraintsFree func(constraints **AVHWFramesConstraints)
+var avHwframeConstraintsFreeOnce sync.Once
+
 func AvHwframeConstraintsFree(constraints **AVHWFramesConstraints) {
-	ffcommon.GetAvutilDll().NewProc("av_hwframe_constraints_free").Call(
-		uintptr(unsafe.Pointer(constraints)),
-	)
+	avHwframeConstraintsFreeOnce.Do(func() {
+		purego.RegisterLibFunc(&avHwframeConstraintsFree, ffcommon.GetAvutilDll(), "av_hwframe_constraints_free")
+	})
+	avHwframeConstraintsFree(constraints)
 }
 
 /**
@@ -729,14 +746,14 @@ const (
  * @return Zero on success, negative AVERROR code on failure.
  */
 //int av_hwframe_map(AVFrame *dst, const AVFrame *src, int flags);
-func AvHwframeMap(dst, src *AVFrame, flags ffcommon.FInt) (res ffcommon.FInt) {
-	t, _, _ := ffcommon.GetAvutilDll().NewProc("av_hwframe_map").Call(
-		uintptr(unsafe.Pointer(dst)),
-		uintptr(unsafe.Pointer(src)),
-		uintptr(flags),
-	)
-	res = ffcommon.FInt(t)
-	return
+var avHwframeMap func(dst, src *AVFrame, flags ffcommon.FInt) ffcommon.FInt
+var avHwframeMapOnce sync.Once
+
+func AvHwframeMap(dst, src *AVFrame, flags ffcommon.FInt) ffcommon.FInt {
+	avHwframeMapOnce.Do(func() {
+		purego.RegisterLibFunc(&avHwframeMap, ffcommon.GetAvutilDll(), "av_hwframe_map")
+	})
+	return avHwframeMap(dst, src, flags)
 }
 
 /**
@@ -761,20 +778,14 @@ func AvHwframeMap(dst, src *AVFrame, flags ffcommon.FInt) (res ffcommon.FInt) {
 //AVBufferRef *derived_device_ctx,
 //AVBufferRef *source_frame_ctx,
 //int flags);
-func AvHwframeCtxCreateDerived(derived_frame_ctx **AVBufferRef,
-	format AVPixelFormat,
-	derived_device_ctx,
-	source_frame_ctx *AVBufferRef,
-	flags ffcommon.FInt) (res ffcommon.FInt) {
-	t, _, _ := ffcommon.GetAvutilDll().NewProc("av_hwframe_ctx_create_derived").Call(
-		uintptr(unsafe.Pointer(derived_frame_ctx)),
-		uintptr(format),
-		uintptr(unsafe.Pointer(derived_device_ctx)),
-		uintptr(unsafe.Pointer(source_frame_ctx)),
-		uintptr(flags),
-	)
-	res = ffcommon.FInt(t)
-	return
+var avHwframeCtxCreateDerived func(derived_frame_ctx **AVBufferRef, format AVPixelFormat, derived_device_ctx, source_frame_ctx *AVBufferRef, flags ffcommon.FInt) ffcommon.FInt
+var avHwframeCtxCreateDerivedOnce sync.Once
+
+func AvHwframeCtxCreateDerived(derived_frame_ctx **AVBufferRef, format AVPixelFormat, derived_device_ctx, source_frame_ctx *AVBufferRef, flags ffcommon.FInt) ffcommon.FInt {
+	avHwframeCtxCreateDerivedOnce.Do(func() {
+		purego.RegisterLibFunc(&avHwframeCtxCreateDerived, ffcommon.GetAvutilDll(), "av_hwframe_ctx_create_derived")
+	})
+	return avHwframeCtxCreateDerived(derived_frame_ctx, format, derived_device_ctx, source_frame_ctx, flags)
 }
 
 //#endif /* AVUTIL_HWCONTEXT_H */

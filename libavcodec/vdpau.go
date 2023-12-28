@@ -1,10 +1,11 @@
 package libavcodec
 
 import (
-	"unsafe"
+	"sync"
 
 	"github.com/dwdcth/ffmpeg-go/ffcommon"
 	"github.com/dwdcth/ffmpeg-go/libavutil"
+	"github.com/ebitengine/purego"
 )
 
 /*
@@ -115,27 +116,36 @@ type AVVDPAUContext struct {
  * Allows extending the struct without breaking API/ABI
  */
 //AVVDPAUContext *av_alloc_vdpaucontext(void);
-func AvAllocVdpaucontext() (res *AVVDPAUContext) {
-	t, _, _ := ffcommon.GetAvcodecDll().NewProc("av_alloc_vdpaucontext").Call()
-	res = (*AVVDPAUContext)(unsafe.Pointer(t))
-	return
+var avAllocVdpaucontext func() *AVVDPAUContext
+var avAllocVdpaucontextOnce sync.Once
+
+func AvAllocVdpaucontext() *AVVDPAUContext {
+	avAllocVdpaucontextOnce.Do(func() {
+		purego.RegisterLibFunc(&avAllocVdpaucontext, ffcommon.GetAvcodecDll(), "av_alloc_vdpaucontext")
+	})
+	return avAllocVdpaucontext()
 }
 
 // AVVDPAU_Render2 av_vdpau_hwaccel_get_render2(const AVVDPAUContext *);
-func (c *AVVDPAUContext) AvVdpauHwaccelGetRender2() (res uintptr) {
-	t, _, _ := ffcommon.GetAvcodecDll().NewProc("av_vdpau_hwaccel_get_render2").Call(
-		uintptr(unsafe.Pointer(c)),
-	)
-	res = t
-	return
+var avVdpauHwaccelGetRender2 func(c *AVVDPAUContext) uintptr
+var avVdpauHwaccelGetRender2Once sync.Once
+
+func (c *AVVDPAUContext) AvVdpauHwaccelGetRender2() uintptr {
+	avVdpauHwaccelGetRender2Once.Do(func() {
+		purego.RegisterLibFunc(&avVdpauHwaccelGetRender2, ffcommon.GetAvcodecDll(), "av_vdpau_hwaccel_get_render2")
+	})
+	return avVdpauHwaccelGetRender2(c)
 }
 
 // void av_vdpau_hwaccel_set_render2(AVVDPAUContext *, AVVDPAU_Render2);
+var avVdpauHwaccelSetRender2 func(c *AVVDPAUContext, r2 uintptr)
+var avVdpauHwaccelSetRender2Once sync.Once
+
 func (c *AVVDPAUContext) AvVdpauHwaccelSetRender2(r2 uintptr) {
-	ffcommon.GetAvcodecDll().NewProc("av_vdpau_hwaccel_set_render2").Call(
-		uintptr(unsafe.Pointer(c)),
-		r2,
-	)
+	avVdpauHwaccelSetRender2Once.Do(func() {
+		purego.RegisterLibFunc(&avVdpauHwaccelSetRender2, ffcommon.GetAvcodecDll(), "av_vdpau_hwaccel_set_render2")
+	})
+	avVdpauHwaccelSetRender2(c, r2)
 }
 
 /**
@@ -158,13 +168,14 @@ func (c *AVVDPAUContext) AvVdpauHwaccelSetRender2(r2 uintptr) {
 //int av_vdpau_bind_context(AVCodecContext *avctx, VdpDevice device,
 //VdpGetProcAddress *get_proc_address, unsigned flags);
 //todo
-func av_vdpau_bind_context() (res ffcommon.FCharP) {
-	t, _, _ := ffcommon.GetAvcodecDll().NewProc("av_vdpau_bind_context").Call()
-	if t == 0 {
+var avVdpauBindContext func() ffcommon.FCharP
+var avVdpauBindContextOnce sync.Once
 
-	}
-	res = ffcommon.StringFromPtr(t)
-	return
+func AvVdpauBindContext() ffcommon.FCharP {
+	avVdpauBindContextOnce.Do(func() {
+		purego.RegisterLibFunc(&avVdpauBindContext, ffcommon.GetAvcodecDll(), "av_vdpau_bind_context")
+	})
+	return avVdpauBindContext()
 }
 
 /**
@@ -187,13 +198,14 @@ func av_vdpau_bind_context() (res ffcommon.FCharP) {
 //int av_vdpau_get_surface_parameters(AVCodecContext *avctx, VdpChromaType *type,
 //uint32_t *width, uint32_t *height);
 //todo
-func av_vdpau_get_surface_parameters() (res ffcommon.FCharP) {
-	t, _, _ := ffcommon.GetAvcodecDll().NewProc("av_vdpau_get_surface_parameters").Call()
-	if t == 0 {
+var avVdpauGetSurfaceParameters func() ffcommon.FCharP
+var avVdpauGetSurfaceParametersOnce sync.Once
 
-	}
-	res = ffcommon.StringFromPtr(t)
-	return
+func AvVdpauGetSurfaceParameters() ffcommon.FCharP {
+	avVdpauGetSurfaceParametersOnce.Do(func() {
+		purego.RegisterLibFunc(&avVdpauGetSurfaceParameters, ffcommon.GetAvcodecDll(), "av_vdpau_get_surface_parameters")
+	})
+	return avVdpauGetSurfaceParameters()
 }
 
 /**
@@ -203,13 +215,14 @@ func av_vdpau_get_surface_parameters() (res ffcommon.FCharP) {
  */
 //AVVDPAUContext *av_vdpau_alloc_context(void);
 //todo
-func av_vdpau_alloc_context() (res ffcommon.FCharP) {
-	t, _, _ := ffcommon.GetAvcodecDll().NewProc("av_vdpau_alloc_context").Call()
-	if t == 0 {
+var avVdpauAllocContext func() ffcommon.FCharP
+var avVdpauAllocContextOnce sync.Once
 
-	}
-	res = ffcommon.StringFromPtr(t)
-	return
+func AvVdpauAllocContext() ffcommon.FCharP {
+	avVdpauAllocContextOnce.Do(func() {
+		purego.RegisterLibFunc(&avVdpauAllocContext, ffcommon.GetAvcodecDll(), "av_vdpau_alloc_context")
+	})
+	return avVdpauAllocContext()
 }
 
 //#if FF_API_VDPAU_PROFILE
@@ -229,13 +242,14 @@ func av_vdpau_alloc_context() (res ffcommon.FCharP) {
 //attribute_deprecated
 //int av_vdpau_get_profile(AVCodecContext *avctx, VdpDecoderProfile *profile);
 //todo
-func (avctx *AVCodecContext) av_vdpau_get_profile() (res ffcommon.FCharP) {
-	t, _, _ := ffcommon.GetAvcodecDll().NewProc("av_vdpau_get_profile").Call()
-	if t == 0 {
+var avVdpauGetProfile func(avctx *AVCodecContext) ffcommon.FCharP
+var avVdpauGetProfileOnce sync.Once
 
-	}
-	res = ffcommon.StringFromPtr(t)
-	return
+func (avctx *AVCodecContext) AvVdpauGetProfile() ffcommon.FCharP {
+	avVdpauGetProfileOnce.Do(func() {
+		purego.RegisterLibFunc(&avVdpauGetProfile, ffcommon.GetAvcodecDll(), "av_vdpau_get_profile")
+	})
+	return avVdpauGetProfile(avctx)
 }
 
 //#endif

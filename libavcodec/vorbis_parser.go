@@ -1,9 +1,10 @@
 package libavcodec
 
 import (
-	"unsafe"
+	"sync"
 
 	"github.com/dwdcth/ffmpeg-go/ffcommon"
+	"github.com/ebitengine/purego"
 )
 
 /*
@@ -45,23 +46,28 @@ type AVVorbisParseContext struct {
  */
 //AVVorbisParseContext *av_vorbis_parse_init(const uint8_t *extradata,
 //                                           int extradata_size);
-func AvVorbisParseInit(extradata *ffcommon.FUint8T, extradata_size ffcommon.FInt) (res *AVVorbisParseContext) {
-	t, _, _ := ffcommon.GetAvcodecDll().NewProc("av_vorbis_parse_init").Call(
-		uintptr(unsafe.Pointer(extradata)),
-		uintptr(extradata_size),
-	)
-	res = (*AVVorbisParseContext)(unsafe.Pointer(t))
-	return
+var avVorbisParseInit func(extradata *ffcommon.FUint8T, extradata_size ffcommon.FInt) *AVVorbisParseContext
+var avVorbisParseInitOnce sync.Once
+
+func AvVorbisParseInit(extradata *ffcommon.FUint8T, extradata_size ffcommon.FInt) *AVVorbisParseContext {
+	avVorbisParseInitOnce.Do(func() {
+		purego.RegisterLibFunc(&avVorbisParseInit, ffcommon.GetAvcodecDll(), "av_vorbis_parse_init")
+	})
+	return avVorbisParseInit(extradata, extradata_size)
 }
 
 /**
  * Free the parser and everything associated with it.
  */
 //void av_vorbis_parse_free(AVVorbisParseContext **s);
+var avVorbisParseFree func(s **AVVorbisParseContext)
+var avVorbisParseFreeOnce sync.Once
+
 func AvVorbisParseFree(s **AVVorbisParseContext) {
-	ffcommon.GetAvcodecDll().NewProc("av_vorbis_parse_free").Call(
-		uintptr(unsafe.Pointer(s)),
-	)
+	avVorbisParseFreeOnce.Do(func() {
+		purego.RegisterLibFunc(&avVorbisParseFree, ffcommon.GetAvcodecDll(), "av_vorbis_parse_free")
+	})
+	avVorbisParseFree(s)
 }
 
 const VORBIS_FLAG_HEADER = 0x00000001
@@ -81,15 +87,14 @@ const VORBIS_FLAG_SETUP = 0x00000004
  */
 //int av_vorbis_parse_frame_flags(AVVorbisParseContext *s, const uint8_t *buf,
 //                                int buf_size, int *flags);
-func (s *AVVorbisParseContext) AvVorbisParseFrameFlags(buf *ffcommon.FUint8T, buf_size ffcommon.FInt, flags *ffcommon.FInt) (res ffcommon.FInt) {
-	t, _, _ := ffcommon.GetAvcodecDll().NewProc("av_vorbis_parse_frame_flags").Call(
-		uintptr(unsafe.Pointer(s)),
-		uintptr(unsafe.Pointer(buf)),
-		uintptr(buf_size),
-		uintptr(unsafe.Pointer(flags)),
-	)
-	res = ffcommon.FInt(t)
-	return
+var avVorbisParseFrameFlags func(s *AVVorbisParseContext, buf *ffcommon.FUint8T, buf_size ffcommon.FInt, flags *ffcommon.FInt) ffcommon.FInt
+var avVorbisParseFrameFlagsOnce sync.Once
+
+func (s *AVVorbisParseContext) AvVorbisParseFrameFlags(buf *ffcommon.FUint8T, buf_size ffcommon.FInt, flags *ffcommon.FInt) ffcommon.FInt {
+	avVorbisParseFrameFlagsOnce.Do(func() {
+		purego.RegisterLibFunc(&avVorbisParseFrameFlags, ffcommon.GetAvcodecDll(), "av_vorbis_parse_frame_flags")
+	})
+	return avVorbisParseFrameFlags(s, buf, buf_size, flags)
 }
 
 /**
@@ -101,21 +106,25 @@ func (s *AVVorbisParseContext) AvVorbisParseFrameFlags(buf *ffcommon.FUint8T, bu
  */
 //int av_vorbis_parse_frame(AVVorbisParseContext *s, const uint8_t *buf,
 //                          int buf_size);
-func (s *AVVorbisParseContext) AvVorbisParseFrame(buf *ffcommon.FUint8T, buf_size ffcommon.FInt) (res ffcommon.FInt) {
-	t, _, _ := ffcommon.GetAvcodecDll().NewProc("av_vorbis_parse_frame").Call(
-		uintptr(unsafe.Pointer(s)),
-		uintptr(unsafe.Pointer(buf)),
-		uintptr(buf_size),
-	)
-	res = ffcommon.FInt(t)
-	return
+var avVorbisParseFrame func(s *AVVorbisParseContext, buf *ffcommon.FUint8T, buf_size ffcommon.FInt) ffcommon.FInt
+var avVorbisParseFrameOnce sync.Once
+
+func (s *AVVorbisParseContext) AvVorbisParseFrame(buf *ffcommon.FUint8T, buf_size ffcommon.FInt) ffcommon.FInt {
+	avVorbisParseFrameOnce.Do(func() {
+		purego.RegisterLibFunc(&avVorbisParseFrame, ffcommon.GetAvcodecDll(), "av_vorbis_parse_frame")
+	})
+	return avVorbisParseFrame(s, buf, buf_size)
 }
 
 // void av_vorbis_parse_reset(AVVorbisParseContext *s);
+var avVorbisParseReset func(s *AVVorbisParseContext)
+var avVorbisParseResetOnce sync.Once
+
 func (s *AVVorbisParseContext) AvVorbisParseReset() {
-	ffcommon.GetAvcodecDll().NewProc("av_vorbis_parse_reset").Call(
-		uintptr(unsafe.Pointer(s)),
-	)
+	avVorbisParseResetOnce.Do(func() {
+		purego.RegisterLibFunc(&avVorbisParseReset, ffcommon.GetAvcodecDll(), "av_vorbis_parse_reset")
+	})
+	avVorbisParseReset(s)
 }
 
 //#endif /* AVCODEC_VORBIS_PARSER_H */

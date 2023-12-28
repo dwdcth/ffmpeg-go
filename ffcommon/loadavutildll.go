@@ -17,6 +17,10 @@ var (
 	avswscalePath    = "swscale-5.dll"
 )
 
+func SetAvutilPath(path0 string) {
+	avutilPath = path0
+}
+
 func SetAvcodecPath(path0 string) {
 	avcodecPath = path0
 }

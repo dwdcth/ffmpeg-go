@@ -1,9 +1,10 @@
 package libavutil
 
 import (
-	"unsafe"
+	"sync"
 
 	"github.com/dwdcth/ffmpeg-go/ffcommon"
+	"github.com/ebitengine/purego"
 )
 
 /*
@@ -112,15 +113,14 @@ type AVDictionary struct {
  */
 //AVDictionaryEntry *av_dict_get(const AVDictionary *m, const char *key,
 //const AVDictionaryEntry *prev, int flags);
+var avDictGet func(m *AVDictionary, key ffcommon.FConstCharP, prev *AVDictionaryEntry, flags ffcommon.FInt) *AVDictionaryEntry
+var avDictGetOnce sync.Once
+
 func (m *AVDictionary) AvDictGet(key ffcommon.FConstCharP, prev *AVDictionaryEntry, flags ffcommon.FInt) (res *AVDictionaryEntry) {
-	t, _, _ := ffcommon.GetAvutilDll().NewProc("av_dict_get").Call(
-		uintptr(unsafe.Pointer(m)),
-		ffcommon.UintPtrFromContainsEmptyString(key),
-		uintptr(unsafe.Pointer(prev)),
-		uintptr(flags),
-	)
-	res = (*AVDictionaryEntry)(unsafe.Pointer(t))
-	return
+	avDictGetOnce.Do(func() {
+		purego.RegisterLibFunc(&avDictGet, ffcommon.GetAvutilDll(), "av_dict_get")
+	})
+	return avDictGet(m, key, prev, flags)
 }
 
 /**
@@ -130,12 +130,14 @@ func (m *AVDictionary) AvDictGet(key ffcommon.FConstCharP, prev *AVDictionaryEnt
  * @return  number of entries in dictionary
  */
 //int av_dict_count(const AVDictionary *m);
+var avDictCount func(m *AVDictionary) ffcommon.FInt
+var avDictCountOnce sync.Once
+
 func (m *AVDictionary) AvDictCount() (res ffcommon.FInt) {
-	t, _, _ := ffcommon.GetAvutilDll().NewProc("av_dict_count").Call(
-		uintptr(unsafe.Pointer(m)),
-	)
-	res = ffcommon.FInt(t)
-	return
+	avDictCountOnce.Do(func() {
+		purego.RegisterLibFunc(&avDictCount, ffcommon.GetAvutilDll(), "av_dict_count")
+	})
+	return avDictCount(m)
 }
 
 /**
@@ -155,15 +157,14 @@ func (m *AVDictionary) AvDictCount() (res ffcommon.FInt) {
  * @return >= 0 on success otherwise an error code <0
  */
 //int av_dict_set(AVDictionary **pm, const char *key, const char *value, int flags);
+var avDictSet func(pm **AVDictionary, key, value ffcommon.FConstCharP, flags ffcommon.FInt) ffcommon.FInt
+var avDictSetOnce sync.Once
+
 func AvDictSet(pm **AVDictionary, key, value ffcommon.FConstCharP, flags ffcommon.FInt) (res ffcommon.FInt) {
-	t, _, _ := ffcommon.GetAvutilDll().NewProc("av_dict_set").Call(
-		uintptr(unsafe.Pointer(pm)),
-		ffcommon.UintPtrFromString(key),
-		ffcommon.UintPtrFromString(value),
-		uintptr(flags),
-	)
-	res = ffcommon.FInt(t)
-	return
+	avDictSetOnce.Do(func() {
+		purego.RegisterLibFunc(&avDictSet, ffcommon.GetAvutilDll(), "av_dict_set")
+	})
+	return avDictSet(pm, key, value, flags)
 }
 
 /**
@@ -173,15 +174,14 @@ func AvDictSet(pm **AVDictionary, key, value ffcommon.FConstCharP, flags ffcommo
  * Note: If AV_DICT_DONT_STRDUP_KEY is set, key will be freed on error.
  */
 //int av_dict_set_int(AVDictionary **pm, const char *key, int64_t value, int flags);
+var avDictSetInt func(pm **AVDictionary, key ffcommon.FConstCharP, value ffcommon.FInt64T, flags ffcommon.FInt) ffcommon.FInt
+var avDictSetIntOnce sync.Once
+
 func AvDictSetInt(pm **AVDictionary, key ffcommon.FConstCharP, value ffcommon.FInt64T, flags ffcommon.FInt) (res ffcommon.FInt) {
-	t, _, _ := ffcommon.GetAvutilDll().NewProc("av_dict_set_int").Call(
-		uintptr(unsafe.Pointer(pm)),
-		ffcommon.UintPtrFromString(key),
-		uintptr(value),
-		uintptr(flags),
-	)
-	res = ffcommon.FInt(t)
-	return
+	avDictSetIntOnce.Do(func() {
+		purego.RegisterLibFunc(&avDictSetInt, ffcommon.GetAvutilDll(), "av_dict_set_int")
+	})
+	return avDictSetInt(pm, key, value, flags)
 }
 
 /**
@@ -203,16 +203,14 @@ func AvDictSetInt(pm **AVDictionary, key ffcommon.FConstCharP, value ffcommon.FI
 //int av_dict_parse_string(AVDictionary **pm, const char *str,
 //const char *key_val_sep, const char *pairs_sep,
 //int flags);
+var avDictParseString func(pm **AVDictionary, str, key_val_sep, pairs_sep ffcommon.FConstCharP, flags ffcommon.FInt) ffcommon.FInt
+var avDictParseStringOnce sync.Once
+
 func AvDictParseString(pm **AVDictionary, str, key_val_sep, pairs_sep ffcommon.FConstCharP, flags ffcommon.FInt) (res ffcommon.FInt) {
-	t, _, _ := ffcommon.GetAvutilDll().NewProc("av_dict_parse_string").Call(
-		uintptr(unsafe.Pointer(pm)),
-		ffcommon.UintPtrFromString(str),
-		ffcommon.UintPtrFromString(key_val_sep),
-		ffcommon.UintPtrFromString(pairs_sep),
-		uintptr(flags),
-	)
-	res = ffcommon.FInt(t)
-	return
+	avDictParseStringOnce.Do(func() {
+		purego.RegisterLibFunc(&avDictParseString, ffcommon.GetAvutilDll(), "av_dict_parse_string")
+	})
+	return avDictParseString(pm, str, key_val_sep, pairs_sep, flags)
 }
 
 /**
@@ -226,14 +224,14 @@ func AvDictParseString(pm **AVDictionary, str, key_val_sep, pairs_sep ffcommon.F
  *           by this function, callers should free the associated memory.
  */
 //int av_dict_copy(AVDictionary **dst, const AVDictionary *src, int flags);
+var avDictCopy func(dst **AVDictionary, src *AVDictionary, flags ffcommon.FInt) ffcommon.FInt
+var avDictCopyOnce sync.Once
+
 func AvDictCopy(dst **AVDictionary, src *AVDictionary, flags ffcommon.FInt) (res ffcommon.FInt) {
-	t, _, _ := ffcommon.GetAvutilDll().NewProc("av_dict_copy").Call(
-		uintptr(unsafe.Pointer(dst)),
-		uintptr(unsafe.Pointer(src)),
-		uintptr(flags),
-	)
-	res = ffcommon.FInt(t)
-	return
+	avDictCopyOnce.Do(func() {
+		purego.RegisterLibFunc(&avDictCopy, ffcommon.GetAvutilDll(), "av_dict_copy")
+	})
+	return avDictCopy(dst, src, flags)
 }
 
 /**
@@ -241,10 +239,14 @@ func AvDictCopy(dst **AVDictionary, src *AVDictionary, flags ffcommon.FInt) (res
  * and all keys and values.
  */
 //void av_dict_free(AVDictionary **m);
+var avDictFree func(m **AVDictionary)
+var avDictFreeOnce sync.Once
+
 func AvDictFree(m **AVDictionary) {
-	ffcommon.GetAvutilDll().NewProc("av_dict_free").Call(
-		uintptr(unsafe.Pointer(m)),
-	)
+	avDictFreeOnce.Do(func() {
+		purego.RegisterLibFunc(&avDictFree, ffcommon.GetAvutilDll(), "av_dict_free")
+	})
+	avDictFree(m)
 }
 
 /**
@@ -264,15 +266,14 @@ func AvDictFree(m **AVDictionary) {
  */
 //int av_dict_get_string(const AVDictionary *m, char **buffer,
 //const char key_val_sep, const char pairs_sep);
+var avDictGetString func(m *AVDictionary, buffer *ffcommon.FBuf, key_val_sep, pairs_sep ffcommon.FConstCharP) ffcommon.FInt
+var avDictGetStringOnce sync.Once
+
 func (m *AVDictionary) AvDictGetString(buffer *ffcommon.FBuf, key_val_sep, pairs_sep ffcommon.FConstCharP) (res ffcommon.FInt) {
-	t, _, _ := ffcommon.GetAvutilDll().NewProc("av_dict_get_string").Call(
-		uintptr(unsafe.Pointer(m)),
-		uintptr(unsafe.Pointer(buffer)),
-		ffcommon.UintPtrFromString(key_val_sep),
-		ffcommon.UintPtrFromString(pairs_sep),
-	)
-	res = ffcommon.FInt(t)
-	return
+	avDictGetStringOnce.Do(func() {
+		purego.RegisterLibFunc(&avDictGetString, ffcommon.GetAvutilDll(), "av_dict_get_string")
+	})
+	return avDictGetString(m, buffer, key_val_sep, pairs_sep)
 }
 
 /**

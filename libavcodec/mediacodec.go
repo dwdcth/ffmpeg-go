@@ -1,9 +1,10 @@
 package libavcodec
 
 import (
-	"unsafe"
+	"sync"
 
 	"github.com/dwdcth/ffmpeg-go/ffcommon"
+	"github.com/ebitengine/purego"
 )
 
 /*
@@ -55,10 +56,14 @@ type AVMediaCodecContext struct {
  * @return a pointer to a newly allocated AVMediaCodecContext on success, NULL otherwise
  */
 //AVMediaCodecContext *av_mediacodec_alloc_context(void);
-func AvMediacodecAllocContext() (res *AVMediaCodecContext) {
-	t, _, _ := ffcommon.GetAvcodecDll().NewProc("av_mediacodec_alloc_context").Call()
-	res = (*AVMediaCodecContext)(unsafe.Pointer(t))
-	return
+var avMediacodecAllocContext func() *AVMediaCodecContext
+var avMediacodecAllocContextOnce sync.Once
+
+func AvMediacodecAllocContext() *AVMediaCodecContext {
+	avMediacodecAllocContextOnce.Do(func() {
+		purego.RegisterLibFunc(&avMediacodecAllocContext, ffcommon.GetAvcodecDll(), "av_mediacodec_alloc_context")
+	})
+	return avMediacodecAllocContext()
 }
 
 /**
@@ -70,14 +75,14 @@ func AvMediacodecAllocContext() (res *AVMediaCodecContext) {
  * @return 0 on success, < 0 otherwise
  */
 //int av_mediacodec_default_init(AVCodecContext *avctx, AVMediaCodecContext *ctx, void *surface);
-func (avctx *AVCodecContext) AvMediacodecDefaultInit(ctx *AVMediaCodecContext, surface ffcommon.FVoidP) (res ffcommon.FInt) {
-	t, _, _ := ffcommon.GetAvcodecDll().NewProc("av_mediacodec_default_init").Call(
-		uintptr(unsafe.Pointer(avctx)),
-		uintptr(unsafe.Pointer(ctx)),
-		surface,
-	)
-	res = ffcommon.FInt(t)
-	return
+var avMediacodecDefaultInit func(avctx *AVCodecContext, ctx *AVMediaCodecContext, surface ffcommon.FVoidP) ffcommon.FInt
+var avMediacodecDefaultInitOnce sync.Once
+
+func (avctx *AVCodecContext) AvMediacodecDefaultInit(ctx *AVMediaCodecContext, surface ffcommon.FVoidP) ffcommon.FInt {
+	avMediacodecDefaultInitOnce.Do(func() {
+		purego.RegisterLibFunc(&avMediacodecDefaultInit, ffcommon.GetAvcodecDll(), "av_mediacodec_default_init")
+	})
+	return avMediacodecDefaultInit(avctx, ctx, surface)
 }
 
 /**
@@ -87,10 +92,14 @@ func (avctx *AVCodecContext) AvMediacodecDefaultInit(ctx *AVMediaCodecContext, s
  * @param avctx codec context
  */
 //void av_mediacodec_default_free(AVCodecContext *avctx);
+var avMediacodecDefaultFree func(avctx *AVCodecContext)
+var avMediacodecDefaultFreeOnce sync.Once
+
 func (avctx *AVCodecContext) AvMediacodecDefaultFree() {
-	ffcommon.GetAvcodecDll().NewProc("av_mediacodec_default_free").Call(
-		uintptr(unsafe.Pointer(avctx)),
-	)
+	avMediacodecDefaultFreeOnce.Do(func() {
+		purego.RegisterLibFunc(&avMediacodecDefaultFree, ffcommon.GetAvcodecDll(), "av_mediacodec_default_free")
+	})
+	avMediacodecDefaultFree(avctx)
 }
 
 /**
@@ -112,13 +121,14 @@ type AVMediaCodecBuffer struct {
  * @return 0 on success, < 0 otherwise
  */
 //int av_mediacodec_release_buffer(AVMediaCodecBuffer *buffer, int render);
-func (buffer *AVMediaCodecBuffer) AvMediacodecReleaseBuffer(render ffcommon.FInt) (res ffcommon.FInt) {
-	t, _, _ := ffcommon.GetAvcodecDll().NewProc("av_mediacodec_release_buffer").Call(
-		uintptr(unsafe.Pointer(buffer)),
-		uintptr(render),
-	)
-	res = ffcommon.FInt(t)
-	return
+var avMediacodecReleaseBuffer func(buffer *AVMediaCodecBuffer, render ffcommon.FInt) ffcommon.FInt
+var avMediacodecReleaseBufferOnce sync.Once
+
+func (buffer *AVMediaCodecBuffer) AvMediacodecReleaseBuffer(render ffcommon.FInt) ffcommon.FInt {
+	avMediacodecReleaseBufferOnce.Do(func() {
+		purego.RegisterLibFunc(&avMediacodecReleaseBuffer, ffcommon.GetAvcodecDll(), "av_mediacodec_release_buffer")
+	})
+	return avMediacodecReleaseBuffer(buffer, render)
 }
 
 /**
@@ -133,13 +143,14 @@ func (buffer *AVMediaCodecBuffer) AvMediacodecReleaseBuffer(render ffcommon.FInt
  * @return 0 on success, < 0 otherwise
  */
 //int av_mediacodec_render_buffer_at_time(AVMediaCodecBuffer *buffer, int64_t time);
-func (buffer *AVMediaCodecBuffer) AvMediacodecRenderBufferAtTime(time ffcommon.FInt64T) (res ffcommon.FInt) {
-	t, _, _ := ffcommon.GetAvcodecDll().NewProc("av_mediacodec_render_buffer_at_time").Call(
-		uintptr(unsafe.Pointer(buffer)),
-		uintptr(time),
-	)
-	res = ffcommon.FInt(t)
-	return
+var avMediacodecRenderBufferAtTime func(buffer *AVMediaCodecBuffer, time ffcommon.FInt64T) ffcommon.FInt
+var avMediacodecRenderBufferAtTimeOnce sync.Once
+
+func (buffer *AVMediaCodecBuffer) AvMediacodecRenderBufferAtTime(time ffcommon.FInt64T) ffcommon.FInt {
+	avMediacodecRenderBufferAtTimeOnce.Do(func() {
+		purego.RegisterLibFunc(&avMediacodecRenderBufferAtTime, ffcommon.GetAvcodecDll(), "av_mediacodec_render_buffer_at_time")
+	})
+	return avMediacodecRenderBufferAtTime(buffer, time)
 }
 
 //#endif /* AVCODEC_MEDIACODEC_H */

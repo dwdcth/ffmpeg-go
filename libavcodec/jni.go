@@ -1,6 +1,11 @@
 package libavcodec
 
-import "github.com/dwdcth/ffmpeg-go/ffcommon"
+import (
+	"sync"
+
+	"github.com/dwdcth/ffmpeg-go/ffcommon"
+	"github.com/ebitengine/purego"
+)
 
 /*
  * JNI public API functions
@@ -38,12 +43,14 @@ import "github.com/dwdcth/ffmpeg-go/ffcommon"
  * @return 0 on success, < 0 otherwise
  */
 //int av_jni_set_java_vm(void *vm, void *log_ctx);
-func AvJniSetJavaVm(vm, log_ctx ffcommon.FVoidP) (res ffcommon.FInt) {
-	t, _, _ := ffcommon.GetAvcodecDll().NewProc("av_jni_set_java_vm").Call(
-		vm, log_ctx,
-	)
-	res = ffcommon.FInt(t)
-	return
+var avJniSetJavaVm func(vm, log_ctx ffcommon.FVoidP) ffcommon.FInt
+var avJniSetJavaVmOnce sync.Once
+
+func AvJniSetJavaVm(vm, log_ctx ffcommon.FVoidP) ffcommon.FInt {
+	avJniSetJavaVmOnce.Do(func() {
+		purego.RegisterLibFunc(&avJniSetJavaVm, ffcommon.GetAvcodecDll(), "av_jni_set_java_vm")
+	})
+	return avJniSetJavaVm(vm, log_ctx)
 }
 
 /*
@@ -53,12 +60,14 @@ func AvJniSetJavaVm(vm, log_ctx ffcommon.FVoidP) (res ffcommon.FInt) {
  * @return a pointer to the Java virtual machine
  */
 //void *av_jni_get_java_vm(void *log_ctx);
-func AvJniGetJavaVm(log_ctx ffcommon.FVoidP) (res ffcommon.FVoidP) {
-	t, _, _ := ffcommon.GetAvcodecDll().NewProc("av_jni_get_java_vm").Call(
-		log_ctx,
-	)
-	res = t
-	return
+var avJniGetJavaVm func(log_ctx ffcommon.FVoidP) ffcommon.FVoidP
+var avJniGetJavaVmOnce sync.Once
+
+func AvJniGetJavaVm(log_ctx ffcommon.FVoidP) ffcommon.FVoidP {
+	avJniGetJavaVmOnce.Do(func() {
+		purego.RegisterLibFunc(&avJniGetJavaVm, ffcommon.GetAvcodecDll(), "av_jni_get_java_vm")
+	})
+	return avJniGetJavaVm(log_ctx)
 }
 
 //#endif /* AVCODEC_JNI_H */

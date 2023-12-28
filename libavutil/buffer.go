@@ -1,9 +1,10 @@
 package libavutil
 
 import (
-	"unsafe"
+	"sync"
 
 	"github.com/dwdcth/ffmpeg-go/ffcommon"
+	"github.com/ebitengine/purego"
 )
 
 /*
@@ -121,12 +122,15 @@ type AVBufferRef struct {
 //#else
 //AVBufferRef *av_buffer_alloc(size_t size);
 //#endif
-func AvBufferAlloc(size ffcommon.FIntOrSizeT) (res *AVBufferRef) {
-	t, _, _ := ffcommon.GetAvutilDll().NewProc("av_buffer_alloc").Call(
-		uintptr(size),
-	)
-	res = (*AVBufferRef)(unsafe.Pointer(t))
-	return
+var avBufferAlloc func(size ffcommon.FIntOrSizeT) *AVBufferRef
+var avBufferAllocOnce sync.Once
+
+func AvBufferAlloc(size ffcommon.FIntOrSizeT) *AVBufferRef {
+	avBufferAllocOnce.Do(func() {
+		purego.RegisterLibFunc(&avBufferAlloc, ffcommon.GetAvutilDll(), "av_buffer_alloc")
+	})
+
+	return avBufferAlloc(size)
 }
 
 /**
@@ -138,12 +142,15 @@ func AvBufferAlloc(size ffcommon.FIntOrSizeT) (res *AVBufferRef) {
 //#else
 //AVBufferRef *av_buffer_allocz(size_t size);
 //#endif
-func AvBufferAllocz(size ffcommon.FIntOrSizeT) (res *AVBufferRef) {
-	t, _, _ := ffcommon.GetAvutilDll().NewProc("av_buffer_allocz").Call(
-		uintptr(size),
-	)
-	res = (*AVBufferRef)(unsafe.Pointer(t))
-	return
+var avBufferAllocz func(size ffcommon.FIntOrSizeT) *AVBufferRef
+var avBufferAlloczOnce sync.Once
+
+func AvBufferAllocz(size ffcommon.FIntOrSizeT) *AVBufferRef {
+	avBufferAlloczOnce.Do(func() {
+		purego.RegisterLibFunc(&avBufferAllocz, ffcommon.GetAvutilDll(), "av_buffer_allocz")
+	})
+
+	return avBufferAllocz(size)
 }
 
 /**
@@ -174,16 +181,15 @@ const AV_BUFFER_FLAG_READONLY = (1 << 0)
 //#endif
 //void (*free)(void *opaque, uint8_t *data),
 //void *opaque, int flags);
-func AvBufferCreate(data *ffcommon.FUint8T, size ffcommon.FIntOrSizeT, free func(opaque ffcommon.FVoidP, data *ffcommon.FUint8T) uintptr, opaque ffcommon.FVoidP, flags ffcommon.FInt) (res *AVBufferRef) {
-	t, _, _ := ffcommon.GetAvutilDll().NewProc("av_buffer_create").Call(
-		uintptr(unsafe.Pointer(data)),
-		uintptr(size),
-		ffcommon.NewCallback(free),
-		opaque,
-		uintptr(flags),
-	)
-	res = (*AVBufferRef)(unsafe.Pointer(t))
-	return
+var avBufferCreate func(data *ffcommon.FUint8T, size ffcommon.FIntOrSizeT, free func(opaque ffcommon.FVoidP, data *ffcommon.FUint8T) uintptr, opaque ffcommon.FVoidP, flags ffcommon.FInt) *AVBufferRef
+var avBufferCreateOnce sync.Once
+
+func AvBufferCreate(data *ffcommon.FUint8T, size ffcommon.FIntOrSizeT, free func(opaque ffcommon.FVoidP, data *ffcommon.FUint8T) uintptr, opaque ffcommon.FVoidP, flags ffcommon.FInt) *AVBufferRef {
+	avBufferCreateOnce.Do(func() {
+		purego.RegisterLibFunc(&avBufferCreate, ffcommon.GetAvutilDll(), "av_buffer_create")
+	})
+
+	return avBufferCreate(data, size, free, opaque, flags)
 }
 
 /**
@@ -192,11 +198,15 @@ func AvBufferCreate(data *ffcommon.FUint8T, size ffcommon.FIntOrSizeT, free func
  * directly.
  */
 //void av_buffer_default_free(void *opaque, uint8_t *data);
+var avBufferDefaultFree func(opaque ffcommon.FVoidP, data *ffcommon.FUint8T)
+var avBufferDefaultFreeOnce sync.Once
+
 func AvBufferDefaultFree(opaque ffcommon.FVoidP, data *ffcommon.FUint8T) {
-	ffcommon.GetAvutilDll().NewProc("av_buffer_default_free").Call(
-		opaque,
-		uintptr(unsafe.Pointer(data)),
-	)
+	avBufferDefaultFreeOnce.Do(func() {
+		purego.RegisterLibFunc(&avBufferDefaultFree, ffcommon.GetAvutilDll(), "av_buffer_default_free")
+	})
+
+	avBufferDefaultFree(opaque, data)
 }
 
 /**
@@ -206,12 +216,14 @@ func AvBufferDefaultFree(opaque ffcommon.FVoidP, data *ffcommon.FUint8T) {
  * failure.
  */
 //AVBufferRef *av_buffer_ref(AVBufferRef *buf);
-func (buf *AVBufferRef) AvBufferRef() (res *AVBufferRef) {
-	t, _, _ := ffcommon.GetAvutilDll().NewProc("av_buffer_ref").Call(
-		uintptr(unsafe.Pointer(buf)),
-	)
-	res = (*AVBufferRef)(unsafe.Pointer(t))
-	return
+var avBufferRef func(buf *AVBufferRef) *AVBufferRef
+var avBufferRefOnce sync.Once
+
+func AvBufferRef(buf *AVBufferRef) *AVBufferRef {
+	avBufferRefOnce.Do(func() {
+		purego.RegisterLibFunc(&avBufferRef, ffcommon.GetAvutilDll(), "av_buffer_ref")
+	})
+	return avBufferRef(buf)
 }
 
 /**
@@ -221,10 +233,14 @@ func (buf *AVBufferRef) AvBufferRef() (res *AVBufferRef) {
  * @param buf the reference to be freed. The pointer is set to NULL on return.
  */
 //void av_buffer_unref(AVBufferRef **buf);
+var avBufferUnref func(buf **AVBufferRef)
+var avBufferUnrefOnce sync.Once
+
 func AvBufferUnref(buf **AVBufferRef) {
-	ffcommon.GetAvutilDll().NewProc("av_buffer_unref").Call(
-		uintptr(unsafe.Pointer(buf)),
-	)
+	avBufferUnrefOnce.Do(func() {
+		purego.RegisterLibFunc(&avBufferUnref, ffcommon.GetAvutilDll(), "av_buffer_unref")
+	})
+	avBufferUnref(buf)
 }
 
 /**
@@ -234,33 +250,39 @@ func AvBufferUnref(buf **AVBufferRef) {
  * A positive answer is valid until av_buffer_ref() is called on buf.
  */
 //int av_buffer_is_writable(const AVBufferRef *buf);
-func (buf *AVBufferRef) AvBufferIsWritable() (res ffcommon.FInt) {
-	t, _, _ := ffcommon.GetAvutilDll().NewProc("av_buffer_is_writable").Call(
-		uintptr(unsafe.Pointer(buf)),
-	)
-	res = ffcommon.FInt(t)
-	return
+var avBufferIsWritable func(buf *AVBufferRef) ffcommon.FInt
+var avBufferIsWritableOnce sync.Once
+
+func (buf *AVBufferRef) AvBufferIsWritable() ffcommon.FInt {
+	avBufferIsWritableOnce.Do(func() {
+		purego.RegisterLibFunc(&avBufferIsWritable, ffcommon.GetAvutilDll(), "av_buffer_is_writable")
+	})
+	return avBufferIsWritable(buf)
 }
 
 /**
  * @return the opaque parameter set by av_buffer_create.
  */
 //void *av_buffer_get_opaque(const AVBufferRef *buf);
-func (buf *AVBufferRef) AvBufferGetOpaque() (res ffcommon.FVoidP) {
-	t, _, _ := ffcommon.GetAvutilDll().NewProc("av_buffer_get_opaque").Call(
-		uintptr(unsafe.Pointer(buf)),
-	)
-	res = t
-	return
+var avBufferGetOpaque func(buf *AVBufferRef) ffcommon.FVoidP
+var avBufferGetOpaqueOnce sync.Once
+
+func (buf *AVBufferRef) AvBufferGetOpaque() ffcommon.FVoidP {
+	avBufferGetOpaqueOnce.Do(func() {
+		purego.RegisterLibFunc(&avBufferGetOpaque, ffcommon.GetAvutilDll(), "av_buffer_get_opaque")
+	})
+	return avBufferGetOpaque(buf)
 }
 
 // int av_buffer_get_ref_count(const AVBufferRef *buf);
-func (buf *AVBufferRef) AvBufferGetRefCount() (res ffcommon.FInt) {
-	t, _, _ := ffcommon.GetAvutilDll().NewProc("av_buffer_get_ref_count").Call(
-		uintptr(unsafe.Pointer(buf)),
-	)
-	res = ffcommon.FInt(t)
-	return
+var avBufferGetRefCount func(buf *AVBufferRef) ffcommon.FInt
+var avBufferGetRefCountOnce sync.Once
+
+func (buf *AVBufferRef) AvBufferGetRefCount() ffcommon.FInt {
+	avBufferGetRefCountOnce.Do(func() {
+		purego.RegisterLibFunc(&avBufferGetRefCount, ffcommon.GetAvutilDll(), "av_buffer_get_ref_count")
+	})
+	return avBufferGetRefCount(buf)
 }
 
 /**
@@ -273,12 +295,14 @@ func (buf *AVBufferRef) AvBufferGetRefCount() (res ffcommon.FInt) {
  * @return 0 on success, a negative AVERROR on failure.
  */
 //int av_buffer_make_writable(AVBufferRef **buf);
-func AvBufferMakeWritable(buf **AVBufferRef) (res ffcommon.FInt) {
-	t, _, _ := ffcommon.GetAvutilDll().NewProc("av_buffer_make_writable").Call(
-		uintptr(unsafe.Pointer(buf)),
-	)
-	res = ffcommon.FInt(t)
-	return
+var avBufferMakeWritable func(buf **AVBufferRef) ffcommon.FInt
+var avBufferMakeWritableOnce sync.Once
+
+func AvBufferMakeWritable(buf **AVBufferRef) ffcommon.FInt {
+	avBufferMakeWritableOnce.Do(func() {
+		purego.RegisterLibFunc(&avBufferMakeWritable, ffcommon.GetAvutilDll(), "av_buffer_make_writable")
+	})
+	return avBufferMakeWritable(buf)
 }
 
 /**
@@ -301,13 +325,14 @@ func AvBufferMakeWritable(buf **AVBufferRef) (res ffcommon.FInt) {
 //#else
 //int av_buffer_realloc(AVBufferRef **buf, size_t size);
 //#endif
-func AvBufferRealloc(buf **AVBufferRef, size ffcommon.FIntOrSizeT) (res ffcommon.FInt) {
-	t, _, _ := ffcommon.GetAvutilDll().NewProc("av_buffer_realloc").Call(
-		uintptr(unsafe.Pointer(buf)),
-		uintptr(size),
-	)
-	res = ffcommon.FInt(t)
-	return
+var avBufferRealloc func(buf **AVBufferRef, size ffcommon.FIntOrSizeT) ffcommon.FInt
+var avBufferReallocOnce sync.Once
+
+func AvBufferRealloc(buf **AVBufferRef, size ffcommon.FIntOrSizeT) ffcommon.FInt {
+	avBufferReallocOnce.Do(func() {
+		purego.RegisterLibFunc(&avBufferRealloc, ffcommon.GetAvutilDll(), "av_buffer_realloc")
+	})
+	return avBufferRealloc(buf, size)
 }
 
 /**
@@ -325,13 +350,14 @@ func AvBufferRealloc(buf **AVBufferRef, size ffcommon.FIntOrSizeT) (res ffcommon
  *         AVERROR(ENOMEM) on memory allocation failure.
  */
 //int av_buffer_replace(AVBufferRef **dst, AVBufferRef *src);
-func AvBufferReplace(dst **AVBufferRef, src **AVBufferRef) (res ffcommon.FInt) {
-	t, _, _ := ffcommon.GetAvutilDll().NewProc("av_buffer_replace").Call(
-		uintptr(unsafe.Pointer(dst)),
-		uintptr(unsafe.Pointer(src)),
-	)
-	res = ffcommon.FInt(t)
-	return
+var avBufferReplace func(dst **AVBufferRef, src **AVBufferRef) ffcommon.FInt
+var avBufferReplaceOnce sync.Once
+
+func AvBufferReplace(dst **AVBufferRef, src **AVBufferRef) ffcommon.FInt {
+	avBufferReplaceOnce.Do(func() {
+		purego.RegisterLibFunc(&avBufferReplace, ffcommon.GetAvutilDll(), "av_buffer_replace")
+	})
+	return avBufferReplace(dst, src)
 }
 
 /**
@@ -390,13 +416,16 @@ type AVBufferPool struct {
 //#else
 //AVBufferPool *av_buffer_pool_init(size_t size, AVBufferRef* (*alloc)(size_t size));
 //#endif
-func AvBufferPoolInit(size ffcommon.FIntOrSizeT, alloc func(size ffcommon.FIntOrSizeT) uintptr) (res *AVBufferPool) {
-	t, _, _ := ffcommon.GetAvutilDll().NewProc("av_buffer_pool_init").Call(
-		uintptr(size),
-		ffcommon.NewCallback(alloc),
-	)
-	res = (*AVBufferPool)(unsafe.Pointer(t))
-	return
+type AVBufferPoolInitCallback func(size ffcommon.FIntOrSizeT) uintptr
+
+var avBufferPoolInit func(size ffcommon.FIntOrSizeT, alloc AVBufferPoolInitCallback) *AVBufferPool
+var avBufferPoolInitOnce sync.Once
+
+func AvBufferPoolInit(size ffcommon.FIntOrSizeT, alloc AVBufferPoolInitCallback) *AVBufferPool {
+	avBufferPoolInitOnce.Do(func() {
+		purego.RegisterLibFunc(&avBufferPoolInit, ffcommon.GetAvutilDll(), "av_buffer_pool_init")
+	})
+	return avBufferPoolInit(size, alloc)
 }
 
 /**
@@ -422,17 +451,17 @@ func AvBufferPoolInit(size ffcommon.FIntOrSizeT, alloc func(size ffcommon.FIntOr
 //AVBufferRef* (*alloc)(void *opaque, size_t size),
 //#endif
 //void (*pool_free)(void *opaque));
-func AvBufferPoolInit2(size ffcommon.FIntOrSizeT, opaque ffcommon.FVoidP,
-	alloc func(size ffcommon.FIntOrSizeT) uintptr,
-	pool_free func(opaque ffcommon.FVoidP) uintptr) (res *AVBufferPool) {
-	t, _, _ := ffcommon.GetAvutilDll().NewProc("av_buffer_pool_init2").Call(
-		uintptr(size),
-		opaque,
-		ffcommon.NewCallback(alloc),
-		ffcommon.NewCallback(pool_free),
-	)
-	res = (*AVBufferPool)(unsafe.Pointer(t))
-	return
+type AVBufferPoolInit2Callback func(size ffcommon.FIntOrSizeT) uintptr
+type AVBufferPoolInit2PoolFreeCallback func(opaque ffcommon.FVoidP) uintptr
+
+var avBufferPoolInit2 func(size ffcommon.FIntOrSizeT, opaque ffcommon.FVoidP, alloc AVBufferPoolInit2Callback, poolFree AVBufferPoolInit2PoolFreeCallback) *AVBufferPool
+var avBufferPoolInit2Once sync.Once
+
+func AvBufferPoolInit2(size ffcommon.FIntOrSizeT, opaque ffcommon.FVoidP, alloc AVBufferPoolInit2Callback, poolFree AVBufferPoolInit2PoolFreeCallback) *AVBufferPool {
+	avBufferPoolInit2Once.Do(func() {
+		purego.RegisterLibFunc(&avBufferPoolInit2, ffcommon.GetAvutilDll(), "av_buffer_pool_init2")
+	})
+	return avBufferPoolInit2(size, opaque, alloc, poolFree)
 }
 
 /**
@@ -444,10 +473,14 @@ func AvBufferPoolInit2(size ffcommon.FIntOrSizeT, opaque ffcommon.FVoidP,
  * @param pool pointer to the pool to be freed. It will be set to NULL.
  */
 //void av_buffer_pool_uninit(AVBufferPool **pool);
+var avBufferPoolUninit func(pool **AVBufferPool)
+var avBufferPoolUninitOnce sync.Once
+
 func AvBufferPoolUninit(pool **AVBufferPool) {
-	ffcommon.GetAvutilDll().NewProc("av_buffer_pool_uninit").Call(
-		uintptr(unsafe.Pointer(pool)),
-	)
+	avBufferPoolUninitOnce.Do(func() {
+		purego.RegisterLibFunc(&avBufferPoolUninit, ffcommon.GetAvutilDll(), "av_buffer_pool_uninit")
+	})
+	avBufferPoolUninit(pool)
 }
 
 /**
@@ -457,12 +490,14 @@ func AvBufferPoolUninit(pool **AVBufferPool) {
  * @return a reference to the new buffer on success, NULL on error.
  */
 //AVBufferRef *av_buffer_pool_get(AVBufferPool *pool);
+var avBufferPoolGet func(pool *AVBufferPool) *AVBufferPool
+var avBufferPoolGetOnce sync.Once
+
 func (pool *AVBufferPool) AvBufferPoolGet() (res *AVBufferPool) {
-	t, _, _ := ffcommon.GetAvutilDll().NewProc("av_buffer_pool_get").Call(
-		uintptr(unsafe.Pointer(pool)),
-	)
-	res = (*AVBufferPool)(unsafe.Pointer(t))
-	return
+	avBufferPoolGetOnce.Do(func() {
+		purego.RegisterLibFunc(&avBufferPoolGet, ffcommon.GetAvutilDll(), "av_buffer_pool_get")
+	})
+	return avBufferPoolGet(pool)
 }
 
 /**
@@ -477,12 +512,14 @@ func (pool *AVBufferPool) AvBufferPoolGet() (res *AVBufferPool) {
  * parameter of an allocated buffer.
  */
 //void *av_buffer_pool_buffer_get_opaque(AVBufferRef *ref);
+var avBufferPoolBufferGetOpaque func(pool *AVBufferPool) ffcommon.FVoidP
+var avBufferPoolBufferGetOpaqueOnce sync.Once
+
 func (pool *AVBufferPool) AvBufferPoolBufferGetOpaque() (res ffcommon.FVoidP) {
-	t, _, _ := ffcommon.GetAvutilDll().NewProc("av_buffer_pool_buffer_get_opaque").Call(
-		uintptr(unsafe.Pointer(pool)),
-	)
-	res = t
-	return
+	avBufferPoolBufferGetOpaqueOnce.Do(func() {
+		purego.RegisterLibFunc(&avBufferPoolBufferGetOpaque, ffcommon.GetAvutilDll(), "av_buffer_pool_buffer_get_opaque")
+	})
+	return avBufferPoolBufferGetOpaque(pool)
 }
 
 /**

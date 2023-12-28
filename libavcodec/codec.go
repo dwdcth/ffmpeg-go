@@ -1,10 +1,12 @@
 package libavcodec
 
 import (
+	"sync"
 	"unsafe"
 
 	"github.com/dwdcth/ffmpeg-go/ffcommon"
 	"github.com/dwdcth/ffmpeg-go/libavutil"
+	"github.com/ebitengine/purego"
 )
 
 /*
@@ -423,12 +425,14 @@ func (this *AVCodec) GetChannelLayout(index ffcommon.FUnsignedInt) (res ffcommon
  *         finished
  */
 //const AVCodec *av_codec_iterate(void **opaque);
+var avCodecIterate func(opaque *ffcommon.FVoidP) *AVCodec
+var avCodecIterateOnce sync.Once
+
 func AvCodecIterate(opaque *ffcommon.FVoidP) (res *AVCodec) {
-	t, _, _ := ffcommon.GetAvcodecDll().NewProc("av_codec_iterate").Call(
-		uintptr(unsafe.Pointer(opaque)),
-	)
-	res = (*AVCodec)(unsafe.Pointer(t))
-	return
+	avCodecIterateOnce.Do(func() {
+		purego.RegisterLibFunc(&avCodecIterate, ffcommon.GetAvcodecDll(), "av_codec_iterate")
+	})
+	return avCodecIterate(opaque)
 }
 
 /**
@@ -438,12 +442,14 @@ func AvCodecIterate(opaque *ffcommon.FVoidP) (res *AVCodec) {
  * @return A decoder if one was found, NULL otherwise.
  */
 //AVCodec *avcodec_find_decoder(enum AVCodecID id);
+var avcodecFindDecoder func(id AVCodecID) *AVCodec
+var avcodecFindDecoderOnce sync.Once
+
 func AvcodecFindDecoder(id AVCodecID) (res *AVCodec) {
-	t, _, _ := ffcommon.GetAvcodecDll().NewProc("avcodec_find_decoder").Call(
-		uintptr(id),
-	)
-	res = (*AVCodec)(unsafe.Pointer(t))
-	return
+	avcodecFindDecoderOnce.Do(func() {
+		purego.RegisterLibFunc(&avcodecFindDecoder, ffcommon.GetAvcodecDll(), "avcodec_find_decoder")
+	})
+	return avcodecFindDecoder(id)
 }
 
 /**
@@ -453,12 +459,15 @@ func AvcodecFindDecoder(id AVCodecID) (res *AVCodec) {
  * @return A decoder if one was found, NULL otherwise.
  */
 //AVCodec *avcodec_find_decoder_by_name(const char *name);
+
+var avcodecFindDecoderByName func(name ffcommon.FConstCharP) *AVCodec
+var avcodecFindDecoderByNameOnce sync.Once
+
 func AvcodecFindDecoderByName(name ffcommon.FConstCharP) (res *AVCodec) {
-	t, _, _ := ffcommon.GetAvcodecDll().NewProc("avcodec_find_decoder_by_name").Call(
-		ffcommon.UintPtrFromString(name),
-	)
-	res = (*AVCodec)(unsafe.Pointer(t))
-	return
+	avcodecFindDecoderByNameOnce.Do(func() {
+		purego.RegisterLibFunc(&avcodecFindDecoderByName, ffcommon.GetAvcodecDll(), "avcodec_find_decoder_by_name")
+	})
+	return avcodecFindDecoderByName(name)
 }
 
 /**
@@ -468,12 +477,15 @@ func AvcodecFindDecoderByName(name ffcommon.FConstCharP) (res *AVCodec) {
  * @return An encoder if one was found, NULL otherwise.
  */
 //AVCodec *avcodec_find_encoder(enum AVCodecID id);
+
+var avcodecFindEncoder func(id AVCodecID) *AVCodec
+var avcodecFindEncoderOnce sync.Once
+
 func AvcodecFindEncoder(id AVCodecID) (res *AVCodec) {
-	t, _, _ := ffcommon.GetAvcodecDll().NewProc("avcodec_find_encoder").Call(
-		uintptr(id),
-	)
-	res = (*AVCodec)(unsafe.Pointer(t))
-	return
+	avcodecFindEncoderOnce.Do(func() {
+		purego.RegisterLibFunc(&avcodecFindEncoder, ffcommon.GetAvcodecDll(), "avcodec_find_encoder")
+	})
+	return avcodecFindEncoder(id)
 }
 
 /**
@@ -483,36 +495,45 @@ func AvcodecFindEncoder(id AVCodecID) (res *AVCodec) {
  * @return An encoder if one was found, NULL otherwise.
  */
 //AVCodec *avcodec_find_encoder_by_name(const char *name);
+
+var avcodecFindEncoderByName func(name ffcommon.FConstCharP) *AVCodec
+var avcodecFindEncoderByNameOnce sync.Once
+
 func AvcodecFindEncoderByName(name ffcommon.FConstCharP) (res *AVCodec) {
-	t, _, _ := ffcommon.GetAvcodecDll().NewProc("avcodec_find_encoder_by_name").Call(
-		ffcommon.UintPtrFromString(name),
-	)
-	res = (*AVCodec)(unsafe.Pointer(t))
-	return
+	avcodecFindEncoderByNameOnce.Do(func() {
+		purego.RegisterLibFunc(&avcodecFindEncoderByName, ffcommon.GetAvcodecDll(), "avcodec_find_encoder_by_name")
+	})
+	return avcodecFindEncoderByName(name)
 }
 
 /**
  * @return a non-zero number if codec is an encoder, zero otherwise
  */
 //int av_codec_is_encoder(const AVCodec *codec);
+
+var avCodecIsEncoder func(codec *AVCodec) ffcommon.FInt
+var avCodecIsEncoderOnce sync.Once
+
 func (codec *AVCodec) AvCodecIsEncoder() (res ffcommon.FInt) {
-	t, _, _ := ffcommon.GetAvcodecDll().NewProc("av_codec_is_encoder").Call(
-		uintptr(unsafe.Pointer(codec)),
-	)
-	res = ffcommon.FInt(t)
-	return
+	avCodecIsEncoderOnce.Do(func() {
+		purego.RegisterLibFunc(&avCodecIsEncoder, ffcommon.GetAvcodecDll(), "av_codec_is_encoder")
+	})
+	return avCodecIsEncoder(codec)
 }
 
 /**
  * @return a non-zero number if codec is a decoder, zero otherwise
  */
 //int av_codec_is_decoder(const AVCodec *codec);
+
+var avCodecIsDecoder func(codec *AVCodec) ffcommon.FInt
+var avCodecIsDecoderOnce sync.Once
+
 func (codec *AVCodec) AvCodecIsDecoder() (res ffcommon.FInt) {
-	t, _, _ := ffcommon.GetAvcodecDll().NewProc("av_codec_is_decoder").Call(
-		uintptr(unsafe.Pointer(codec)),
-	)
-	res = ffcommon.FInt(t)
-	return
+	avCodecIsDecoderOnce.Do(func() {
+		purego.RegisterLibFunc(&avCodecIsDecoder, ffcommon.GetAvcodecDll(), "av_codec_is_decoder")
+	})
+	return avCodecIsDecoder(codec)
 }
 
 const (
@@ -588,13 +609,14 @@ type AVHWDeviceType = libavutil.AVHWDeviceType
  * any hardware configurations then it will always return NULL.
  */
 //const AVCodecHWConfig *avcodec_get_hw_config(const AVCodec *codec, int index);
+var avcodecGetHwConfig func(codec *AVCodec, index ffcommon.FInt) *AVCodecHWConfig
+var avcodecGetHwConfigOnce sync.Once
+
 func (codec *AVCodec) AvcodecGetHwConfig(index ffcommon.FInt) (res *AVCodecHWConfig) {
-	t, _, _ := ffcommon.GetAvcodecDll().NewProc("avcodec_get_hw_config").Call(
-		uintptr(unsafe.Pointer(codec)),
-		uintptr(index),
-	)
-	res = (*AVCodecHWConfig)(unsafe.Pointer(t))
-	return
+	avcodecGetHwConfigOnce.Do(func() {
+		purego.RegisterLibFunc(&avcodecGetHwConfig, ffcommon.GetAvcodecDll(), "avcodec_get_hw_config")
+	})
+	return avcodecGetHwConfig(codec, index)
 }
 
 /**

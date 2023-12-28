@@ -1,10 +1,11 @@
 package libavcodec
 
 import (
-	"unsafe"
+	"sync"
 
 	"github.com/dwdcth/ffmpeg-go/ffcommon"
 	"github.com/dwdcth/ffmpeg-go/libavutil"
+	"github.com/ebitengine/purego"
 )
 
 /*
@@ -222,10 +223,14 @@ type AVCodecParameters struct {
  * avcodec_parameters_free().
  */
 //AVCodecParameters *avcodec_parameters_alloc(void);
-func AvcodecParametersAlloc() (res *AVCodecParameters) {
-	t, _, _ := ffcommon.GetAvcodecDll().NewProc("avcodec_parameters_alloc").Call()
-	res = (*AVCodecParameters)(unsafe.Pointer(t))
-	return
+var avcodecParametersAlloc func() *AVCodecParameters
+var avcodecParametersAllocOnce sync.Once
+
+func AvcodecParametersAlloc() *AVCodecParameters {
+	avcodecParametersAllocOnce.Do(func() {
+		purego.RegisterLibFunc(&avcodecParametersAlloc, ffcommon.GetAvcodecDll(), "avcodec_parameters_alloc")
+	})
+	return avcodecParametersAlloc()
 }
 
 /**
@@ -233,10 +238,14 @@ func AvcodecParametersAlloc() (res *AVCodecParameters) {
  * write NULL to the supplied pointer.
  */
 //void avcodec_parameters_free(AVCodecParameters **par);
+var avcodecParametersFree func(par **AVCodecParameters)
+var avcodecParametersFreeOnce sync.Once
+
 func AvcodecParametersFree(par **AVCodecParameters) {
-	ffcommon.GetAvcodecDll().NewProc("avcodec_parameters_free").Call(
-		uintptr(unsafe.Pointer(par)),
-	)
+	avcodecParametersFreeOnce.Do(func() {
+		purego.RegisterLibFunc(&avcodecParametersFree, ffcommon.GetAvcodecDll(), "avcodec_parameters_free")
+	})
+	avcodecParametersFree(par)
 }
 
 /**
@@ -246,13 +255,14 @@ func AvcodecParametersFree(par **AVCodecParameters) {
  * @return >= 0 on success, a negative AVERROR code on failure.
  */
 //int avcodec_parameters_copy(AVCodecParameters *dst, const AVCodecParameters *src);
-func AvcodecParametersCopy(dst, src *AVCodecParameters) (res ffcommon.FInt) {
-	t, _, _ := ffcommon.GetAvcodecDll().NewProc("avcodec_parameters_copy").Call(
-		uintptr(unsafe.Pointer(dst)),
-		uintptr(unsafe.Pointer(src)),
-	)
-	res = ffcommon.FInt(t)
-	return
+var avcodecParametersCopy func(dst, src *AVCodecParameters) ffcommon.FInt
+var avcodecParametersCopyOnce sync.Once
+
+func AvcodecParametersCopy(dst, src *AVCodecParameters) ffcommon.FInt {
+	avcodecParametersCopyOnce.Do(func() {
+		purego.RegisterLibFunc(&avcodecParametersCopy, ffcommon.GetAvcodecDll(), "avcodec_parameters_copy")
+	})
+	return avcodecParametersCopy(dst, src)
 }
 
 /**

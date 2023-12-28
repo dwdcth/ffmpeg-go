@@ -1,9 +1,10 @@
 package libavutil
 
 import (
-	"unsafe"
+	"sync"
 
 	"github.com/dwdcth/ffmpeg-go/ffcommon"
+	"github.com/ebitengine/purego"
 )
 
 /*
@@ -176,13 +177,15 @@ import (
  * Return the LIBAVUTIL_VERSION_INT constant.
  */
 //unsigned avutil_version(void);
-func AvutilVersion() (res ffcommon.FUnsigned) {
-	t, _, _ := ffcommon.GetAvutilDll().NewProc("avutil_version").Call()
-	if t == 0 {
+var avutilVersion func() ffcommon.FUnsigned
+var avutilVersionOnce sync.Once
 
-	}
-	res = ffcommon.FUnsigned(t)
-	return
+func AvutilVersion() ffcommon.FUnsigned {
+	avutilVersionOnce.Do(func() {
+		purego.RegisterLibFunc(&avutilVersion, ffcommon.GetAvutilDll(), "avutil_version")
+	})
+
+	return avutilVersion()
 }
 
 /**
@@ -191,39 +194,60 @@ func AvutilVersion() (res ffcommon.FUnsigned) {
  * and can change any time. It should never be parsed by code.
  */
 //const char *av_version_info(void);
-func AvVersionInfo() (res ffcommon.FCharP) {
-	t, _, _ := ffcommon.GetAvutilDll().NewProc("av_version_info").Call()
-	if t == 0 {
+var avVersionInfo func() ffcommon.FCharP
+var avVersionInfoOnce sync.Once
 
-	}
-	res = ffcommon.StringFromPtr(t)
-	return
+func AvVersionInfo() ffcommon.FCharP {
+	avVersionInfoOnce.Do(func() {
+		purego.RegisterLibFunc(&avVersionInfo, ffcommon.GetAvutilDll(), "av_version_info")
+	})
+
+	return avVersionInfo()
+	// if t == 0 {
+	// 	return nil
+	// }
+
+	// return ffcommon.StringFromPtr(t)
 }
 
 /**
  * Return the libavutil build-time configuration.
  */
 //const char *avutil_configuration(void);
-func AvutilConfiguration() (res ffcommon.FCharP) {
-	t, _, _ := ffcommon.GetAvutilDll().NewProc("avutil_configuration").Call()
-	if t == 0 {
+var avutilConfiguration func() ffcommon.FCharP
+var avutilConfigurationOnce sync.Once
 
-	}
-	res = ffcommon.StringFromPtr(t)
-	return
+func AvutilConfiguration() ffcommon.FCharP {
+	avutilConfigurationOnce.Do(func() {
+		purego.RegisterLibFunc(&avutilConfiguration, ffcommon.GetAvutilDll(), "avutil_configuration")
+	})
+
+	return avutilConfiguration()
+	// if t == 0 {
+	// 	return nil
+	// }
+
+	// return ffcommon.StringFromPtr(t)
 }
 
 /**
  * Return the libavutil license.
  */
 //const char *avutil_license(void);
-func AvutilLicense() (res ffcommon.FCharP) {
-	t, _, _ := ffcommon.GetAvutilDll().NewProc("avutil_license").Call()
-	if t == 0 {
+var avutilLicense func() ffcommon.FCharP
+var avutilLicenseOnce sync.Once
 
-	}
-	res = ffcommon.StringFromPtr(t)
-	return
+func AvutilLicense() ffcommon.FCharP {
+	avutilLicenseOnce.Do(func() {
+		purego.RegisterLibFunc(&avutilLicense, ffcommon.GetAvutilDll(), "avutil_license")
+	})
+
+	return avutilLicense()
+	// if t == 0 {
+	//     return nil
+	// }
+
+	// return ffcommon.StringFromPtr(t)
 }
 
 /**
@@ -251,12 +275,20 @@ const (
  * is unknown.
  */
 //const char *av_get_media_type_string(enum AVMediaType media_type);
-func AvGetMediaTypeString(media_type AVMediaType) (res ffcommon.FCharP) {
-	t, _, _ := ffcommon.GetAvutilDll().NewProc("av_get_media_type_string").Call(
-		uintptr(media_type),
-	)
-	res = ffcommon.StringFromPtr(t)
-	return
+var avGetMediaTypeString func(media_type AVMediaType) ffcommon.FCharP
+var avGetMediaTypeStringOnce sync.Once
+
+func AvGetMediaTypeString(media_type AVMediaType) ffcommon.FCharP {
+	avGetMediaTypeStringOnce.Do(func() {
+		purego.RegisterLibFunc(&avGetMediaTypeString, ffcommon.GetAvutilDll(), "av_get_media_type_string")
+	})
+
+	return avGetMediaTypeString(media_type)
+	// if t == 0 {
+	// 	return nil
+	// }
+
+	// return ffcommon.StringFromPtr(t)
 }
 
 /**
@@ -339,12 +371,15 @@ const (
  * representing the picture type, '?' if pict_type is unknown
  */
 //char av_get_picture_type_char(enum AVPictureType pict_type);
-func AvGetPictureTypeChar(pict_type AVPictureType) (res ffcommon.FChar) {
-	t, _, _ := ffcommon.GetAvutilDll().NewProc("av_get_picture_type_char").Call(
-		uintptr(pict_type),
-	)
-	res = ffcommon.FChar(t)
-	return
+var avGetPictureTypeChar func(pict_type AVPictureType) ffcommon.FChar
+var avGetPictureTypeCharOnce sync.Once
+
+func AvGetPictureTypeChar(pict_type AVPictureType) ffcommon.FChar {
+	avGetPictureTypeCharOnce.Do(func() {
+		purego.RegisterLibFunc(&avGetPictureTypeChar, ffcommon.GetAvutilDll(), "av_get_picture_type_char")
+	})
+
+	return ffcommon.FChar(avGetPictureTypeChar(pict_type))
 }
 
 /**
@@ -386,14 +421,15 @@ func AvXIfNull(p, x ffcommon.FConstVoidP) (res ffcommon.FConstVoidP) {
  */
 //unsigned av_int_list_length_for_size(unsigned elsize,
 //const void *list, uint64_t term) av_pure;
-func AvIntListLengthForSize(elsize ffcommon.FUnsigned, list0 ffcommon.FConstVoidP, term ffcommon.FUint64T) (res ffcommon.FUnsigned) {
-	t, _, _ := ffcommon.GetAvutilDll().NewProc("av_int_list_length_for_size").Call(
-		uintptr(elsize),
-		list0,
-		uintptr(term),
-	)
-	res = ffcommon.FUnsigned(t)
-	return
+var avIntListLengthForSize func(elsize ffcommon.FUnsigned, list0 ffcommon.FConstVoidP, term ffcommon.FUint64T) ffcommon.FUnsigned
+var avIntListLengthForSizeOnce sync.Once
+
+func AvIntListLengthForSize(elsize ffcommon.FUnsigned, list0 ffcommon.FConstVoidP, term ffcommon.FUint64T) ffcommon.FUnsigned {
+	avIntListLengthForSizeOnce.Do(func() {
+		purego.RegisterLibFunc(&avIntListLengthForSize, ffcommon.GetAvutilDll(), "av_int_list_length_for_size")
+	})
+
+	return ffcommon.FUnsigned(avIntListLengthForSize(elsize, list0, term))
 }
 
 /**
@@ -417,37 +453,51 @@ func AvIntListLengthForSize(elsize ffcommon.FUnsigned, list0 ffcommon.FConstVoid
  * errno.
  */
 //FILE *av_fopen_utf8(const char *path, const char *mode);
-func AvFopenUtf8(path0, mode ffcommon.FConstCharP) (res ffcommon.FFileP) {
-	t, _, _ := ffcommon.GetAvutilDll().NewProc("av_fopen_utf8").Call(
-		ffcommon.UintPtrFromString(path0),
-		ffcommon.UintPtrFromString(mode),
-	)
-	res = t
-	return
+var avFopenUtf8 func(path0, mode ffcommon.FConstCharP) ffcommon.FFileP
+var avFopenUtf8Once sync.Once
+
+func AvFopenUtf8(path0, mode ffcommon.FConstCharP) ffcommon.FFileP {
+	avFopenUtf8Once.Do(func() {
+		purego.RegisterLibFunc(&avFopenUtf8, ffcommon.GetAvutilDll(), "av_fopen_utf8")
+	})
+
+	return avFopenUtf8(path0, mode)
 }
 
 /**
  * Return the fractional representation of the internal time base.
  */
 //AVRational av_get_time_base_q(void);
-func AvGetTimeBaseQ() (res AVRational) {
-	t, _, _ := ffcommon.GetAvutilDll().NewProc("av_get_time_base_q").Call()
-	res = *(*AVRational)(unsafe.Pointer(&t))
-	return
+var avGetTimeBaseQ func() AVRational
+var avGetTimeBaseQOnce sync.Once
+
+func AvGetTimeBaseQ() AVRational {
+	avGetTimeBaseQOnce.Do(func() {
+		purego.RegisterLibFunc(&avGetTimeBaseQ, ffcommon.GetAvutilDll(), "av_get_time_base_q")
+	})
+
+	return avGetTimeBaseQ()
 }
 
 const AV_FOURCC_MAX_STRING_SIZE = 32
 
-//#define av_fourcc2str(fourcc) av_fourcc_make_string((char[AV_FOURCC_MAX_STRING_SIZE]){0}, fourcc)
-//todo
-// func av_fourcc2str() (res ffcommon.FCharP) {
-// 	t, _, _ := ffcommon.GetAvutilDll().NewProc("av_fourcc2str").Call()
-// 	if t == 0 {
+// #define av_fourcc2str(fourcc) av_fourcc_make_string((char[AV_FOURCC_MAX_STRING_SIZE]){0}, fourcc)
+// todo
+var avFourcc2Str func() ffcommon.FCharP
+var avFourcc2StrOnce sync.Once
 
-// 	}
-// 	res = ffcommon.StringFromPtr(t)
-// 	return
-// }
+func AvFourcc2Str() ffcommon.FCharP {
+	avFourcc2StrOnce.Do(func() {
+		purego.RegisterLibFunc(&avFourcc2Str, ffcommon.GetAvutilDll(), "av_fourcc2str")
+	})
+
+	return avFourcc2Str()
+	// if t == 0 {
+	// 	return nil
+	// }
+
+	// return ffcommon.StringFromPtr(t)
+}
 
 /**
  * Fill the provided buffer with a string containing a FourCC (four-character
@@ -458,13 +508,20 @@ const AV_FOURCC_MAX_STRING_SIZE = 32
  * @return the buffer in input
  */
 //char *av_fourcc_make_string(char *buf, uint32_t fourcc);
-func AvFourccMakeString(buf ffcommon.FCharP, fourcc ffcommon.FUint32T) (res ffcommon.FConstCharP) {
-	t, _, _ := ffcommon.GetAvutilDll().NewProc("av_fourcc_make_string").Call(
-		ffcommon.UintPtrFromString(buf),
-		uintptr(fourcc),
-	)
-	res = ffcommon.StringFromPtr(t)
-	return
+var avFourccMakeString func(buf ffcommon.FCharP, fourcc ffcommon.FUint32T) ffcommon.FConstCharP
+var avFourccMakeStringOnce sync.Once
+
+func AvFourccMakeString(buf ffcommon.FCharP, fourcc ffcommon.FUint32T) ffcommon.FConstCharP {
+	avFourccMakeStringOnce.Do(func() {
+		purego.RegisterLibFunc(&avFourccMakeString, ffcommon.GetAvutilDll(), "av_fourcc_make_string")
+	})
+
+	return avFourccMakeString(buf, fourcc)
+	// if t == 0 {
+	// 	return nil
+	// }
+
+	// return ffcommon.StringFromPtr(t)
 }
 
 /**

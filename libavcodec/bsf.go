@@ -1,10 +1,11 @@
 package libavcodec
 
 import (
-	"unsafe"
+	"sync"
 
 	"github.com/dwdcth/ffmpeg-go/ffcommon"
 	"github.com/dwdcth/ffmpeg-go/libavutil"
+	"github.com/ebitengine/purego"
 )
 
 /*
@@ -152,13 +153,6 @@ type AVBitStreamFilter struct {
  *         bitstream filter exists.
  */
 //const AVBitStreamFilter *av_bsf_get_by_name(const char *name);
-func AvBsfGetByName(name ffcommon.FConstCharP) (res *AVBitStreamFilter) {
-	t, _, _ := ffcommon.GetAvcodecDll().NewProc("av_bsf_get_by_name").Call(
-		ffcommon.UintPtrFromString(name),
-	)
-	res = (*AVBitStreamFilter)(unsafe.Pointer(t))
-	return
-}
 
 /**
  * Iterate over all registered bitstream filters.
@@ -170,12 +164,14 @@ func AvBsfGetByName(name ffcommon.FConstCharP) (res *AVBitStreamFilter) {
  *         finished
  */
 //const AVBitStreamFilter *av_bsf_iterate(void **opaque);
+var avBsfIterate func(opaque *ffcommon.FVoidP) *AVBitStreamFilter
+var avBsfIterateOnce sync.Once
+
 func AvBsfIterate(opaque *ffcommon.FVoidP) (res *AVBitStreamFilter) {
-	t, _, _ := ffcommon.GetAvcodecDll().NewProc("av_bsf_iterate").Call(
-		uintptr(unsafe.Pointer(opaque)),
-	)
-	res = (*AVBitStreamFilter)(unsafe.Pointer(t))
-	return
+	avBsfIterateOnce.Do(func() {
+		purego.RegisterLibFunc(&avBsfIterate, ffcommon.GetAvcodecDll(), "av_bsf_iterate")
+	})
+	return avBsfIterate(opaque)
 }
 
 /**
@@ -191,13 +187,14 @@ func AvBsfIterate(opaque *ffcommon.FVoidP) (res *AVBitStreamFilter) {
  * @return 0 on success, a negative AVERROR code on failure
  */
 //int av_bsf_alloc(const AVBitStreamFilter *filter, AVBSFContext **ctx);
+var avBsfAlloc func(filter *AVBitStreamFilter, ctx **AVBSFContext) ffcommon.FInt
+var avBsfAllocOnce sync.Once
+
 func (filter *AVBitStreamFilter) AvBsfAlloc(ctx **AVBSFContext) (res ffcommon.FInt) {
-	t, _, _ := ffcommon.GetAvcodecDll().NewProc("av_bsf_alloc").Call(
-		uintptr(unsafe.Pointer(filter)),
-		uintptr(unsafe.Pointer(ctx)),
-	)
-	res = ffcommon.FInt(t)
-	return
+	avBsfAllocOnce.Do(func() {
+		purego.RegisterLibFunc(&avBsfAlloc, ffcommon.GetAvcodecDll(), "av_bsf_alloc")
+	})
+	return avBsfAlloc(filter, ctx)
 }
 
 /**
@@ -205,12 +202,14 @@ func (filter *AVBitStreamFilter) AvBsfAlloc(ctx **AVBSFContext) (res ffcommon.FI
  * set.
  */
 //int av_bsf_init(AVBSFContext *ctx);
+var avBsfInit func(ctx *AVBSFContext) ffcommon.FInt
+var avBsfInitOnce sync.Once
+
 func (ctx *AVBSFContext) AvBsfInit() (res ffcommon.FInt) {
-	t, _, _ := ffcommon.GetAvcodecDll().NewProc("av_bsf_init").Call(
-		uintptr(unsafe.Pointer(ctx)),
-	)
-	res = ffcommon.FInt(t)
-	return
+	avBsfInitOnce.Do(func() {
+		purego.RegisterLibFunc(&avBsfInit, ffcommon.GetAvcodecDll(), "av_bsf_init")
+	})
+	return avBsfInit(ctx)
 }
 
 /**
@@ -232,13 +231,14 @@ func (ctx *AVBSFContext) AvBsfInit() (res ffcommon.FInt) {
  * negative AVERROR value if an error occurs.
  */
 //int av_bsf_send_packet(AVBSFContext *ctx, AVPacket *pkt);
+var avBsfSendPacket func(ctx *AVBSFContext, pkt *AVPacket) ffcommon.FInt
+var avBsfSendPacketOnce sync.Once
+
 func (ctx *AVBSFContext) AvBsfSendPacket(pkt *AVPacket) (res ffcommon.FInt) {
-	t, _, _ := ffcommon.GetAvcodecDll().NewProc("av_bsf_send_packet").Call(
-		uintptr(unsafe.Pointer(ctx)),
-		uintptr(unsafe.Pointer(pkt)),
-	)
-	res = ffcommon.FInt(t)
-	return
+	avBsfSendPacketOnce.Do(func() {
+		purego.RegisterLibFunc(&avBsfSendPacket, ffcommon.GetAvcodecDll(), "av_bsf_send_packet")
+	})
+	return avBsfSendPacket(ctx, pkt)
 }
 
 /**
@@ -266,23 +266,28 @@ func (ctx *AVBSFContext) AvBsfSendPacket(pkt *AVPacket) (res ffcommon.FInt) {
  * AVERROR(EAGAIN) immediately after a successful av_bsf_send_packet() call.
  */
 //int av_bsf_receive_packet(AVBSFContext *ctx, AVPacket *pkt);
+var avBsfReceivePacket func(ctx *AVBSFContext, pkt *AVPacket) ffcommon.FInt
+var avBsfReceivePacketOnce sync.Once
+
 func (ctx *AVBSFContext) AvBsfReceivePacket(pkt *AVPacket) (res ffcommon.FInt) {
-	t, _, _ := ffcommon.GetAvcodecDll().NewProc("av_bsf_receive_packet").Call(
-		uintptr(unsafe.Pointer(ctx)),
-		uintptr(unsafe.Pointer(pkt)),
-	)
-	res = ffcommon.FInt(t)
-	return
+	avBsfReceivePacketOnce.Do(func() {
+		purego.RegisterLibFunc(&avBsfReceivePacket, ffcommon.GetAvcodecDll(), "av_bsf_receive_packet")
+	})
+	return avBsfReceivePacket(ctx, pkt)
 }
 
 /**
  * Reset the internal bitstream filter state. Should be called e.g. when seeking.
  */
 //void av_bsf_flush(AVBSFContext *ctx);
+var avBsfFlush func(ctx *AVBSFContext)
+var avBsfFlushOnce sync.Once
+
 func (ctx *AVBSFContext) AvBsfFlush() {
-	ffcommon.GetAvcodecDll().NewProc("av_bsf_flush").Call(
-		uintptr(unsafe.Pointer(ctx)),
-	)
+	avBsfFlushOnce.Do(func() {
+		purego.RegisterLibFunc(&avBsfFlush, ffcommon.GetAvcodecDll(), "av_bsf_flush")
+	})
+	avBsfFlush(ctx)
 }
 
 /**
@@ -290,10 +295,14 @@ func (ctx *AVBSFContext) AvBsfFlush() {
  * into the supplied pointer.
  */
 //void av_bsf_free(AVBSFContext **ctx);
+var avBsfFree func(ctx **AVBSFContext)
+var avBsfFreeOnce sync.Once
+
 func AvBsfFree(ctx **AVBSFContext) {
-	ffcommon.GetAvcodecDll().NewProc("av_bsf_free").Call(
-		uintptr(unsafe.Pointer(ctx)),
-	)
+	avBsfFreeOnce.Do(func() {
+		purego.RegisterLibFunc(&avBsfFree, ffcommon.GetAvcodecDll(), "av_bsf_free")
+	})
+	avBsfFree(ctx)
 }
 
 /**
@@ -303,10 +312,14 @@ func AvBsfFree(ctx **AVBSFContext) {
  * @see av_opt_find().
  */
 //const AVClass *av_bsf_get_class(void);
+var avBsfGetClass func() *AVClass
+var avBsfGetClassOnce sync.Once
+
 func AvBsfGetClass() (res *AVClass) {
-	t, _, _ := ffcommon.GetAvcodecDll().NewProc("av_bsf_get_class").Call()
-	res = (*AVClass)(unsafe.Pointer(t))
-	return
+	avBsfGetClassOnce.Do(func() {
+		purego.RegisterLibFunc(&avBsfGetClass, ffcommon.GetAvcodecDll(), "av_bsf_get_class")
+	})
+	return avBsfGetClass()
 }
 
 /**
@@ -325,10 +338,14 @@ type AVBSFList struct {
  * @return Pointer to @ref AVBSFList on success, NULL in case of failure
  */
 //AVBSFList *av_bsf_list_alloc(void);
+var avBsfListAlloc func() *AVBSFList
+var avBsfListAllocOnce sync.Once
+
 func AvBsfListAlloc() (res *AVBSFList) {
-	t, _, _ := ffcommon.GetAvcodecDll().NewProc("av_bsf_list_alloc").Call()
-	res = (*AVBSFList)(unsafe.Pointer(t))
-	return
+	avBsfListAllocOnce.Do(func() {
+		purego.RegisterLibFunc(&avBsfListAlloc, ffcommon.GetAvcodecDll(), "av_bsf_list_alloc")
+	})
+	return avBsfListAlloc()
 }
 
 /**
@@ -337,10 +354,14 @@ func AvBsfListAlloc() (res *AVBSFList) {
  * @param lst Pointer to pointer returned by av_bsf_list_alloc()
  */
 //void av_bsf_list_free(AVBSFList **lst);
+var avBsfListFree func(lst **AVBSFList)
+var avBsfListFreeOnce sync.Once
+
 func AvBsfListFree(lst **AVBSFList) {
-	ffcommon.GetAvcodecDll().NewProc("av_bsf_list_free").Call(
-		uintptr(unsafe.Pointer(lst)),
-	)
+	avBsfListFreeOnce.Do(func() {
+		purego.RegisterLibFunc(&avBsfListFree, ffcommon.GetAvcodecDll(), "av_bsf_list_free")
+	})
+	avBsfListFree(lst)
 }
 
 /**
@@ -352,13 +373,14 @@ func AvBsfListFree(lst **AVBSFList) {
  * @return >=0 on success, negative AVERROR in case of failure
  */
 //int av_bsf_list_append(AVBSFList *lst, AVBSFContext *bsf);
-func (lst *AVBSFList) AvBsfListAppend(bsf *AVBSFContext) (res ffcommon.FInt) {
-	t, _, _ := ffcommon.GetAvcodecDll().NewProc("av_bsf_list_append").Call(
-		uintptr(unsafe.Pointer(lst)),
-		uintptr(unsafe.Pointer(bsf)),
-	)
-	res = ffcommon.FInt(t)
-	return
+var avBsfListAppend func(lst *AVBSFList, bsf *AVBSFContext) ffcommon.FInt
+var avBsfListAppendOnce sync.Once
+
+func (lst *AVBSFList) AvBsfListAppend(bsf *AVBSFContext) ffcommon.FInt {
+	avBsfListAppendOnce.Do(func() {
+		purego.RegisterLibFunc(&avBsfListAppend, ffcommon.GetAvcodecDll(), "av_bsf_list_append")
+	})
+	return avBsfListAppend(lst, bsf)
 }
 
 /**
@@ -372,14 +394,14 @@ func (lst *AVBSFList) AvBsfListAppend(bsf *AVBSFContext) (res ffcommon.FInt) {
  * @return >=0 on success, negative AVERROR in case of failure
  */
 //int av_bsf_list_append2(AVBSFList *lst, const char * bsf_name, AVDictionary **options);
-func (lst *AVBSFList) AvBsfListAppend2(bsf_name ffcommon.FConstCharP, options **AVDictionary) (res ffcommon.FInt) {
-	t, _, _ := ffcommon.GetAvcodecDll().NewProc("av_bsf_list_append2").Call(
-		uintptr(unsafe.Pointer(lst)),
-		ffcommon.UintPtrFromString(bsf_name),
-		uintptr(unsafe.Pointer(options)),
-	)
-	res = ffcommon.FInt(t)
-	return
+var avBsfListAppend2 func(lst *AVBSFList, bsf_name ffcommon.FConstCharP, options **AVDictionary) ffcommon.FInt
+var avBsfListAppend2Once sync.Once
+
+func (lst *AVBSFList) AvBsfListAppend2(bsf_name ffcommon.FConstCharP, options **AVDictionary) ffcommon.FInt {
+	avBsfListAppend2Once.Do(func() {
+		purego.RegisterLibFunc(&avBsfListAppend2, ffcommon.GetAvcodecDll(), "av_bsf_list_append2")
+	})
+	return avBsfListAppend2(lst, bsf_name, options)
 }
 
 /**
@@ -399,13 +421,14 @@ func (lst *AVBSFList) AvBsfListAppend2(bsf_name ffcommon.FConstCharP, options **
  * @return >=0 on success, negative AVERROR in case of failure
  */
 //int av_bsf_list_finalize(AVBSFList **lst, AVBSFContext **bsf);
-func AvBsfListFinalize(lst **AVBSFList, bsf *AVBSFContext) (res ffcommon.FInt) {
-	t, _, _ := ffcommon.GetAvcodecDll().NewProc("av_bsf_list_finalize").Call(
-		uintptr(unsafe.Pointer(lst)),
-		uintptr(unsafe.Pointer(bsf)),
-	)
-	res = ffcommon.FInt(t)
-	return
+var avBsfListFinalize func(lst **AVBSFList, bsf *AVBSFContext) ffcommon.FInt
+var avBsfListFinalizeOnce sync.Once
+
+func AvBsfListFinalize(lst **AVBSFList, bsf *AVBSFContext) ffcommon.FInt {
+	avBsfListFinalizeOnce.Do(func() {
+		purego.RegisterLibFunc(&avBsfListFinalize, ffcommon.GetAvcodecDll(), "av_bsf_list_finalize")
+	})
+	return avBsfListFinalize(lst, bsf)
 }
 
 /**
@@ -422,13 +445,14 @@ func AvBsfListFinalize(lst **AVBSFList, bsf *AVBSFContext) (res ffcommon.FInt) {
  * @return >=0 on success, negative AVERROR in case of failure
  */
 //int av_bsf_list_parse_str(const char *str, AVBSFContext **bsf);
-func AvBsfListParseStr(str ffcommon.FConstCharP, bsf *AVBSFContext) (res ffcommon.FInt) {
-	t, _, _ := ffcommon.GetAvcodecDll().NewProc("av_bsf_list_parse_str").Call(
-		ffcommon.UintPtrFromString(str),
-		uintptr(unsafe.Pointer(bsf)),
-	)
-	res = ffcommon.FInt(t)
-	return
+var avBsfListParseStr func(str ffcommon.FConstCharP, bsf *AVBSFContext) ffcommon.FInt
+var avBsfListParseStrOnce sync.Once
+
+func AvBsfListParseStr(str ffcommon.FConstCharP, bsf *AVBSFContext) ffcommon.FInt {
+	avBsfListParseStrOnce.Do(func() {
+		purego.RegisterLibFunc(&avBsfListParseStr, ffcommon.GetAvcodecDll(), "av_bsf_list_parse_str")
+	})
+	return avBsfListParseStr(str, bsf)
 }
 
 /**
@@ -439,12 +463,14 @@ func AvBsfListParseStr(str ffcommon.FConstCharP, bsf *AVBSFContext) (res ffcommo
  * @return
  */
 //int av_bsf_get_null_filter(AVBSFContext **bsf);
-func AvBsfGetNullFilter(bsf *AVBSFContext) (res ffcommon.FInt) {
-	t, _, _ := ffcommon.GetAvcodecDll().NewProc("av_bsf_get_null_filter").Call(
-		uintptr(unsafe.Pointer(bsf)),
-	)
-	res = ffcommon.FInt(t)
-	return
+var avBsfGetNullFilter func(bsf *AVBSFContext) ffcommon.FInt
+var avBsfGetNullFilterOnce sync.Once
+
+func AvBsfGetNullFilter(bsf *AVBSFContext) ffcommon.FInt {
+	avBsfGetNullFilterOnce.Do(func() {
+		purego.RegisterLibFunc(&avBsfGetNullFilter, ffcommon.GetAvcodecDll(), "av_bsf_get_null_filter")
+	})
+	return avBsfGetNullFilter(bsf)
 }
 
 /**

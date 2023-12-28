@@ -1,7 +1,10 @@
 package libavutil
 
 import (
+	"sync"
+
 	"github.com/dwdcth/ffmpeg-go/ffcommon"
+	"github.com/ebitengine/purego"
 )
 
 /*
@@ -119,13 +122,14 @@ const AV_BPRINT_SIZE_COUNT_ONLY = 0
  */
 //void av_bprint_init(AVBPrint *buf, unsigned size_init, unsigned size_max);
 //todo
-func av_bprint_init() (res ffcommon.FCharP) {
-	t, _, _ := ffcommon.GetAvutilDll().NewProc("av_blowfish_crypt_ecb").Call()
-	if t == 0 {
+var avBprintInit func() ffcommon.FCharP
+var avBprintInitOnce sync.Once
 
-	}
-	res = ffcommon.StringFromPtr(t)
-	return
+func AvBprintInit() ffcommon.FCharP {
+	avBprintInitOnce.Do(func() {
+		purego.RegisterLibFunc(&avBprintInit, ffcommon.GetAvutilDll(), "av_blowfish_crypt_ecb")
+	})
+	return avBprintInit()
 }
 
 /**
@@ -139,13 +143,14 @@ func av_bprint_init() (res ffcommon.FCharP) {
  */
 //void av_bprint_init_for_buffer(AVBPrint *buf, char *buffer, unsigned size);
 //todo
-func av_bprint_init_for_buffer() (res ffcommon.FCharP) {
-	t, _, _ := ffcommon.GetAvutilDll().NewProc("av_bprint_init_for_buffer").Call()
-	if t == 0 {
+var avBprintInitForBuffer func() ffcommon.FCharP
+var avBprintInitForBufferOnce sync.Once
 
-	}
-	res = ffcommon.StringFromPtr(t)
-	return
+func AvBprintInitForBuffer() ffcommon.FCharP {
+	avBprintInitForBufferOnce.Do(func() {
+		purego.RegisterLibFunc(&avBprintInitForBuffer, ffcommon.GetAvutilDll(), "av_bprint_init_for_buffer")
+	})
+	return avBprintInitForBuffer()
 }
 
 /**
@@ -153,13 +158,14 @@ func av_bprint_init_for_buffer() (res ffcommon.FCharP) {
  */
 //void av_bprintf(AVBPrint *buf, const char *fmt, ...) av_printf_format(2, 3);
 //todo
-func av_bprintf() (res ffcommon.FCharP) {
-	t, _, _ := ffcommon.GetAvutilDll().NewProc("av_bprintf").Call()
-	if t == 0 {
+var avBprintf func() ffcommon.FCharP
+var avBprintfOnce sync.Once
 
-	}
-	res = ffcommon.StringFromPtr(t)
-	return
+func AvBprintf() ffcommon.FCharP {
+	avBprintfOnce.Do(func() {
+		purego.RegisterLibFunc(&avBprintf, ffcommon.GetAvutilDll(), "av_bprintf")
+	})
+	return avBprintf()
 }
 
 /**
@@ -167,13 +173,14 @@ func av_bprintf() (res ffcommon.FCharP) {
  */
 //void av_vbprintf(AVBPrint *buf, const char *fmt, va_list vl_arg);
 //todo
-func av_vbprintf() (res ffcommon.FCharP) {
-	t, _, _ := ffcommon.GetAvutilDll().NewProc("av_vbprintf").Call()
-	if t == 0 {
+var avVbprintf func() ffcommon.FCharP
+var avVbprintfOnce sync.Once
 
-	}
-	res = ffcommon.StringFromPtr(t)
-	return
+func AvVbprintf() ffcommon.FCharP {
+	avVbprintfOnce.Do(func() {
+		purego.RegisterLibFunc(&avVbprintf, ffcommon.GetAvutilDll(), "av_vbprintf")
+	})
+	return avVbprintf()
 }
 
 /**
@@ -181,13 +188,14 @@ func av_vbprintf() (res ffcommon.FCharP) {
  */
 //void av_bprint_chars(AVBPrint *buf, char c, unsigned n);
 //todo
-func av_bprint_chars() (res ffcommon.FCharP) {
-	t, _, _ := ffcommon.GetAvutilDll().NewProc("av_bprint_chars").Call()
-	if t == 0 {
+var avBprintChars func() ffcommon.FCharP
+var avBprintCharsOnce sync.Once
 
-	}
-	res = ffcommon.StringFromPtr(t)
-	return
+func AvBprintChars() ffcommon.FCharP {
+	avBprintCharsOnce.Do(func() {
+		purego.RegisterLibFunc(&avBprintChars, ffcommon.GetAvutilDll(), "av_bprint_chars")
+	})
+	return avBprintChars()
 }
 
 /**
@@ -199,13 +207,14 @@ func av_bprint_chars() (res ffcommon.FCharP) {
  */
 //void av_bprint_append_data(AVBPrint *buf, const char *data, unsigned size);
 //todo
-func av_bprint_append_data() (res ffcommon.FCharP) {
-	t, _, _ := ffcommon.GetAvutilDll().NewProc("av_bprint_append_data").Call()
-	if t == 0 {
+var avBprintAppendData func() ffcommon.FCharP
+var avBprintAppendDataOnce sync.Once
 
-	}
-	res = ffcommon.StringFromPtr(t)
-	return
+func AvBprintAppendData() ffcommon.FCharP {
+	avBprintAppendDataOnce.Do(func() {
+		purego.RegisterLibFunc(&avBprintAppendData, ffcommon.GetAvutilDll(), "av_bprint_append_data")
+	})
+	return avBprintAppendData()
 }
 
 // struct tm;
@@ -225,13 +234,14 @@ type Tm struct {
  */
 //void av_bprint_strftime(AVBPrint *buf, const char *fmt, const struct tm *tm);
 //todo
-func av_bprint_strftime() (res ffcommon.FCharP) {
-	t, _, _ := ffcommon.GetAvutilDll().NewProc("av_bprint_strftime").Call()
-	if t == 0 {
+var avBprintStrftime func() ffcommon.FCharP
+var avBprintStrftimeOnce sync.Once
 
-	}
-	res = ffcommon.StringFromPtr(t)
-	return
+func AvBprintStrftime() ffcommon.FCharP {
+	avBprintStrftimeOnce.Do(func() {
+		purego.RegisterLibFunc(&avBprintStrftime, ffcommon.GetAvutilDll(), "av_bprint_strftime")
+	})
+	return avBprintStrftime()
 }
 
 /**
@@ -246,13 +256,14 @@ func av_bprint_strftime() (res ffcommon.FCharP) {
 //void av_bprint_get_buffer(AVBPrint *buf, unsigned size,
 //unsigned char **mem, unsigned *actual_size);
 //todo
-func av_bprint_get_buffer() (res ffcommon.FCharP) {
-	t, _, _ := ffcommon.GetAvutilDll().NewProc("av_bprint_get_buffer").Call()
-	if t == 0 {
+var avBprintGetBuffer func() ffcommon.FCharP
+var avBprintGetBufferOnce sync.Once
 
-	}
-	res = ffcommon.StringFromPtr(t)
-	return
+func AvBprintGetBuffer() ffcommon.FCharP {
+	avBprintGetBufferOnce.Do(func() {
+		purego.RegisterLibFunc(&avBprintGetBuffer, ffcommon.GetAvutilDll(), "av_bprint_get_buffer")
+	})
+	return avBprintGetBuffer()
 }
 
 /**
@@ -260,13 +271,14 @@ func av_bprint_get_buffer() (res ffcommon.FCharP) {
  */
 //void av_bprint_clear(AVBPrint *buf);
 //todo
-func av_bprint_clear() (res ffcommon.FCharP) {
-	t, _, _ := ffcommon.GetAvutilDll().NewProc("av_bprint_clear").Call()
-	if t == 0 {
+var avBprintClear func() ffcommon.FCharP
+var avBprintClearOnce sync.Once
 
-	}
-	res = ffcommon.StringFromPtr(t)
-	return
+func AvBprintClear() ffcommon.FCharP {
+	avBprintClearOnce.Do(func() {
+		purego.RegisterLibFunc(&avBprintClear, ffcommon.GetAvutilDll(), "av_bprint_clear")
+	})
+	return avBprintClear()
 }
 
 /**
@@ -280,13 +292,14 @@ func av_bprint_clear() (res ffcommon.FCharP) {
 //return buf->len < buf->size;
 //}
 //todo
-func av_bprint_is_complete() (res ffcommon.FCharP) {
-	t, _, _ := ffcommon.GetAvutilDll().NewProc("av_bprint_is_complete").Call()
-	if t == 0 {
+var avBprintIsComplete func() ffcommon.FCharP
+var avBprintIsCompleteOnce sync.Once
 
-	}
-	res = ffcommon.StringFromPtr(t)
-	return
+func AvBprintIsComplete() ffcommon.FCharP {
+	avBprintIsCompleteOnce.Do(func() {
+		purego.RegisterLibFunc(&avBprintIsComplete, ffcommon.GetAvutilDll(), "av_bprint_is_complete")
+	})
+	return avBprintIsComplete()
 }
 
 /**
@@ -302,13 +315,14 @@ func av_bprint_is_complete() (res ffcommon.FCharP) {
  */
 //int av_bprint_finalize(AVBPrint *buf, char **ret_str);
 //todo
-func av_bprint_finalize() (res ffcommon.FCharP) {
-	t, _, _ := ffcommon.GetAvutilDll().NewProc("av_bprint_finalize").Call()
-	if t == 0 {
+var avBprintFinalize func() ffcommon.FCharP
+var avBprintFinalizeOnce sync.Once
 
-	}
-	res = ffcommon.StringFromPtr(t)
-	return
+func AvBprintFinalize() ffcommon.FCharP {
+	avBprintFinalizeOnce.Do(func() {
+		purego.RegisterLibFunc(&avBprintFinalize, ffcommon.GetAvutilDll(), "av_bprint_finalize")
+	})
+	return avBprintFinalize()
 }
 
 /**
@@ -327,13 +341,14 @@ func av_bprint_finalize() (res ffcommon.FCharP) {
 //void av_bprint_escape(AVBPrint *dstbuf, const char *src, const char *special_chars,
 //enum AVEscapeMode mode, int flags);
 //todo
-func av_bprint_escape() (res ffcommon.FCharP) {
-	t, _, _ := ffcommon.GetAvutilDll().NewProc("av_bprint_escape").Call()
-	if t == 0 {
+var avBprintEscape func() ffcommon.FCharP
+var avBprintEscapeOnce sync.Once
 
-	}
-	res = ffcommon.StringFromPtr(t)
-	return
+func AvBprintEscape() ffcommon.FCharP {
+	avBprintEscapeOnce.Do(func() {
+		purego.RegisterLibFunc(&avBprintEscape, ffcommon.GetAvutilDll(), "av_bprint_escape")
+	})
+	return avBprintEscape()
 }
 
 //#endif /* AVUTIL_BPRINT_H */

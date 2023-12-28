@@ -1,9 +1,10 @@
 package libavcodec
 
 import (
-	"unsafe"
+	"sync"
 
 	"github.com/dwdcth/ffmpeg-go/ffcommon"
+	"github.com/ebitengine/purego"
 )
 
 /*
@@ -116,10 +117,14 @@ type AVD3D11VAContext struct {
  * @return Newly-allocated AVD3D11VAContext or NULL on failure.
  */
 //AVD3D11VAContext *av_d3d11va_alloc_context(void);
-func AvD3d11vaAllocContext() (res *AVD3D11VAContext) {
-	t, _, _ := ffcommon.GetAvcodecDll().NewProc("av_d3d11va_alloc_context").Call()
-	res = (*AVD3D11VAContext)(unsafe.Pointer(t))
-	return
+var avD3D11VAAllocContext func() *AVD3D11VAContext
+var avD3D11VAAllocContextOnce sync.Once
+
+func AvD3d11vaAllocContext() *AVD3D11VAContext {
+	avD3D11VAAllocContextOnce.Do(func() {
+		purego.RegisterLibFunc(&avD3D11VAAllocContext, ffcommon.GetAvcodecDll(), "av_d3d11va_alloc_context")
+	})
+	return avD3D11VAAllocContext()
 }
 
 /**

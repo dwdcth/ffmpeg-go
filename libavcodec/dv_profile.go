@@ -1,9 +1,10 @@
 package libavcodec
 
 import (
-	"unsafe"
+	"sync"
 
 	"github.com/dwdcth/ffmpeg-go/ffcommon"
+	"github.com/ebitengine/purego"
 )
 
 /*
@@ -76,28 +77,28 @@ type AVDVProfile struct {
  */
 //const AVDVProfile *av_dv_frame_profile(const AVDVProfile *sys,
 //const uint8_t *frame, unsigned buf_size);
-func (sys *AVDVProfile) AvDvFrameProfile(frame *ffcommon.FUint8T, buf_size ffcommon.FUnsigned) (res *AVDVProfile) {
-	t, _, _ := ffcommon.GetAvcodecDll().NewProc("av_dv_frame_profile").Call(
-		uintptr(unsafe.Pointer(sys)),
-		uintptr(unsafe.Pointer(frame)),
-		uintptr(buf_size),
-	)
-	res = (*AVDVProfile)(unsafe.Pointer(t))
-	return
+var avDvFrameProfile func(sys *AVDVProfile, frame *ffcommon.FUint8T, buf_size ffcommon.FUnsigned) *AVDVProfile
+var avDvFrameProfileOnce sync.Once
+
+func (sys *AVDVProfile) AvDvFrameProfile(frame *ffcommon.FUint8T, buf_size ffcommon.FUnsigned) *AVDVProfile {
+	avDvFrameProfileOnce.Do(func() {
+		purego.RegisterLibFunc(&avDvFrameProfile, ffcommon.GetAvcodecDll(), "av_dv_frame_profile")
+	})
+	return avDvFrameProfile(sys, frame, buf_size)
 }
 
 /**
  * Get a DV profile for the provided stream parameters.
  */
 //const AVDVProfile *av_dv_codec_profile(int width, int height, enum AVPixelFormat pix_fmt);
-func AvDvCodecProfile(width, height ffcommon.FInt, pix_fmt AVPixelFormat) (res *AVDVProfile) {
-	t, _, _ := ffcommon.GetAvcodecDll().NewProc("av_dv_codec_profile").Call(
-		uintptr(width),
-		uintptr(height),
-		uintptr(pix_fmt),
-	)
-	res = (*AVDVProfile)(unsafe.Pointer(t))
-	return
+var avDvCodecProfile func(width, height ffcommon.FInt, pix_fmt AVPixelFormat) *AVDVProfile
+var avDvCodecProfileOnce sync.Once
+
+func AvDvCodecProfile(width, height ffcommon.FInt, pix_fmt AVPixelFormat) *AVDVProfile {
+	avDvCodecProfileOnce.Do(func() {
+		purego.RegisterLibFunc(&avDvCodecProfile, ffcommon.GetAvcodecDll(), "av_dv_codec_profile")
+	})
+	return avDvCodecProfile(width, height, pix_fmt)
 }
 
 /**
@@ -105,15 +106,14 @@ func AvDvCodecProfile(width, height ffcommon.FInt, pix_fmt AVPixelFormat) (res *
  * The frame rate is used as a best-effort parameter.
  */
 //const AVDVProfile *av_dv_codec_profile2(int width, int height, enum AVPixelFormat pix_fmt, AVRational frame_rate);
-func AvDvCodecProfile2(width, height ffcommon.FInt, pix_fmt AVPixelFormat, frame_rate AVRational) (res *AVDVProfile) {
-	t, _, _ := ffcommon.GetAvcodecDll().NewProc("av_dv_codec_profile2").Call(
-		uintptr(width),
-		uintptr(height),
-		uintptr(pix_fmt),
-		uintptr(unsafe.Pointer(&frame_rate)),
-	)
-	res = (*AVDVProfile)(unsafe.Pointer(t))
-	return
+var avDvCodecProfile2 func(width, height ffcommon.FInt, pix_fmt AVPixelFormat, frame_rate AVRational) *AVDVProfile
+var avDvCodecProfile2Once sync.Once
+
+func AvDvCodecProfile2(width, height ffcommon.FInt, pix_fmt AVPixelFormat, frame_rate AVRational) *AVDVProfile {
+	avDvCodecProfile2Once.Do(func() {
+		purego.RegisterLibFunc(&avDvCodecProfile2, ffcommon.GetAvcodecDll(), "av_dv_codec_profile2")
+	})
+	return avDvCodecProfile2(width, height, pix_fmt, frame_rate)
 }
 
 //#endif /* AVCODEC_DV_PROFILE_H */

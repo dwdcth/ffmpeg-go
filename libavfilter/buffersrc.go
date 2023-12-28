@@ -1,10 +1,11 @@
 package libavfilter
 
 import (
-	"unsafe"
+	"sync"
 
 	"github.com/dwdcth/ffmpeg-go/ffcommon"
 	"github.com/dwdcth/ffmpeg-go/libavutil"
+	"github.com/ebitengine/purego"
 )
 
 /*
@@ -70,12 +71,14 @@ const (
  * The number is reset when a frame is added.
  */
 //unsigned av_buffersrc_get_nb_failed_requests(AVFilterContext *buffer_src);
-func (buffer_src *AVFilterContext) AvBuffersrcGetNbFailedRequests() (res ffcommon.FUnsigned) {
-	t, _, _ := ffcommon.GetAvfilterDll().NewProc("av_buffersrc_get_nb_failed_requests").Call(
-		uintptr(unsafe.Pointer(buffer_src)),
-	)
-	res = ffcommon.FUnsigned(t)
-	return
+var avBuffersrcGetNbFailedRequests func(bufferSrc *AVFilterContext) ffcommon.FUnsigned
+var avBuffersrcGetNbFailedRequestsOnce sync.Once
+
+func (bufferSrc *AVFilterContext) AvBuffersrcGetNbFailedRequests() ffcommon.FUnsigned {
+	avBuffersrcGetNbFailedRequestsOnce.Do(func() {
+		purego.RegisterLibFunc(&avBuffersrcGetNbFailedRequests, ffcommon.GetAvfilterDll(), "av_buffersrc_get_nb_failed_requests")
+	})
+	return avBuffersrcGetNbFailedRequests(bufferSrc)
 }
 
 /**
@@ -139,10 +142,14 @@ type AVBufferSrcParameters struct {
  * caller with av_free().
  */
 //AVBufferSrcParameters *av_buffersrc_parameters_alloc(void);
-func AvBuffersrcParametersAlloc() (res *AVBufferSrcParameters) {
-	t, _, _ := ffcommon.GetAvfilterDll().NewProc("av_buffersrc_parameters_alloc").Call()
-	res = (*AVBufferSrcParameters)(unsafe.Pointer(t))
-	return
+var avBuffersrcParametersAlloc func() *AVBufferSrcParameters
+var avBuffersrcParametersAllocOnce sync.Once
+
+func AvBuffersrcParametersAlloc() *AVBufferSrcParameters {
+	avBuffersrcParametersAllocOnce.Do(func() {
+		purego.RegisterLibFunc(&avBuffersrcParametersAlloc, ffcommon.GetAvfilterDll(), "av_buffersrc_parameters_alloc")
+	})
+	return avBuffersrcParametersAlloc()
 }
 
 /**
@@ -159,13 +166,15 @@ func AvBuffersrcParametersAlloc() (res *AVBufferSrcParameters) {
  * @return 0 on success, a negative AVERROR code on failure.
  */
 //int av_buffersrc_parameters_set(AVFilterContext *ctx, AVBufferSrcParameters *param);
-func (ctx *AVFilterContext) AvBuffersrcParametersSet(param *AVBufferSrcParameters) (res ffcommon.FInt) {
-	t, _, _ := ffcommon.GetAvfilterDll().NewProc("av_buffersrc_parameters_set").Call(
-		uintptr(unsafe.Pointer(ctx)),
-		uintptr(unsafe.Pointer(param)),
-	)
-	res = ffcommon.FInt(t)
-	return
+func (ctx *AVFilterContext) AvBuffersrcParametersSet(param *AVBufferSrcParameters) ffcommon.FInt {
+	var avBuffersrcParametersSet func(*AVFilterContext, *AVBufferSrcParameters) ffcommon.FInt
+	var avBuffersrcParametersSetOnce sync.Once
+
+	avBuffersrcParametersSetOnce.Do(func() {
+		purego.RegisterLibFunc(&avBuffersrcParametersSet, ffcommon.GetAvfilterDll(), "av_buffersrc_parameters_set")
+	})
+
+	return avBuffersrcParametersSet(ctx, param)
 }
 
 /**
@@ -183,13 +192,15 @@ func (ctx *AVFilterContext) AvBuffersrcParametersSet(param *AVBufferSrcParameter
  */
 //av_warn_unused_result
 //int av_buffersrc_write_frame(AVFilterContext *ctx, const AVFrame *frame);
-func (ctx *AVFilterContext) AvBuffersrcWriteFrame(frame *AVFrame) (res ffcommon.FInt) {
-	t, _, _ := ffcommon.GetAvfilterDll().NewProc("av_buffersrc_write_frame").Call(
-		uintptr(unsafe.Pointer(ctx)),
-		uintptr(unsafe.Pointer(frame)),
-	)
-	res = ffcommon.FInt(t)
-	return
+func (ctx *AVFilterContext) AvBuffersrcWriteFrame(frame *AVFrame) ffcommon.FInt {
+	var avBuffersrcWriteFrame func(*AVFilterContext, *AVFrame) ffcommon.FInt
+	var avBuffersrcWriteFrameOnce sync.Once
+
+	avBuffersrcWriteFrameOnce.Do(func() {
+		purego.RegisterLibFunc(&avBuffersrcWriteFrame, ffcommon.GetAvfilterDll(), "av_buffersrc_write_frame")
+	})
+
+	return avBuffersrcWriteFrame(ctx, frame)
 }
 
 /**
@@ -212,13 +223,15 @@ func (ctx *AVFilterContext) AvBuffersrcWriteFrame(frame *AVFrame) (res ffcommon.
  */
 //av_warn_unused_result
 //int av_buffersrc_add_frame(AVFilterContext *ctx, AVFrame *frame);
-func (ctx *AVFilterContext) AvBuffersrcAddFrame(frame *AVFrame) (res ffcommon.FInt) {
-	t, _, _ := ffcommon.GetAvfilterDll().NewProc("av_buffersrc_add_frame").Call(
-		uintptr(unsafe.Pointer(ctx)),
-		uintptr(unsafe.Pointer(frame)),
-	)
-	res = ffcommon.FInt(t)
-	return
+func (ctx *AVFilterContext) AvBuffersrcAddFrame(frame *AVFrame) ffcommon.FInt {
+	var avBuffersrcAddFrame func(*AVFilterContext, *AVFrame) ffcommon.FInt
+	var avBuffersrcAddFrameOnce sync.Once
+
+	avBuffersrcAddFrameOnce.Do(func() {
+		purego.RegisterLibFunc(&avBuffersrcAddFrame, ffcommon.GetAvfilterDll(), "av_buffersrc_add_frame")
+	})
+
+	return avBuffersrcAddFrame(ctx, frame)
 }
 
 /**
@@ -239,13 +252,15 @@ func (ctx *AVFilterContext) AvBuffersrcAddFrame(frame *AVFrame) (res ffcommon.FI
 //av_warn_unused_result
 //int av_buffersrc_add_frame_flags(AVFilterContext *buffer_src,
 //AVFrame *frame, int flags);
-func (ctx *AVFilterContext) AvBuffersrcAddFrameFlags(frame *AVFrame, flags ffcommon.FInt) (res ffcommon.FInt) {
-	t, _, _ := ffcommon.GetAvfilterDll().NewProc("av_buffersrc_add_frame_flags").Call(
-		uintptr(unsafe.Pointer(ctx)),
-		uintptr(unsafe.Pointer(frame)),
-	)
-	res = ffcommon.FInt(t)
-	return
+func (ctx *AVFilterContext) AvBuffersrcAddFrameFlags(frame *AVFrame, flags ffcommon.FInt) ffcommon.FInt {
+	var avBuffersrcAddFrameFlags func(*AVFilterContext, *AVFrame, ffcommon.FInt) ffcommon.FInt
+	var avBuffersrcAddFrameFlagsOnce sync.Once
+
+	avBuffersrcAddFrameFlagsOnce.Do(func() {
+		purego.RegisterLibFunc(&avBuffersrcAddFrameFlags, ffcommon.GetAvfilterDll(), "av_buffersrc_add_frame_flags")
+	})
+
+	return avBuffersrcAddFrameFlags(ctx, frame, flags)
 }
 
 /**
@@ -256,14 +271,16 @@ func (ctx *AVFilterContext) AvBuffersrcAddFrameFlags(frame *AVFrame, flags ffcom
  * of the last frame.
  */
 //int av_buffersrc_close(AVFilterContext *ctx, int64_t pts, unsigned flags);
-func (ctx *AVFilterContext) AvBuffersrcClose(pts ffcommon.FInt, flags ffcommon.FUnsigned) (res ffcommon.FInt) {
-	t, _, _ := ffcommon.GetAvfilterDll().NewProc("av_buffersrc_close").Call(
-		uintptr(unsafe.Pointer(ctx)),
-		uintptr(pts),
-		uintptr(flags),
-	)
-	res = ffcommon.FInt(t)
-	return
+
+func (ctx *AVFilterContext) AvBuffersrcClose(pts ffcommon.FInt, flags ffcommon.FUnsigned) ffcommon.FInt {
+	var avBuffersrcClose func(*AVFilterContext, ffcommon.FInt, ffcommon.FUnsigned) ffcommon.FInt
+	var avBuffersrcCloseOnce sync.Once
+
+	avBuffersrcCloseOnce.Do(func() {
+		purego.RegisterLibFunc(&avBuffersrcClose, ffcommon.GetAvfilterDll(), "av_buffersrc_close")
+	})
+
+	return avBuffersrcClose(ctx, pts, flags)
 }
 
 /**

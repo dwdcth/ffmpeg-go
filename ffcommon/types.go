@@ -51,3 +51,5 @@ type FIntOrInt64 = int32
 type FUnsignedIntOrSizeT = int32
 
 type FEnum = int32
+
+const INT_MIN = -2147483648

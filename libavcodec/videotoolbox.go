@@ -1,9 +1,10 @@
 package libavcodec
 
 import (
-	"unsafe"
+	"sync"
 
 	"github.com/dwdcth/ffmpeg-go/ffcommon"
+	"github.com/ebitengine/purego"
 )
 
 /*
@@ -99,10 +100,14 @@ type AVVideotoolboxContext struct {
  * @return the newly allocated context or NULL on failure
  */
 //AVVideotoolboxContext *av_videotoolbox_alloc_context(void);
-func AvVideotoolboxAllocContext() (res *AVVideotoolboxContext) {
-	t, _, _ := ffcommon.GetAvcodecDll().NewProc("av_videotoolbox_alloc_context").Call()
-	res = (*AVVideotoolboxContext)(unsafe.Pointer(t))
-	return
+var avVideotoolboxAllocContext func() *AVVideotoolboxContext
+var avVideotoolboxAllocContextOnce sync.Once
+
+func AvVideotoolboxAllocContext() *AVVideotoolboxContext {
+	avVideotoolboxAllocContextOnce.Do(func() {
+		purego.RegisterLibFunc(&avVideotoolboxAllocContext, ffcommon.GetAvcodecDll(), "av_videotoolbox_alloc_context")
+	})
+	return avVideotoolboxAllocContext()
 }
 
 /**
@@ -114,12 +119,14 @@ func AvVideotoolboxAllocContext() (res *AVVideotoolboxContext) {
  * @return >= 0 on success, a negative AVERROR code on failure
  */
 //int av_videotoolbox_default_init(AVCodecContext *avctx);
-func (avctx *AVCodecContext) AvVideotoolboxDefaultInit() (res ffcommon.FInt) {
-	t, _, _ := ffcommon.GetAvcodecDll().NewProc("av_videotoolbox_default_init").Call(
-		uintptr(unsafe.Pointer(avctx)),
-	)
-	res = ffcommon.FInt(t)
-	return
+var avVideotoolboxDefaultInit func(avctx *AVCodecContext) ffcommon.FInt
+var avVideotoolboxDefaultInitOnce sync.Once
+
+func (avctx *AVCodecContext) AvVideotoolboxDefaultInit() ffcommon.FInt {
+	avVideotoolboxDefaultInitOnce.Do(func() {
+		purego.RegisterLibFunc(&avVideotoolboxDefaultInit, ffcommon.GetAvcodecDll(), "av_videotoolbox_default_init")
+	})
+	return avVideotoolboxDefaultInit(avctx)
 }
 
 /**
@@ -132,13 +139,14 @@ func (avctx *AVCodecContext) AvVideotoolboxDefaultInit() (res ffcommon.FInt) {
  * @return >= 0 on success, a negative AVERROR code on failure
  */
 //int av_videotoolbox_default_init2(AVCodecContext *avctx, AVVideotoolboxContext *vtctx);
-func (avctx *AVCodecContext) AvVideotoolboxDefaultInit2(vtctx *AVVideotoolboxContext) (res ffcommon.FInt) {
-	t, _, _ := ffcommon.GetAvcodecDll().NewProc("av_videotoolbox_default_init2").Call(
-		uintptr(unsafe.Pointer(avctx)),
-		uintptr(unsafe.Pointer(vtctx)),
-	)
-	res = ffcommon.FInt(t)
-	return
+var avVideotoolboxDefaultInit2 func(avctx *AVCodecContext, vtctx *AVVideotoolboxContext) ffcommon.FInt
+var avVideotoolboxDefaultInit2Once sync.Once
+
+func (avctx *AVCodecContext) AvVideotoolboxDefaultInit2(vtctx *AVVideotoolboxContext) ffcommon.FInt {
+	avVideotoolboxDefaultInit2Once.Do(func() {
+		purego.RegisterLibFunc(&avVideotoolboxDefaultInit2, ffcommon.GetAvcodecDll(), "av_videotoolbox_default_init2")
+	})
+	return avVideotoolboxDefaultInit2(avctx, vtctx)
 }
 
 /**
@@ -148,10 +156,14 @@ func (avctx *AVCodecContext) AvVideotoolboxDefaultInit2(vtctx *AVVideotoolboxCon
  * @param avctx the corresponding codec context
  */
 //void av_videotoolbox_default_free(AVCodecContext *avctx);
+var avVideotoolboxDefaultFree func(avctx *AVCodecContext)
+var avVideotoolboxDefaultFreeOnce sync.Once
+
 func (avctx *AVCodecContext) AvVideotoolboxDefaultFree() {
-	ffcommon.GetAvcodecDll().NewProc("av_videotoolbox_default_free").Call(
-		uintptr(unsafe.Pointer(avctx)),
-	)
+	avVideotoolboxDefaultFreeOnce.Do(func() {
+		purego.RegisterLibFunc(&avVideotoolboxDefaultFree, ffcommon.GetAvcodecDll(), "av_videotoolbox_default_free")
+	})
+	avVideotoolboxDefaultFree(avctx)
 }
 
 /**

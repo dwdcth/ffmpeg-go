@@ -1,8 +1,8 @@
 package main
 
 import (
+	"flag"
 	"fmt"
-	"os"
 	"os/exec"
 
 	"github.com/dwdcth/ffmpeg-go/ffcommon"
@@ -10,18 +10,27 @@ import (
 	"github.com/dwdcth/ffmpeg-go/libavutil"
 )
 
+// go run main.go -util -codec
 func main() {
-	os.Setenv("Path", os.Getenv("Path")+";./lib")
-	ffcommon.SetAvutilPath("./lib/avutil-56.dll")
-	ffcommon.SetAvcodecPath("./lib/avcodec-58.dll")
+	//flags
+	utilPath := flag.String("util", "", "avutilpath")
+	codecPath := flag.String("codec", "", "avcodecpth")
+	flag.Parse()
+	if *utilPath == "" || *codecPath == "" {
+		fmt.Println("usage: -util avutil 路径 -codec avcodec 路径")
+		return
+	}
+	// os.Setenv("Path", os.Getenv("Path")+";./lib")
+	ffcommon.SetAvutilPath(*utilPath)
+	ffcommon.SetAvcodecPath(*codecPath)
 	codecVer := libavcodec.AvcodecVersion()
 	ver_major := (codecVer >> 16) & 0xff
 	ver_minor := (codecVer >> 8) & 0xff
 	ver_micro := (codecVer) & 0xff
-	fmt.Printf("FFmpeg version is: %s .\navcodec version is: %d=%d.%d.%d.\n", libavutil.FFMPEG_VERSION, codecVer, ver_major, ver_minor, ver_micro)
+	fmt.Printf("FFmpeg version is: %s .\navcodec version is: %d=%d.%d.%d.\n", libavutil.AvVersionInfo(), codecVer, ver_major, ver_minor, ver_micro)
 
-	fmt.Println("---------------------------------")
-	data, err := exec.Command("./lib/ffmpeg", "-version").Output()
+	fmt.Println("\n---------------------------------\n")
+	data, err := exec.Command("ffmpeg", "-version").Output()
 	if err != nil {
 		fmt.Println("ffmpeg err = ", err)
 	}

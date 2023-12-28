@@ -1,9 +1,10 @@
 package libavutil
 
 import (
-	"unsafe"
+	"sync"
 
 	"github.com/dwdcth/ffmpeg-go/ffcommon"
+	"github.com/ebitengine/purego"
 )
 
 /*
@@ -107,22 +108,18 @@ func AvMakeQ(num, den ffcommon.FInt) (res AVRational) {
 //else                    return INT_MIN;
 //}
 // todo
-// func AvCmpQ(a, b AVRational) (res ffcommon.FInt) {
-// 	tmp := a.Num*b.Den - b.Num*a.Den
-// 	//if(tmp) return (int)((tmp ^ a.den ^ b.den)>>63)|1;
-// 	//else if(b.den && a.den) return 0;
-// 	//else if(a.num && b.num) return (a.num>>31) - (b.num>>31);
-// 	//else                    return INT_MIN;
-// 	if tmp == 0 {
-
-// 	}
-// 	//t, _, _ := ffcommon.GetAvutilDll().NewProc("av_cmp_q").Call()
-// 	//if t == 0 {
-// 	//
-// 	//}
-// 	//res = ffcommon.StringFromPtr(t)
-// 	return
-// }
+func AvCmpQ(a, b AVRational) (res ffcommon.FInt) {
+	tmp := a.Num*b.Den - b.Num*a.Den
+	if tmp != 0 {
+		return ffcommon.FInt(int64(tmp^a.Den^b.Den)>>63) | 1
+	} else if b.Den != 0 && a.Den != 0 {
+		return 0
+	} else if a.Num != 0 && b.Num != 0 {
+		return ffcommon.FInt((a.Num >> 31) - (b.Num >> 31))
+	} else {
+		return ffcommon.INT_MIN
+	}
+}
 
 /**
  * Convert an AVRational to a `double`.
@@ -151,16 +148,14 @@ func AvQ2d(a AVRational) (res ffcommon.FDouble) {
  * @return 1 if the operation is exact, 0 otherwise
  */
 //int av_reduce(int *dst_num, int *dst_den, int64_t num, int64_t den, int64_t max);
+var avReduce func(dst_num, dst_den ffcommon.FInt, num, den, max ffcommon.FInt64T) ffcommon.FInt
+var avReduceOnce sync.Once
+
 func AvReduce(dst_num, dst_den ffcommon.FInt, num, den, max ffcommon.FInt64T) (res ffcommon.FInt) {
-	t, _, _ := ffcommon.GetAvutilDll().NewProc("av_reduce").Call(
-		uintptr(dst_num),
-		uintptr(dst_den),
-		uintptr(num),
-		uintptr(den),
-		uintptr(max),
-	)
-	res = ffcommon.FInt(t)
-	return
+	avReduceOnce.Do(func() {
+		purego.RegisterLibFunc(&avReduce, ffcommon.GetAvutilDll(), "av_reduce")
+	})
+	return avReduce(dst_num, dst_den, num, den, max)
 }
 
 /**
@@ -170,13 +165,14 @@ func AvReduce(dst_num, dst_den ffcommon.FInt, num, den, max ffcommon.FInt64T) (r
  * @return b*c
  */
 //AVRational av_mul_q(AVRational b, AVRational c) av_const;
+var avMulQ func(b, c AVRational) AVRational
+var avMulQOnce sync.Once
+
 func AvMulQ(b, c AVRational) (res AVRational) {
-	t, _, _ := ffcommon.GetAvutilDll().NewProc("av_mul_q").Call(
-		uintptr(unsafe.Pointer(&b)),
-		uintptr(unsafe.Pointer(&c)),
-	)
-	res = *(*AVRational)(unsafe.Pointer(&t))
-	return
+	avMulQOnce.Do(func() {
+		purego.RegisterLibFunc(&avMulQ, ffcommon.GetAvutilDll(), "av_mul_q")
+	})
+	return avMulQ(b, c)
 }
 
 /**
@@ -186,13 +182,14 @@ func AvMulQ(b, c AVRational) (res AVRational) {
  * @return b/c
  */
 //AVRational av_div_q(AVRational b, AVRational c) av_const;
+var avDivQ func(b, c AVRational) AVRational
+var avDivQOnce sync.Once
+
 func AvDivQ(b, c AVRational) (res AVRational) {
-	t, _, _ := ffcommon.GetAvutilDll().NewProc("av_div_q").Call(
-		uintptr(unsafe.Pointer(&b)),
-		uintptr(unsafe.Pointer(&c)),
-	)
-	res = *(*AVRational)(unsafe.Pointer(&t))
-	return
+	avDivQOnce.Do(func() {
+		purego.RegisterLibFunc(&avDivQ, ffcommon.GetAvutilDll(), "av_div_q")
+	})
+	return avDivQ(b, c)
 }
 
 /**
@@ -202,13 +199,14 @@ func AvDivQ(b, c AVRational) (res AVRational) {
  * @return b+c
  */
 //AVRational av_add_q(AVRational b, AVRational c) av_const;
+var avAddQ func(b, c AVRational) AVRational
+var avAddQOnce sync.Once
+
 func AvAddQ(b, c AVRational) (res AVRational) {
-	t, _, _ := ffcommon.GetAvutilDll().NewProc("av_add_q").Call(
-		uintptr(unsafe.Pointer(&b)),
-		uintptr(unsafe.Pointer(&c)),
-	)
-	res = *(*AVRational)(unsafe.Pointer(&t))
-	return
+	avAddQOnce.Do(func() {
+		purego.RegisterLibFunc(&avAddQ, ffcommon.GetAvutilDll(), "av_add_q")
+	})
+	return avAddQ(b, c)
 }
 
 /**
@@ -218,13 +216,14 @@ func AvAddQ(b, c AVRational) (res AVRational) {
  * @return b-c
  */
 //AVRational av_sub_q(AVRational b, AVRational c) av_const;
+var avSubQ func(b, c AVRational) AVRational
+var avSubQOnce sync.Once
+
 func AvSubQ(b, c AVRational) (res AVRational) {
-	t, _, _ := ffcommon.GetAvutilDll().NewProc("av_sub_q").Call(
-		uintptr(unsafe.Pointer(&b)),
-		uintptr(unsafe.Pointer(&c)),
-	)
-	res = *(*AVRational)(unsafe.Pointer(&t))
-	return
+	avSubQOnce.Do(func() {
+		purego.RegisterLibFunc(&avSubQ, ffcommon.GetAvutilDll(), "av_sub_q")
+	})
+	return avSubQ(b, c)
 }
 
 /**
@@ -254,13 +253,14 @@ func AvInvQ(q AVRational) (res AVRational) {
  * @see av_q2d()
  */
 //AVRational av_d2q(double d, int max) av_const;
+var avD2q func(d ffcommon.FDouble, max ffcommon.FInt) AVRational
+var avD2qOnce sync.Once
+
 func AvD2q(d ffcommon.FDouble, max ffcommon.FInt) (res AVRational) {
-	t, _, _ := ffcommon.GetAvutilDll().NewProc("av_d2q").Call(
-		uintptr(unsafe.Pointer(&d)),
-		uintptr(max),
-	)
-	res = *(*AVRational)(unsafe.Pointer(&t))
-	return
+	avD2qOnce.Do(func() {
+		purego.RegisterLibFunc(&avD2q, ffcommon.GetAvutilDll(), "av_d2q")
+	})
+	return avD2q(d, max)
 }
 
 /**
@@ -274,14 +274,14 @@ func AvD2q(d ffcommon.FDouble, max ffcommon.FInt) (res AVRational) {
  *         - 0 if they have the same distance
  */
 //int av_nearer_q(AVRational q, AVRational q1, AVRational q2);
+var avNearerQ func(q, q1, q2 AVRational) ffcommon.FInt
+var avNearerQOnce sync.Once
+
 func AvNearerQ(q, q1, q2 AVRational) (res ffcommon.FInt) {
-	t, _, _ := ffcommon.GetAvutilDll().NewProc("av_nearer_q").Call(
-		uintptr(unsafe.Pointer(&q)),
-		uintptr(unsafe.Pointer(&q1)),
-		uintptr(unsafe.Pointer(&q2)),
-	)
-	res = ffcommon.FInt(t)
-	return
+	avNearerQOnce.Do(func() {
+		purego.RegisterLibFunc(&avNearerQ, ffcommon.GetAvutilDll(), "av_nearer_q")
+	})
+	return avNearerQ(q, q1, q2)
 }
 
 /**
@@ -292,13 +292,14 @@ func AvNearerQ(q, q1, q2 AVRational) (res ffcommon.FInt) {
  * @return Index of the nearest value found in the array
  */
 //int av_find_nearest_q_idx(AVRational q, const AVRational* q_list);
+var avFindNearestQIdx func(q AVRational, q_list *AVRational) ffcommon.FInt
+var avFindNearestQIdxOnce sync.Once
+
 func AvFindNearestQIdx(q AVRational, q_list *AVRational) (res ffcommon.FInt) {
-	t, _, _ := ffcommon.GetAvutilDll().NewProc("av_find_nearest_q_idx").Call(
-		uintptr(unsafe.Pointer(&q)),
-		uintptr(unsafe.Pointer(q_list)),
-	)
-	res = ffcommon.FInt(t)
-	return
+	avFindNearestQIdxOnce.Do(func() {
+		purego.RegisterLibFunc(&avFindNearestQIdx, ffcommon.GetAvutilDll(), "av_find_nearest_q_idx")
+	})
+	return avFindNearestQIdx(q, q_list)
 }
 
 /**
@@ -311,12 +312,14 @@ func AvFindNearestQIdx(q AVRational, q_list *AVRational) (res ffcommon.FInt) {
  * @note The returned value is platform-indepedant.
  */
 //uint32_t av_q2intfloat(AVRational q);
+var avQ2intfloat func(q AVRational) ffcommon.FUint32T
+var avQ2intfloatOnce sync.Once
+
 func AvQ2intfloat(q AVRational) (res ffcommon.FUint32T) {
-	t, _, _ := ffcommon.GetAvutilDll().NewProc("av_q2intfloat").Call(
-		uintptr(unsafe.Pointer(&q)),
-	)
-	res = ffcommon.FUint32T(t)
-	return
+	avQ2intfloatOnce.Do(func() {
+		purego.RegisterLibFunc(&avQ2intfloat, ffcommon.GetAvutilDll(), "av_q2intfloat")
+	})
+	return avQ2intfloat(q)
 }
 
 /**
@@ -324,15 +327,14 @@ func AvQ2intfloat(q AVRational) (res ffcommon.FUint32T) {
  * If the resulting denominator is larger than max_den, return def.
  */
 //AVRational av_gcd_q(AVRational a, AVRational b, int max_den, AVRational def);
+var avGcdQ func(a, b AVRational, max_den ffcommon.FInt, def AVRational) AVRational
+var avGcdQOnce sync.Once
+
 func AvGcdQ(a, b AVRational, max_den ffcommon.FInt, def AVRational) (res AVRational) {
-	t, _, _ := ffcommon.GetAvutilDll().NewProc("av_gcd_q").Call(
-		uintptr(unsafe.Pointer(&a)),
-		uintptr(unsafe.Pointer(&b)),
-		uintptr(max_den),
-		uintptr(unsafe.Pointer(&def)),
-	)
-	res = *(*AVRational)(unsafe.Pointer(&t))
-	return
+	avGcdQOnce.Do(func() {
+		purego.RegisterLibFunc(&avGcdQ, ffcommon.GetAvutilDll(), "av_gcd_q")
+	})
+	return avGcdQ(a, b, max_den, def)
 }
 
 /**

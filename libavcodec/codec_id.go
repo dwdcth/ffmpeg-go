@@ -1,6 +1,11 @@
 package libavcodec
 
-import "github.com/dwdcth/ffmpeg-go/ffcommon"
+import (
+	"sync"
+
+	"github.com/dwdcth/ffmpeg-go/ffcommon"
+	"github.com/ebitengine/purego"
+)
 
 /*
  * Codec IDs
@@ -606,12 +611,14 @@ const (
  * Get the type of the given codec.
  */
 //enum AVMediaType avcodec_get_type(enum AVCodecID codec_id);
-func AvcodecGetType(codec_id AVCodecID) (res AVMediaType) {
-	t, _, _ := ffcommon.GetAvcodecDll().NewProc("avcodec_get_type").Call(
-		uintptr(codec_id),
-	)
-	res = AVMediaType(t)
-	return
+var avcodecGetType func(codec_id AVCodecID) AVMediaType
+var avcodecGetTypeOnce sync.Once
+
+func AvcodecGetType(codec_id AVCodecID) AVMediaType {
+	avcodecGetTypeOnce.Do(func() {
+		purego.RegisterLibFunc(&avcodecGetType, ffcommon.GetAvcodecDll(), "avcodec_get_type")
+	})
+	return avcodecGetType(codec_id)
 }
 
 /**
@@ -619,12 +626,14 @@ func AvcodecGetType(codec_id AVCodecID) (res AVMediaType) {
  * @return  a static string identifying the codec; never NULL
  */
 //const char *avcodec_get_name(enum AVCodecID id);
-func AvcodecGetName(id AVCodecID) (res ffcommon.FCharP) {
-	t, _, _ := ffcommon.GetAvcodecDll().NewProc("avcodec_get_name").Call(
-		uintptr(id),
-	)
-	res = ffcommon.StringFromPtr(t)
-	return
+var avcodecGetName func(id AVCodecID) ffcommon.FCharP
+var avcodecGetNameOnce sync.Once
+
+func AvcodecGetName(id AVCodecID) ffcommon.FCharP {
+	avcodecGetNameOnce.Do(func() {
+		purego.RegisterLibFunc(&avcodecGetName, ffcommon.GetAvcodecDll(), "avcodec_get_name")
+	})
+	return avcodecGetName(id)
 }
 
 /**

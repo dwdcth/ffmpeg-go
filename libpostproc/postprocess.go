@@ -1,6 +1,11 @@
 package libpostproc
 
-import "github.com/dwdcth/ffmpeg-go/ffcommon"
+import (
+	"sync"
+
+	"github.com/dwdcth/ffmpeg-go/ffcommon"
+	"github.com/ebitengine/purego"
+)
 
 /*
  * Copyright (C) 2001-2003 Michael Niedermayer (michaelni@gmx.at)
@@ -44,30 +49,42 @@ import "github.com/dwdcth/ffmpeg-go/ffcommon"
  * Return the LIBPOSTPROC_VERSION_INT constant.
  */
 //unsigned postproc_version(void);
-func PostprocVersion() (res ffcommon.FUnsigned) {
-	t, _, _ := ffcommon.GetAvpostprocDll().NewProc("postproc_version").Call()
-	res = ffcommon.FUnsigned(t)
-	return
+var postprocVersion func() ffcommon.FUnsigned
+var postprocVersionOnce sync.Once
+
+func PostprocVersion() ffcommon.FUnsigned {
+	postprocVersionOnce.Do(func() {
+		purego.RegisterLibFunc(&postprocVersion, ffcommon.GetAvpostprocDll(), "postproc_version")
+	})
+	return postprocVersion()
 }
 
 /**
  * Return the libpostproc build-time configuration.
  */
 //const char *postproc_configuration(void);
-func PostprocConfiguration() (res ffcommon.FConstCharP) {
-	t, _, _ := ffcommon.GetAvpostprocDll().NewProc("postproc_configuration").Call()
-	res = ffcommon.StringFromPtr(t)
-	return
+var postprocConfiguration func() ffcommon.FConstCharP
+var postprocConfigurationOnce sync.Once
+
+func PostprocConfiguration() ffcommon.FConstCharP {
+	postprocConfigurationOnce.Do(func() {
+		purego.RegisterLibFunc(&postprocConfiguration, ffcommon.GetAvpostprocDll(), "postproc_configuration")
+	})
+	return postprocConfiguration()
 }
 
 /**
  * Return the libpostproc license.
  */
 //const char *postproc_license(void);
-func PostprocLicense() (res ffcommon.FConstCharP) {
-	t, _, _ := ffcommon.GetAvpostprocDll().NewProc("postproc_license").Call()
-	res = ffcommon.StringFromPtr(t)
-	return
+var postprocLicense func() ffcommon.FConstCharP
+var postprocLicenseOnce sync.Once
+
+func PostprocLicense() ffcommon.FConstCharP {
+	postprocLicenseOnce.Do(func() {
+		purego.RegisterLibFunc(&postprocLicense, ffcommon.GetAvpostprocDll(), "postproc_license")
+	})
+	return postprocLicense()
 }
 
 const PP_QUALITY_MAX = 6
@@ -98,38 +115,47 @@ const PP_QUALITY_MAX = 6
  * @param quality a number from 0 to PP_QUALITY_MAX
  */
 //pp_mode *pp_get_mode_by_name_and_quality(const char *name, int quality);
-func PpGetModeByNameAndQuality(name ffcommon.FConstCharP, quality ffcommon.FInt) (res ffcommon.FVoidP) {
-	t, _, _ := ffcommon.GetAvpostprocDll().NewProc("pp_get_mode_by_name_and_quality").Call(
-		ffcommon.UintPtrFromString(name),
-		uintptr(quality),
-	)
-	res = t
-	return
+var ppGetModeByNameAndQuality func(name ffcommon.FConstCharP, quality ffcommon.FInt) ffcommon.FVoidP
+var ppGetModeByNameAndQualityOnce sync.Once
+
+func PpGetModeByNameAndQuality(name ffcommon.FConstCharP, quality ffcommon.FInt) ffcommon.FVoidP {
+	ppGetModeByNameAndQualityOnce.Do(func() {
+		purego.RegisterLibFunc(&ppGetModeByNameAndQuality, ffcommon.GetAvpostprocDll(), "pp_get_mode_by_name_and_quality")
+	})
+	return ppGetModeByNameAndQuality(name, quality)
 }
 
 // void pp_free_mode(pp_mode *mode);
+var ppFreeMode func(mode ffcommon.FVoidP)
+var ppFreeModeOnce sync.Once
+
 func PpFreeMode(mode ffcommon.FVoidP) {
-	ffcommon.GetAvpostprocDll().NewProc("pp_free_mode").Call(
-		mode,
-	)
+	ppFreeModeOnce.Do(func() {
+		purego.RegisterLibFunc(&ppFreeMode, ffcommon.GetAvpostprocDll(), "pp_free_mode")
+	})
+	ppFreeMode(mode)
 }
 
 // pp_context *pp_get_context(int width, int height, int flags);
-func PpGetContext(width, height, flags ffcommon.FInt) (res ffcommon.FVoidP) {
-	t, _, _ := ffcommon.GetAvpostprocDll().NewProc("pp_get_context").Call(
-		uintptr(width),
-		uintptr(height),
-		uintptr(flags),
-	)
-	res = t
-	return
+var ppGetContext func(width, height, flags ffcommon.FInt) ffcommon.FVoidP
+var ppGetContextOnce sync.Once
+
+func PpGetContext(width, height, flags ffcommon.FInt) ffcommon.FVoidP {
+	ppGetContextOnce.Do(func() {
+		purego.RegisterLibFunc(&ppGetContext, ffcommon.GetAvpostprocDll(), "pp_get_context")
+	})
+	return ppGetContext(width, height, flags)
 }
 
 // void pp_free_context(pp_context *ppContext);
+var ppFreeContext func(ppContext ffcommon.FVoidP)
+var ppFreeContextOnce sync.Once
+
 func PpFreeContext(ppContext ffcommon.FVoidP) {
-	ffcommon.GetAvpostprocDll().NewProc("pp_free_context").Call(
-		ppContext,
-	)
+	ppFreeContextOnce.Do(func() {
+		purego.RegisterLibFunc(&ppFreeContext, ffcommon.GetAvpostprocDll(), "pp_free_context")
+	})
+	ppFreeContext(ppContext)
 }
 
 const PP_CPU_CAPS_MMX = 0x80000000

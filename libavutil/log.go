@@ -1,9 +1,10 @@
 package libavutil
 
 import (
-	"unsafe"
+	"sync"
 
 	"github.com/dwdcth/ffmpeg-go/ffcommon"
+	"github.com/ebitengine/purego"
 )
 
 /*
@@ -270,14 +271,19 @@ const AV_LOG_MAX_OFFSET = (AV_LOG_TRACE - AV_LOG_QUIET)
  *        subsequent arguments are converted to output.
  */
 //void av_log(void *avcl, int level, const char *fmt, ...) av_printf_format(3, 4);
+var avLog func(avcl ffcommon.FVoidP, level ffcommon.FInt, fmt0 ...ffcommon.FConstCharP)
+var avLogOnceS sync.Once
+
 func AvLog(avcl ffcommon.FVoidP, level ffcommon.FInt, fmt0 ...ffcommon.FConstCharP) {
-	uintptrs := make([]uintptr, 0)
-	uintptrs = append(uintptrs, avcl)
-	uintptrs = append(uintptrs, uintptr(level))
-	for i := 0; i < len(fmt0); i++ {
-		uintptrs = append(uintptrs, ffcommon.UintPtrFromString(fmt0[i]))
-	}
-	ffcommon.GetAvutilDll().NewProc("av_log").Call(uintptrs...)
+	avLogOnceS.Do(func() {
+		purego.RegisterLibFunc(&avLog, ffcommon.GetAvutilDll(), "av_log")
+	})
+	// uintptrs := []uintptr{uintptr(avcl), uintptr(level)}
+	// for i := 0; i < len(fmt0); i++ {
+	// 	uintptrs = append(uintptrs, ffcommon.UintPtrFromString(fmt0[i]))
+	// }
+	// avLog(uintptrs...)
+	avLog(avcl, level, fmt0...)
 }
 
 /**
@@ -300,16 +306,19 @@ func AvLog(avcl ffcommon.FVoidP, level ffcommon.FInt, fmt0 ...ffcommon.FConstCha
  *        must not be accessed by 2 Threads simultaneously.
  */
 //void av_log_once(void* avcl, int initial_level, int subsequent_level, int *state, const char *fmt, ...) av_printf_format(5, 6);
+var avLogOnce func(avcl ffcommon.FVoidP, initial_level, subsequent_level ffcommon.FInt, state *ffcommon.FInt, fmt0 ...ffcommon.FConstCharP)
+var avLogOnceOnce sync.Once
+
 func AvLogOnce(avcl ffcommon.FVoidP, initial_level, subsequent_level ffcommon.FInt, state *ffcommon.FInt, fmt0 ...ffcommon.FConstCharP) {
-	uintptrs := make([]uintptr, 0)
-	uintptrs = append(uintptrs, avcl)
-	uintptrs = append(uintptrs, uintptr(initial_level))
-	uintptrs = append(uintptrs, uintptr(subsequent_level))
-	uintptrs = append(uintptrs, uintptr(unsafe.Pointer(state)))
-	for i := 0; i < len(fmt0); i++ {
-		uintptrs = append(uintptrs, ffcommon.UintPtrFromString(fmt0[i]))
-	}
-	ffcommon.GetAvutilDll().NewProc("av_log_once").Call(uintptrs...)
+	avLogOnceOnce.Do(func() {
+		purego.RegisterLibFunc(&avLogOnce, ffcommon.GetAvutilDll(), "av_log_once")
+	})
+	// uintptrs := []uintptr{uintptr(avcl), uintptr(initial_level), uintptr(subsequent_level), uintptr(unsafe.Pointer(state))}
+	// for i := 0; i < len(fmt0); i++ {
+	// 	uintptrs = append(uintptrs, ffcommon.UintPtrFromString(fmt0[i]))
+	// }
+	// avLogOnce(uintptrs...)
+	avLogOnce(avcl, initial_level, subsequent_level, state, fmt0...)
 }
 
 /**
@@ -328,13 +337,14 @@ func AvLogOnce(avcl ffcommon.FVoidP, initial_level, subsequent_level ffcommon.FI
  * @param vl The arguments referenced by the format string.
  */
 //void av_vlog(void *avcl, int level, const char *fmt, va_list vl);
+var avVlog func(avcl ffcommon.FVoidP, level ffcommon.FInt, fmt0 ffcommon.FConstCharP, vl ffcommon.FVaList)
+var avVlogOnce sync.Once
+
 func AvVlog(avcl ffcommon.FVoidP, level ffcommon.FInt, fmt0 ffcommon.FConstCharP, vl ffcommon.FVaList) {
-	ffcommon.GetAvutilDll().NewProc("av_vlog").Call(
-		avcl,
-		uintptr(level),
-		ffcommon.UintPtrFromString(fmt0),
-		uintptr(unsafe.Pointer(vl)),
-	)
+	avVlogOnce.Do(func() {
+		purego.RegisterLibFunc(&avVlog, ffcommon.GetAvutilDll(), "av_vlog")
+	})
+	avVlog(avcl, level, fmt0, vl)
 }
 
 /**
@@ -345,10 +355,14 @@ func AvVlog(avcl ffcommon.FVoidP, level ffcommon.FInt, fmt0 ffcommon.FConstCharP
  * @return Current log level
  */
 //int av_log_get_level(void);
-func AvLogGetLevel() (res ffcommon.FInt) {
-	t, _, _ := ffcommon.GetAvutilDll().NewProc("av_log_get_level").Call()
-	res = ffcommon.FInt(t)
-	return
+var avLogGetLevel func() ffcommon.FInt
+var avLogGetLevelOnce sync.Once
+
+func AvLogGetLevel() ffcommon.FInt {
+	avLogGetLevelOnce.Do(func() {
+		purego.RegisterLibFunc(&avLogGetLevel, ffcommon.GetAvutilDll(), "av_log_get_level")
+	})
+	return avLogGetLevel()
 }
 
 /**
@@ -359,10 +373,14 @@ func AvLogGetLevel() (res ffcommon.FInt) {
  * @param level Logging level
  */
 //void av_log_set_level(int level);
+var avLogSetLevel func(level ffcommon.FInt)
+var avLogSetLevelOnce sync.Once
+
 func AvLogSetLevel(level ffcommon.FInt) {
-	ffcommon.GetAvutilDll().NewProc("av_log_set_level").Call(
-		uintptr(level),
-	)
+	avLogSetLevelOnce.Do(func() {
+		purego.RegisterLibFunc(&avLogSetLevel, ffcommon.GetAvutilDll(), "av_log_set_level")
+	})
+	avLogSetLevel(level)
 }
 
 /**
@@ -376,10 +394,14 @@ func AvLogSetLevel(level ffcommon.FInt) {
  * @param callback A logging function with a compatible signature.
  */
 //void av_log_set_callback(void (*callback)(void*, int, const char*, va_list));
+var avLogSetCallback func(callback func(ffcommon.FVoidP, ffcommon.FInt, ffcommon.FCharPStruct, ffcommon.FVaList) uintptr)
+var avLogSetCallbackOnce sync.Once
+
 func AvLogSetCallback(callback func(ffcommon.FVoidP, ffcommon.FInt, ffcommon.FCharPStruct, ffcommon.FVaList) uintptr) {
-	ffcommon.GetAvutilDll().NewProc("av_log_set_callback").Call(
-		ffcommon.NewCallback(callback),
-	)
+	avLogSetCallbackOnce.Do(func() {
+		purego.RegisterLibFunc(&avLogSetCallback, ffcommon.GetAvutilDll(), "av_log_set_callback")
+	})
+	avLogSetCallback(callback)
 }
 
 /**
@@ -397,13 +419,14 @@ func AvLogSetCallback(callback func(ffcommon.FVoidP, ffcommon.FInt, ffcommon.FCh
  */
 //void av_log_default_callback(void *avcl, int level, const char *fmt,
 //va_list vl);
+var avLogDefaultCallback func(avcl ffcommon.FVoidP, level ffcommon.FInt, fmt0 ffcommon.FConstCharP, vl ffcommon.FVaList)
+var avLogDefaultCallbackOnce sync.Once
+
 func AvLogDefaultCallback(avcl ffcommon.FVoidP, level ffcommon.FInt, fmt0 ffcommon.FConstCharP, vl ffcommon.FVaList) {
-	ffcommon.GetAvutilDll().NewProc("av_log_default_callback").Call(
-		avcl,
-		uintptr(level),
-		ffcommon.UintPtrFromString(fmt0),
-		uintptr(unsafe.Pointer(vl)),
-	)
+	avLogDefaultCallbackOnce.Do(func() {
+		purego.RegisterLibFunc(&avLogDefaultCallback, ffcommon.GetAvutilDll(), "av_log_default_callback")
+	})
+	avLogDefaultCallback(avcl, level, fmt0, vl)
 }
 
 /**
@@ -414,21 +437,25 @@ func AvLogDefaultCallback(avcl ffcommon.FVoidP, level ffcommon.FInt, fmt0 ffcomm
  * @return The AVClass class_name
  */
 //const char* av_default_item_name(void* ctx);
-func AvDefaultItemName(ctx ffcommon.FVoidP) (res ffcommon.FCharP) {
-	t, _, _ := ffcommon.GetAvutilDll().NewProc("av_default_item_name").Call(
-		ctx,
-	)
-	res = ffcommon.StringFromPtr(t)
-	return
+var avDefaultItemName func(ctx ffcommon.FVoidP) ffcommon.FCharP
+var avDefaultItemNameOnce sync.Once
+
+func AvDefaultItemName(ctx ffcommon.FVoidP) ffcommon.FCharP {
+	avDefaultItemNameOnce.Do(func() {
+		purego.RegisterLibFunc(&avDefaultItemName, ffcommon.GetAvutilDll(), "av_default_item_name")
+	})
+	return avDefaultItemName(ctx)
 }
 
 // AVClassCategory av_default_get_category(void *ptr);
-func AvDefaultGetCategory(ptr ffcommon.FVoidP) (res AVClassCategory) {
-	t, _, _ := ffcommon.GetAvutilDll().NewProc("av_default_get_category").Call(
-		ptr,
-	)
-	res = AVClassCategory(t)
-	return
+var avDefaultGetCategory func(ptr ffcommon.FVoidP) AVClassCategory
+var avDefaultGetCategoryOnce sync.Once
+
+func AvDefaultGetCategory(ptr ffcommon.FVoidP) AVClassCategory {
+	avDefaultGetCategoryOnce.Do(func() {
+		purego.RegisterLibFunc(&avDefaultGetCategory, ffcommon.GetAvutilDll(), "av_default_get_category")
+	})
+	return avDefaultGetCategory(ptr)
 }
 
 /**
@@ -440,17 +467,16 @@ func AvDefaultGetCategory(ptr ffcommon.FVoidP) (res AVClassCategory) {
  */
 //void av_log_format_line(void *ptr, int level, const char *fmt, va_list vl,
 //char *line, int line_size, int *print_prefix);
+var avLogFormatLine func(ptr ffcommon.FVoidP, level ffcommon.FInt, fmt0 ffcommon.FConstCharP, vl ffcommon.FVaList,
+	line ffcommon.FCharP, line_size ffcommon.FInt, print_prefix *ffcommon.FInt)
+var avLogFormatLineOnce sync.Once
+
 func AvLogFormatLine(ptr ffcommon.FVoidP, level ffcommon.FInt, fmt0 ffcommon.FConstCharP, vl ffcommon.FVaList,
 	line ffcommon.FCharP, line_size ffcommon.FInt, print_prefix *ffcommon.FInt) {
-	ffcommon.GetAvutilDll().NewProc("av_log_format_line").Call(
-		ptr,
-		uintptr(level),
-		ffcommon.UintPtrFromString(fmt0),
-		uintptr(unsafe.Pointer(vl)),
-		ffcommon.UintPtrFromString(line),
-		uintptr(line_size),
-		uintptr(unsafe.Pointer(print_prefix)),
-	)
+	avLogFormatLineOnce.Do(func() {
+		purego.RegisterLibFunc(&avLogFormatLine, ffcommon.GetAvutilDll(), "av_log_format_line")
+	})
+	avLogFormatLine(ptr, level, fmt0, vl, line, line_size, print_prefix)
 }
 
 /**
@@ -469,19 +495,16 @@ func AvLogFormatLine(ptr ffcommon.FVoidP, level ffcommon.FInt, fmt0 ffcommon.FCo
  */
 //int av_log_format_line2(void *ptr, int level, const char *fmt, va_list vl,
 //char *line, int line_size, int *print_prefix);
+var avLogFormatLine2 func(ptr ffcommon.FVoidP, level ffcommon.FInt, fmt0 ffcommon.FConstCharP, vl ffcommon.FVaList,
+	line ffcommon.FCharP, line_size ffcommon.FInt, print_prefix *ffcommon.FInt) ffcommon.FInt
+var avLogFormatLine2Once sync.Once
+
 func AvLogFormatLine2(ptr ffcommon.FVoidP, level ffcommon.FInt, fmt0 ffcommon.FConstCharP, vl ffcommon.FVaList,
-	line ffcommon.FCharP, line_size ffcommon.FInt, print_prefix *ffcommon.FInt) (res ffcommon.FInt) {
-	t, _, _ := ffcommon.GetAvutilDll().NewProc("av_log_format_line2").Call(
-		ptr,
-		uintptr(level),
-		ffcommon.UintPtrFromString(fmt0),
-		uintptr(unsafe.Pointer(vl)),
-		ffcommon.UintPtrFromString(line),
-		uintptr(line_size),
-		uintptr(unsafe.Pointer(print_prefix)),
-	)
-	res = ffcommon.FInt(t)
-	return
+	line ffcommon.FCharP, line_size ffcommon.FInt, print_prefix *ffcommon.FInt) ffcommon.FInt {
+	avLogFormatLine2Once.Do(func() {
+		purego.RegisterLibFunc(&avLogFormatLine2, ffcommon.GetAvutilDll(), "av_log_format_line2")
+	})
+	return avLogFormatLine2(ptr, level, fmt0, vl, line, line_size, print_prefix)
 }
 
 /**
@@ -503,19 +526,25 @@ const AV_LOG_SKIP_REPEATED = 1
 const AV_LOG_PRINT_LEVEL = 2
 
 // void av_log_set_flags(int arg);
-func AvLogSetFlags(arg ffcommon.FInt) (res ffcommon.FCharP) {
-	t, _, _ := ffcommon.GetAvutilDll().NewProc("av_log_set_flags").Call(
-		uintptr(arg),
-	)
-	res = ffcommon.StringFromPtr(t)
-	return
+var avLogSetFlags func(arg ffcommon.FInt) ffcommon.FCharP
+var avLogSetFlagsOnce sync.Once
+
+func AvLogSetFlags(arg ffcommon.FInt) ffcommon.FCharP {
+	avLogSetFlagsOnce.Do(func() {
+		purego.RegisterLibFunc(&avLogSetFlags, ffcommon.GetAvutilDll(), "av_log_set_flags")
+	})
+	return avLogSetFlags(arg)
 }
 
 // int av_log_get_flags(void);
-func AvLogGetFlags() (res ffcommon.FInt) {
-	t, _, _ := ffcommon.GetAvutilDll().NewProc("av_log_get_flags").Call()
-	res = ffcommon.FInt(t)
-	return
+var avLogGetFlags func() ffcommon.FInt
+var avLogGetFlagsOnce sync.Once
+
+func AvLogGetFlags() ffcommon.FInt {
+	avLogGetFlagsOnce.Do(func() {
+		purego.RegisterLibFunc(&avLogGetFlags, ffcommon.GetAvutilDll(), "av_log_get_flags")
+	})
+	return avLogGetFlags()
 }
 
 /**
