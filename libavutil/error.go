@@ -2,6 +2,7 @@ package libavutil
 
 import (
 	"sync"
+	"unsafe"
 
 	"github.com/dwdcth/ffmpeg-go/ffcommon"
 	"github.com/ebitengine/purego"
@@ -195,6 +196,18 @@ func AvMakeErrorString(errbuf ffcommon.FBuf, errbuf_size ffcommon.FSizeT, errnum
 		purego.RegisterLibFunc(&avMakeErrorString, ffcommon.GetAvutilDll(), "av_make_error_string")
 	})
 	return avMakeErrorString(errbuf, errbuf_size, errnum)
+}
+
+func AvErr2str(errnum ffcommon.FInt) (res ffcommon.FCharP) {
+
+	b := make([]byte, AV_ERROR_MAX_STRING_SIZE)
+	// AvStrerror(errnum, (*byte)(unsafe.Pointer(&b[0])), AV_ERROR_MAX_STRING_SIZE)
+	// t, _, _ := ffcommon.GetAvutilDll().NewProc("av_err2str").Call()
+	// res = ffcommon.StringFromPtr(t)
+
+	AvMakeErrorString((*byte)(unsafe.Pointer(&b[0])), AV_ERROR_MAX_STRING_SIZE, errnum)
+	res = ffcommon.StringFromPtr(uintptr(unsafe.Pointer(&b[0])))
+	return
 }
 
 /**

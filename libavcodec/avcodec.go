@@ -3407,6 +3407,16 @@ func (s *AVCodecContext) AvcodecAlignDimensions2(width, height *ffcommon.FInt, l
 * @param ypos  vertical   chroma sample position
  */
 //int avcodec_enum_to_chroma_pos(int *xpos, int *ypos, enum AVChromaLocation pos);
+var avcodec_enum_to_chroma_pos func(xpos, ypos *ffcommon.FInt, pos AVChromaLocation) ffcommon.FInt
+var avcodec_enum_to_chroma_pos_once sync.Once
+
+func AvcodecEnumToChromaPos(xpos, ypos *ffcommon.FInt, pos AVChromaLocation) ffcommon.FInt {
+	avcodec_enum_to_chroma_pos_once.Do(func() {
+		purego.RegisterLibFunc(&avcodec_enum_to_chroma_pos, ffcommon.GetAvcodecDll(), "avcodec_enum_to_chroma_pos")
+	})
+
+	return avcodec_enum_to_chroma_pos(xpos, ypos, pos)
+}
 
 /**
 * Converts swscale x/y chroma position to AVChromaLocation.
@@ -3419,15 +3429,14 @@ func (s *AVCodecContext) AvcodecAlignDimensions2(width, height *ffcommon.FInt, l
  */
 //enum AVChromaLocation avcodec_chroma_pos_to_enum(int xpos, int ypos);
 // Convert an AVChromaLocation enum value to chroma positional coordinates.
-var avcodec_enum_to_chroma_pos func(xpos, ypos *ffcommon.FInt, pos AVChromaLocation) ffcommon.FInt
-var avcodec_enum_to_chroma_pos_once sync.Once
+var avcodecChromaPosToEnum func(xpos, ypos ffcommon.FInt) AVChromaLocation
+var avcodecChromaPosToEnumOnce sync.Once
 
-func AvcodecEnumToChromaPos(xpos, ypos *ffcommon.FInt, pos AVChromaLocation) ffcommon.FInt {
-	avcodec_enum_to_chroma_pos_once.Do(func() {
-		purego.RegisterLibFunc(&avcodec_enum_to_chroma_pos, ffcommon.GetAvcodecDll(), "avcodec_enum_to_chroma_pos")
+func AvcodecChromaPosToEnum(xpos, ypos ffcommon.FInt) AVChromaLocation {
+	avcodecChromaPosToEnumOnce.Do(func() {
+		purego.RegisterLibFunc(&avcodecChromaPosToEnum, ffcommon.GetAvcodecDll(), "avcodec_chroma_pos_to_enum")
 	})
-
-	return avcodec_enum_to_chroma_pos(xpos, ypos, pos)
+	return avcodecChromaPosToEnum(xpos, ypos)
 }
 
 //#if FF_API_OLD_ENCDEC
