@@ -16,14 +16,19 @@ func main() {
 
 	//flags
 	fileName := flag.String("file", "", "video file to open")
-	libPath := flag.String("lib", "", "avformatpath")
+	// libPath := flag.String("lib", "", "avformatpath")
 	flag.Parse()
-	if *fileName == "" || *libPath == "" {
-		fmt.Println("usage: -file 视频文件  -lib avformat 路径")
+	if *fileName == "" {
+		fmt.Println("usage: -file 视频文件")
 		return
 	}
 
-	ffcommon.SetAvformatPath(*libPath)
+	// ffcommon.SetAvformatPath(*libPath)
+	err := ffcommon.AutoSetAvLib("")
+	if err != nil {
+		fmt.Println("AutoSetAvLib err = ", err)
+		return
+	}
 	fmt_ctx := libavformat.AvformatAllocContext() //创建对象并初始化
 	ret := int32(0)
 

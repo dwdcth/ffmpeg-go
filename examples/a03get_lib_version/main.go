@@ -1,7 +1,6 @@
 package main
 
 import (
-	"flag"
 	"fmt"
 	"os/exec"
 
@@ -13,16 +12,22 @@ import (
 // go run main.go -util -codec
 func main() {
 	//flags
-	utilPath := flag.String("util", "", "avutilpath")
-	codecPath := flag.String("codec", "", "avcodecpth")
-	flag.Parse()
-	if *utilPath == "" || *codecPath == "" {
-		fmt.Println("usage: -util avutil 路径 -codec avcodec 路径")
+	// utilPath := flag.String("util", "", "avutilpath")
+	// codecPath := flag.String("codec", "", "avcodecpth")
+	// flag.Parse()
+	// if *utilPath == "" || *codecPath == "" {
+	// 	fmt.Println("usage: -util avutil 路径 -codec avcodec 路径")
+	// 	return
+	// }
+	// ffcommon.SetAvutilPath(*utilPath)
+	// ffcommon.SetAvcodecPath(*codecPath)
+
+	err := ffcommon.AutoSetAvLib("")
+	if err != nil {
+		fmt.Println("AutoSetAvLib err = ", err)
 		return
 	}
-	// os.Setenv("Path", os.Getenv("Path")+";./lib")
-	ffcommon.SetAvutilPath(*utilPath)
-	ffcommon.SetAvcodecPath(*codecPath)
+
 	codecVer := libavcodec.AvcodecVersion()
 	ver_major := (codecVer >> 16) & 0xff
 	ver_minor := (codecVer >> 8) & 0xff

@@ -1,6 +1,11 @@
 package ffcommon
 
 import (
+	"fmt"
+	"os"
+	"path/filepath"
+	"regexp"
+	"runtime"
 	"sync"
 
 	"github.com/ebitengine/purego"
@@ -55,7 +60,7 @@ var avUtilLibOnce sync.Once
 func GetAvutilDll() uintptr {
 	avUtilLibOnce.Do(func() {
 		var err error
-		avUtilLib, err = purego.Dlopen(avutilPath, purego.RTLD_NOW|purego.RTLD_GLOBAL)
+		avUtilLib, err = purego.Dlopen(avutilPath, purego.RTLD_LAZY|purego.RTLD_GLOBAL)
 		if err != nil {
 			panic(err) // Hanpuregoe error appropriately
 		}
@@ -69,7 +74,7 @@ var avcodecLibOnce sync.Once
 func GetAvcodecDll() uintptr {
 	avcodecLibOnce.Do(func() {
 		var err error
-		avcodecLib, err = purego.Dlopen(avcodecPath, purego.RTLD_NOW|purego.RTLD_GLOBAL)
+		avcodecLib, err = purego.Dlopen(avcodecPath, purego.RTLD_LAZY|purego.RTLD_GLOBAL)
 		if err != nil {
 			panic(err) // Hanpuregoe error appropriately
 		}
@@ -83,7 +88,7 @@ var avdeviceLibOnce sync.Once
 func GetAvdeviceDll() uintptr {
 	avdeviceLibOnce.Do(func() {
 		var err error
-		avdeviceLib, err = purego.Dlopen(avdevicePath, purego.RTLD_NOW|purego.RTLD_GLOBAL)
+		avdeviceLib, err = purego.Dlopen(avdevicePath, purego.RTLD_LAZY|purego.RTLD_GLOBAL)
 		if err != nil {
 			panic(err) // Hanpuregoe error appropriately
 		}
@@ -97,7 +102,7 @@ var avfilterLibOnce sync.Once
 func GetAvfilterDll() uintptr {
 	avfilterLibOnce.Do(func() {
 		var err error
-		avfilterLib, err = purego.Dlopen(avfilterPath, purego.RTLD_NOW|purego.RTLD_GLOBAL)
+		avfilterLib, err = purego.Dlopen(avfilterPath, purego.RTLD_LAZY|purego.RTLD_GLOBAL)
 		if err != nil {
 			panic(err) // Handle error appropriately
 		}
@@ -111,7 +116,7 @@ var avformatLibOnce sync.Once
 func GetAvformatDll() uintptr {
 	avformatLibOnce.Do(func() {
 		var err error
-		avformatLib, err = purego.Dlopen(avformatPath, purego.RTLD_NOW|purego.RTLD_GLOBAL)
+		avformatLib, err = purego.Dlopen(avformatPath, purego.RTLD_LAZY|purego.RTLD_GLOBAL)
 		if err != nil {
 			panic(err) // Handle error appropriately
 		}
@@ -125,7 +130,7 @@ var avpostprocLibOnce sync.Once
 func GetAvpostprocDll() uintptr {
 	avpostprocLibOnce.Do(func() {
 		var err error
-		avpostprocLib, err = purego.Dlopen(avpostprocPath, purego.RTLD_NOW|purego.RTLD_GLOBAL)
+		avpostprocLib, err = purego.Dlopen(avpostprocPath, purego.RTLD_LAZY|purego.RTLD_GLOBAL)
 		if err != nil {
 			panic(err) // Handle error appropriately
 		}
@@ -139,7 +144,7 @@ var avswresampleLibOnce sync.Once
 func GetAvswresampleDll() uintptr {
 	avswresampleLibOnce.Do(func() {
 		var err error
-		avswresampleLib, err = purego.Dlopen(avswresamplePath, purego.RTLD_NOW|purego.RTLD_GLOBAL)
+		avswresampleLib, err = purego.Dlopen(avswresamplePath, purego.RTLD_LAZY|purego.RTLD_GLOBAL)
 		if err != nil {
 			panic(err) // Handle error appropriately
 		}
@@ -153,7 +158,7 @@ var avswscaleLibOnce sync.Once
 func GetAvswscaleDll() uintptr {
 	avswscaleLibOnce.Do(func() {
 		var err error
-		avswscaleLib, err = purego.Dlopen(avswscalePath, purego.RTLD_NOW|purego.RTLD_GLOBAL)
+		avswscaleLib, err = purego.Dlopen(avswscalePath, purego.RTLD_LAZY|purego.RTLD_GLOBAL)
 		if err != nil {
 			panic(err) // Handle error appropriately
 		}
@@ -171,4 +176,97 @@ func CloseDll() {
 			purego.Dlclose(libs[i])
 		}
 	}
+}
+
+var fnMap = map[string]func(path string){
+	"avutil":     SetAvutilPath,
+	"avcodec":    SetAvcodecPath,
+	"avdevice":   SetAvdevicePath,
+	"avfilter":   SetAvfilterPath,
+	"avformat":   SetAvformatPath,
+	"postproc":   SetAvpostprocPath,
+	"swresample": SetAvswresamplePath,
+	"swscale":    SetAvswscalePath,
+}
+
+func AutoSetAvLib(libpath string) error {
+	var libloaded = make(map[string]bool)
+	searchDirs := []string{".", "/usr/local/lib", "/usr/lib/x86_64-linux-gnu", "/usr/lib"}
+	if libpath != "" {
+		searchDirs = append([]string{libpath}, searchDirs...)
+	}
+	defer func() {
+		if err := recover(); err != nil {
+			fmt.Printf("SetAvLib %s\n", err)
+		}
+		for k, v := range libloaded {
+			if !v {
+				fmt.Printf("lib not found %s\n", k)
+			}
+		}
+	}()
+	for _, dir := range searchDirs {
+		_, err := os.Stat(dir)
+		if os.IsNotExist(err) {
+			continue
+		}
+		for k, f := range fnMap {
+			if libloaded[k] {
+				continue
+			}
+			switch runtime.GOOS {
+			case "darwin":
+				lib := fmt.Sprintf("%s/lib%s.dylib", dir, k)
+				if _, err := os.Stat(lib); err == nil {
+					fmt.Println("load lib", lib)
+					f(lib)
+					libloaded[k] = true
+				}
+			case "windows":
+				r := regexp.MustCompile(k + "-\\d+\\.dll")
+				filepath.Walk(dir, func(path string, info os.FileInfo, err error) error {
+					if libloaded[k] {
+						return nil
+					}
+					if err != nil {
+						fmt.Println(err)
+						return nil
+					}
+					if !info.IsDir() && r.MatchString(info.Name()) {
+						fmt.Println("load lib", path)
+						f(path)
+						libloaded[k] = true
+					}
+					return nil
+				})
+			default:
+				// lib := fmt.Sprintf("%s/lib%s.so", dir, k)
+				// if _, err := os.Stat(lib); err == nil {
+				// 	plugin.Info("load lib", zap.String("path", lib))
+				// 	f(lib)
+				// 	libloaded[k] = true
+				// }
+				r := regexp.MustCompile(k + ".so")
+				filepath.Walk(dir, func(path string, info os.FileInfo, err error) error {
+					if libloaded[k] {
+						return nil
+					}
+					if err != nil {
+						fmt.Println(err)
+						return nil
+					}
+					if !info.IsDir() && r.MatchString(info.Name()) {
+						fmt.Println("load lib", path)
+						f(path)
+						libloaded[k] = true
+					}
+					return nil
+				})
+			}
+		}
+	}
+
+	//libavutil.AvLogSetLevel(libavutil.AV_LOG_VERBOSE)
+	//av_log_set_level(AV_LOG_VERBOSE);
+	return nil
 }
