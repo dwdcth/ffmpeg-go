@@ -153,6 +153,15 @@ type AVBitStreamFilter struct {
  *         bitstream filter exists.
  */
 //const AVBitStreamFilter *av_bsf_get_by_name(const char *name);
+var avBsfGetByName func(name ffcommon.FConstCharP) *AVBitStreamFilter
+var avBsfGetByNameOnce sync.Once
+
+func AvBsfGetByName(name ffcommon.FConstCharP) *AVBitStreamFilter {
+	avBsfGetByNameOnce.Do(func() {
+		purego.RegisterLibFunc(&avBsfGetByName, ffcommon.GetAvcodecDll(), "av_bsf_get_by_name")
+	})
+	return avBsfGetByName(name)
+}
 
 /**
  * Iterate over all registered bitstream filters.

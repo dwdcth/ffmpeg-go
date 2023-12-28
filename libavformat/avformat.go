@@ -2126,9 +2126,6 @@ func (s *AVFormatContext) AvFormatSetSubtitleCodec(c *AVCodec) {
 
 // attribute_deprecated
 // AVCodec * av_format_get_data_codec(const AVFormatContext *s);
-
-// attribute_deprecated
-// void      av_format_set_data_codec(AVFormatContext *s, AVCodec *c);
 var avFormatGetDataCodecFunc func(s *AVFormatContext) *AVCodec
 var avFormatGetDataCodecFuncOnce sync.Once
 
@@ -2139,6 +2136,18 @@ func (s *AVFormatContext) AvFormatGetDataCodec() (res *AVCodec) {
 
 	res = avFormatGetDataCodecFunc(s)
 	return
+}
+
+// attribute_deprecated
+// void      av_format_set_data_codec(AVFormatContext *s, AVCodec *c);
+var avFormatSetDataCodec func(s *AVFormatContext, c *AVCodec)
+var avFormatSetDataCodecOnce sync.Once
+
+func (s *AVFormatContext) AvFormatSetDataCodec(c *AVCodec) {
+	avFormatSetDataCodecOnce.Do(func() {
+		purego.RegisterLibFunc(&avFormatSetDataCodec, ffcommon.GetAvformatDll(), "av_format_set_data_codec")
+	})
+	avFormatSetDataCodec(s, c)
 }
 
 // attribute_deprecated

@@ -163,14 +163,15 @@ type AVABufferSinkParams struct {
  */
 //attribute_deprecated
 //AVABufferSinkParams *av_abuffersink_params_alloc(void);
-var avBuffersinkSetFrameSize func(ctx *AVFilterContext, frame_size ffcommon.FUnsigned)
-var avBuffersinkSetFrameSizeOnce sync.Once
 
-func (ctx *AVFilterContext) AvBuffersinkSetFrameSize(frame_size ffcommon.FUnsigned) {
-	avBuffersinkSetFrameSizeOnce.Do(func() {
-		purego.RegisterLibFunc(&avBuffersinkSetFrameSize, ffcommon.GetAvfilterDll(), "av_buffersink_set_frame_size")
+var avAbuffersinkParamsAlloc func() *AVABufferSinkParams
+var avAbuffersinkParamsAllocOnce sync.Once
+
+func AvAbuffersinkParamsAlloc() *AVABufferSinkParams {
+	avAbuffersinkParamsAllocOnce.Do(func() {
+		purego.RegisterLibFunc(&avAbuffersinkParamsAlloc, ffcommon.GetAvfilterDll(), "av_abuffersink_params_alloc")
 	})
-	avBuffersinkSetFrameSize(ctx, frame_size)
+	return avAbuffersinkParamsAlloc()
 }
 
 //#endif
@@ -183,6 +184,15 @@ func (ctx *AVFilterContext) AvBuffersinkSetFrameSize(frame_size ffcommon.FUnsign
  * not enough. The last buffer at EOF will be padded with 0.
  */
 //void av_buffersink_set_frame_size(AVFilterContext *ctx, unsigned frame_size);
+var avBuffersinkSetFrameSize func(ctx *AVFilterContext, frame_size ffcommon.FUnsigned)
+var avBuffersinkSetFrameSizeOnce sync.Once
+
+func (ctx *AVFilterContext) AvBuffersinkSetFrameSize(frame_size ffcommon.FUnsigned) {
+	avBuffersinkSetFrameSizeOnce.Do(func() {
+		purego.RegisterLibFunc(&avBuffersinkSetFrameSize, ffcommon.GetAvfilterDll(), "av_buffersink_set_frame_size")
+	})
+	avBuffersinkSetFrameSize(ctx, frame_size)
+}
 
 /**
  * @defgroup lavfi_buffersink_accessors Buffer sink accessors

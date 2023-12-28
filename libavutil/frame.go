@@ -1329,6 +1329,19 @@ func (src *AVFrame) AvFrameUnref() {
  *           before calling this function to ensure that no memory is leaked.
  */
 //void av_frame_move_ref(AVFrame *dst, AVFrame *src);
+var avFrameMoveRef func(dst, src *AVFrame) ffcommon.FCharP
+var avFrameMoveRefOnce sync.Once
+
+func AvFrameMoveRef(dst, src *AVFrame) ffcommon.FCharP {
+	avFrameMoveRefOnce.Do(func() {
+		purego.RegisterLibFunc(
+			&avFrameMoveRef,
+			ffcommon.GetAvutilDll(),
+			"av_frame_move_ref",
+		)
+	})
+	return avFrameMoveRef(dst, src)
+}
 
 /**
  * Allocate new buffer(s) for audio or video data.
@@ -1354,18 +1367,14 @@ func (src *AVFrame) AvFrameUnref() {
  * @return 0 on success, a negative AVERROR on error.
  */
 //int av_frame_get_buffer(AVFrame *frame, int align);
-var avFrameMoveRef func(dst, src *AVFrame) ffcommon.FCharP
-var avFrameMoveRefOnce sync.Once
+var avFrameGetBuffer func(frame *AVFrame, align ffcommon.FInt) ffcommon.FInt
+var avFrameGetBufferOnce sync.Once
 
-func AvFrameMoveRef(dst, src *AVFrame) ffcommon.FCharP {
-	avFrameMoveRefOnce.Do(func() {
-		purego.RegisterLibFunc(
-			&avFrameMoveRef,
-			ffcommon.GetAvutilDll(),
-			"av_frame_move_ref",
-		)
+func (frame *AVFrame) AvFrameGetBuffer(align ffcommon.FInt) ffcommon.FInt {
+	avFrameGetBufferOnce.Do(func() {
+		purego.RegisterLibFunc(&avFrameGetBuffer, ffcommon.GetAvutilDll(), "av_frame_get_buffer")
 	})
-	return avFrameMoveRef(dst, src)
+	return avFrameGetBuffer(frame, align)
 }
 
 /**

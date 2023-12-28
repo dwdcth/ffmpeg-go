@@ -72,6 +72,14 @@ func AvTsMakeString(buf ffcommon.FBuf, ts ffcommon.FInt64T) ffcommon.FCharP {
  * function arguments but never stand-alone.
  */
 //#define av_ts2str(ts) av_ts_make_string((char[AV_TS_MAX_STRING_SIZE]){0}, ts)
+func AvTs2str(ts ffcommon.FInt64T) (res ffcommon.FCharP) {
+	if ts == AV_NOPTS_VALUE {
+		res = "NOPTS"
+	} else {
+		res = fmt.Sprint(ts)
+	}
+	return
+}
 
 /**
  * Fill the provided buffer with a string containing a timestamp time
