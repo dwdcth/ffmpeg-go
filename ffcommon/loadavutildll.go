@@ -1,6 +1,11 @@
 package ffcommon
 
 import (
+	"fmt"
+	"os"
+	"path/filepath"
+	"regexp"
+	"runtime"
 	"sync"
 
 	"github.com/ying32/dylib"
@@ -140,4 +145,97 @@ var avswscalePath = "swscale-5.dll"
 
 func SetAvswscalePath(path0 string) {
 	avswscalePath = path0
+}
+
+var fnMap = map[string]func(path string){
+	"avutil":     SetAvutilPath,
+	"avcodec":    SetAvcodecPath,
+	"avdevice":   SetAvdevicePath,
+	"avfilter":   SetAvfilterPath,
+	"avformat":   SetAvformatPath,
+	"postproc":   SetAvpostprocPath,
+	"swresample": SetAvswresamplePath,
+	"swscale":    SetAvswscalePath,
+}
+
+func AutoSetAvLib(libpath string) error {
+	var libloaded = make(map[string]bool)
+	searchDirs := []string{".", "/usr/local/lib", "/usr/lib/x86_64-linux-gnu", "/usr/lib"}
+	if libpath != "" {
+		searchDirs = append([]string{libpath}, searchDirs...)
+	}
+	defer func() {
+		if err := recover(); err != nil {
+			fmt.Printf("SetAvLib %s\n", err)
+		}
+		for k, v := range libloaded {
+			if !v {
+				fmt.Printf("lib not found %s\n", k)
+			}
+		}
+	}()
+	for _, dir := range searchDirs {
+		_, err := os.Stat(dir)
+		if os.IsNotExist(err) {
+			continue
+		}
+		for k, f := range fnMap {
+			if libloaded[k] {
+				continue
+			}
+			switch runtime.GOOS {
+			case "darwin":
+				lib := fmt.Sprintf("%s/lib%s.dylib", dir, k)
+				if _, err := os.Stat(lib); err == nil {
+					fmt.Println("load lib", lib)
+					f(lib)
+					libloaded[k] = true
+				}
+			case "windows":
+				r := regexp.MustCompile(k + "-\\d+\\.dll")
+				filepath.Walk(dir, func(path string, info os.FileInfo, err error) error {
+					if libloaded[k] {
+						return nil
+					}
+					if err != nil {
+						fmt.Println(err)
+						return nil
+					}
+					if !info.IsDir() && r.MatchString(info.Name()) {
+						fmt.Println("load lib", path)
+						f(path)
+						libloaded[k] = true
+					}
+					return nil
+				})
+			default:
+				// lib := fmt.Sprintf("%s/lib%s.so", dir, k)
+				// if _, err := os.Stat(lib); err == nil {
+				// 	plugin.Info("load lib", zap.String("path", lib))
+				// 	f(lib)
+				// 	libloaded[k] = true
+				// }
+				r := regexp.MustCompile(k + ".so")
+				filepath.Walk(dir, func(path string, info os.FileInfo, err error) error {
+					if libloaded[k] {
+						return nil
+					}
+					if err != nil {
+						fmt.Println(err)
+						return nil
+					}
+					if !info.IsDir() && r.MatchString(info.Name()) {
+						fmt.Println("load lib", path)
+						f(path)
+						libloaded[k] = true
+					}
+					return nil
+				})
+			}
+		}
+	}
+
+	//libavutil.AvLogSetLevel(libavutil.AV_LOG_VERBOSE)
+	//av_log_set_level(AV_LOG_VERBOSE);
+	return nil
 }
