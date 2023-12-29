@@ -5038,19 +5038,28 @@ func AvBitstreamFilterInit(name ffcommon.FCharP) (res *AVBitStreamFilterContext)
 //AVCodecContext *avctx, const char *args,
 //uint8_t **poutbuf, int *poutbuf_size,
 //const uint8_t *buf, int buf_size, int keyframe);
-var avBitstreamFilterFilterFunc func(bsfc *AVBitStreamFilterContext, avctx *AVCodecContext, args ffcommon.FConstCharP,
-	poutbuf **ffcommon.FUint8T, poutbuf_size *ffcommon.FInt,
-	buf *ffcommon.FUint8T, buf_size, keyframe ffcommon.FInt) ffcommon.FInt
+var avBitstreamFilterFilterFunc func(bsfc, avctx, args,
+	poutbuf, poutbuf_size,
+	buf, buf_size, keyframe uintptr) ffcommon.FInt
 var avBitstreamFilterFilterFuncOnce sync.Once
 
-func AvBitstreamFilterFilter(bsfc *AVBitStreamFilterContext, avctx *AVCodecContext, args ffcommon.FConstCharP,
+func (bsfc *AVBitStreamFilterContext) AvBitstreamFilterFilter(avctx *AVCodecContext, args ffcommon.FConstCharP,
 	poutbuf **ffcommon.FUint8T, poutbuf_size *ffcommon.FInt,
 	buf *ffcommon.FUint8T, buf_size, keyframe ffcommon.FInt) ffcommon.FInt {
 	avBitstreamFilterFilterFuncOnce.Do(func() {
 		purego.RegisterLibFunc(&avBitstreamFilterFilterFunc, ffcommon.GetAvcodecDll(), "av_bitstream_filter_filter")
 	})
 
-	return avBitstreamFilterFilterFunc(bsfc, avctx, args, poutbuf, poutbuf_size, buf, buf_size, keyframe)
+	return avBitstreamFilterFilterFunc(
+		uintptr(unsafe.Pointer(bsfc)),
+		uintptr(unsafe.Pointer(avctx)),
+		ffcommon.UintPtrFromString(args),
+		uintptr(unsafe.Pointer(poutbuf)),
+		uintptr(unsafe.Pointer(poutbuf_size)),
+		uintptr(unsafe.Pointer(buf)),
+		uintptr(buf_size),
+		uintptr(keyframe),
+	)
 }
 
 /**

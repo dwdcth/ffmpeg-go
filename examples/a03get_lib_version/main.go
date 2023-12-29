@@ -11,17 +11,6 @@ import (
 
 // go run main.go
 func main() {
-	//flags
-	// utilPath := flag.String("util", "", "avutilpath")
-	// codecPath := flag.String("codec", "", "avcodecpth")
-	// flag.Parse()
-	// if *utilPath == "" || *codecPath == "" {
-	// 	fmt.Println("usage: -util avutil 路径 -codec avcodec 路径")
-	// 	return
-	// }
-	// ffcommon.SetAvutilPath(*utilPath)
-	// ffcommon.SetAvcodecPath(*codecPath)
-
 	err := ffcommon.AutoSetAvLib("")
 	if err != nil {
 		fmt.Println("AutoSetAvLib err = ", err)

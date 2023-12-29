@@ -2,7 +2,10 @@ package main
 
 import (
 	"fmt"
+	"github.com/dwdcth/ffmpeg-go/examples"
 	"os"
+	"os/exec"
+	"strings"
 	"unsafe"
 
 	"github.com/dwdcth/ffmpeg-go/ffcommon"
@@ -10,11 +13,10 @@ import (
 	"github.com/dwdcth/ffmpeg-go/libavutil"
 )
 
-func main0() (ret ffcommon.FInt) {
-	// ./lib/ffmpeg -i ./resources/big_buck_bunny.mp4 -c:v mpeg1video ./out/big_buck_bunny.mpg
+func main0(filename, outfilename string) (ret ffcommon.FInt) {
+	// ffmpeg -i ./resources/big_buck_bunny.mp4 -c:v mpeg1video ./out/big_buck_bunny.mpg
 	// go run ./examples/internalexamples/decode_video/main.go ./out/big_buck_bunny.mpg ./out/ppm/big_buck_bunny.yuv
-	// ./lib/ffplay  ./out/ppm/big_buck_bunny.yuv-113.ppm
-	var filename, outfilename string
+	// ffplay  ./out/ppm/big_buck_bunny.yuv-113.ppm
 	var codec *libavcodec.AVCodec
 	var parser *libavcodec.AVCodecParserContext
 	var c *libavcodec.AVCodecContext
@@ -24,13 +26,6 @@ func main0() (ret ffcommon.FInt) {
 	var data *ffcommon.FUint8T
 	var data_size ffcommon.FSizeT
 	var pkt *libavcodec.AVPacket
-
-	if len(os.Args) <= 2 {
-		fmt.Printf("Usage: %s <input file> <output file>\nAnd check your input file is encoded by mpeg1video please.\n", os.Args[0])
-		os.Exit(0)
-	}
-	filename = os.Args[1]
-	outfilename = os.Args[2]
 
 	pkt = libavcodec.AvPacketAlloc()
 	if pkt == nil {
@@ -177,15 +172,7 @@ func decode(dec_ctx *libavcodec.AVCodecContext, frame *libavutil.AVFrame, pkt *l
 }
 
 func main() {
-	os.Setenv("Path", os.Getenv("Path")+";./lib")
-	ffcommon.SetAvutilPath("./lib/avutil-56.dll")
-	ffcommon.SetAvcodecPath("./lib/avcodec-58.dll")
-	ffcommon.SetAvdevicePath("./lib/avdevice-58.dll")
-	ffcommon.SetAvfilterPath("./lib/avfilter-56.dll")
-	ffcommon.SetAvformatPath("./lib/avformat-58.dll")
-	ffcommon.SetAvpostprocPath("./lib/postproc-55.dll")
-	ffcommon.SetAvswresamplePath("./lib/swresample-3.dll")
-	ffcommon.SetAvswscalePath("./lib/swscale-5.dll")
+	fileName := examples.Setup()
 
 	genDir := "./out"
 	_, err := os.Stat(genDir)
@@ -195,5 +182,27 @@ func main() {
 		}
 	}
 
-	main0()
+	infile := "./out/big_buck_bunny.mpg"
+	if _, err := os.Stat(infile); err != nil {
+		if os.IsNotExist(err) {
+			args := []string{"ffmpeg", "-i", *fileName, "-c:v", "mpeg1video", infile}
+			fmt.Println(strings.Join(args, " "))
+			err = exec.Command("ffmpeg", "-i", *fileName, "-c:v", "mpeg1video", infile).Run()
+			if err != nil {
+				fmt.Println("error mpg file not generated", err)
+				return
+			}
+		}
+	}
+	outfile := "./out/big_buck_bunny.yuv-113.ppm"
+	main0(infile, outfile)
+	if _, err := os.Stat(outfile); err != nil {
+		if os.IsNotExist(err) {
+			fmt.Println("error pcm file not generated")
+			return
+		}
+	}
+	// ffplay  ./out/ppm/big_buck_bunny.yuv-113.ppm
+	exec.Command("ffplay", outfile).Output()
+
 }

@@ -2,7 +2,10 @@ package main
 
 import (
 	"fmt"
+	"github.com/dwdcth/ffmpeg-go/examples"
 	"os"
+	"os/exec"
+	"strings"
 	"unsafe"
 
 	"github.com/dwdcth/ffmpeg-go/ffcommon"
@@ -12,19 +15,10 @@ import (
 )
 
 // go run ./examples/internalexamples/demuxing_decoding/main.go ./resources/big_buck_bunny.mp4 ./out/big_buck_bunny.yuv ./out/big_buck_bunny.pcm
-// ./lib/ffplay -f rawvideo -pix_fmt yuv420p -video_size 640x360 ./out/big_buck_bunny.yuv
-// ./lib/ffplay -f f32le -ac 1 -ar 22050 .\out\big_buck_bunny.pcm
+// ffplay -f rawvideo -pix_fmt yuv420p -video_size 640x360 ./out/big_buck_bunny.yuv
+// ffplay -f f32le -ac 1 -ar 22050 .\out\big_buck_bunny.pcm
 
-func main0() (ret ffcommon.FInt) {
-
-	if len(os.Args) != 4 {
-		fmt.Printf("usage: %s  input_file video_output_file audio_output_file\nAPI example program to show how to read frames from an input file.\nThis program reads frames from a file, decodes them, and writes decoded\nvideo frames to a rawvideo file named video_output_file, and decoded\naudio frames to a rawaudio file named audio_output_file.\n",
-			os.Args[0])
-		os.Exit(1)
-	}
-	src_filename = os.Args[1]
-	video_dst_filename = os.Args[2]
-	audio_dst_filename = os.Args[3]
+func main0(src_filename, video_dst_filename, audio_dst_filename string) (ret ffcommon.FInt) {
 
 	/* open input file, and allocate format context */
 	if libavformat.AvformatOpenInput(&fmt_ctx, src_filename, nil, nil) < 0 {
@@ -360,15 +354,7 @@ func get_format_from_sample_fmt(fmt0 *string, sample_fmt libavutil.AVSampleForma
 }
 
 func main() {
-	os.Setenv("Path", os.Getenv("Path")+";./lib")
-	ffcommon.SetAvutilPath("./lib/avutil-56.dll")
-	ffcommon.SetAvcodecPath("./lib/avcodec-58.dll")
-	ffcommon.SetAvdevicePath("./lib/avdevice-58.dll")
-	ffcommon.SetAvfilterPath("./lib/avfilter-56.dll")
-	ffcommon.SetAvformatPath("./lib/avformat-58.dll")
-	ffcommon.SetAvpostprocPath("./lib/postproc-55.dll")
-	ffcommon.SetAvswresamplePath("./lib/swresample-3.dll")
-	ffcommon.SetAvswscalePath("./lib/swscale-5.dll")
+	fileName := examples.Setup()
 
 	genDir := "./out"
 	_, err := os.Stat(genDir)
@@ -378,5 +364,27 @@ func main() {
 		}
 	}
 
-	main0()
+	// go run ./examples/internalexamples/demuxing_decoding/main.go ./resources/big_buck_bunny.mp4 ./out/big_buck_bunny.yuv ./out/big_buck_bunny.pcm
+
+	infile := "./out/big_buck_bunny.mpg"
+	if _, err := os.Stat(infile); err != nil {
+		if os.IsNotExist(err) {
+			args := []string{"ffmpeg", "-i", *fileName, "-c:v", "mpeg1video", infile}
+			fmt.Println(strings.Join(args, " "))
+			err = exec.Command("ffmpeg", "-i", *fileName, "-c:v", "mpeg1video", infile).Run()
+			if err != nil {
+				fmt.Println("error mpg file not generated", err)
+				return
+			}
+		}
+	}
+	video := "./out/big_buck_bunny.yuv"
+	audio := "./out/big_buck_bunny.pcm"
+	main0(*fileName, video, audio)
+
+	// ffplay -f rawvideo -pix_fmt yuv420p -video_size 640x360 ./out/big_buck_bunny.yuv
+	exec.Command("ffplay", "-f", "rawvideo", "-pix_fmt", "yuv420p", "-video_size", "640x360", video).Output()
+
+	// ffplay -f f32le -ac 1 -ar 22050 .\out\big_buck_bunny.pcm
+	exec.Command("ffplay", "-f", "f32le", "-ac", "1", "-ar", "22050", audio).Output()
 }

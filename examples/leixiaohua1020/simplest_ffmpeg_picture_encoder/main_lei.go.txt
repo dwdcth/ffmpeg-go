@@ -37,7 +37,7 @@ func main0() (ret ffcommon.FInt) {
 	if err != nil {
 		if os.IsNotExist(err) {
 			fmt.Println("create yuv file")
-			exec.Command("./lib/ffmpeg", "-i", "./resources/big_buck_bunny.mp4", "-pix_fmt", "yuv420p", in, "-y").CombinedOutput()
+			exec.Command("ffmpeg", "-i", "./resources/big_buck_bunny.mp4", "-pix_fmt", "yuv420p", in, "-y").CombinedOutput()
 		}
 	}
 
@@ -142,7 +142,7 @@ func main0() (ret ffcommon.FInt) {
 
 	in_file.Close()
 
-	exec.Command("./lib/ffplay.exe", out_file).Output()
+	exec.Command("ffplay", out_file).Output()
 	if err != nil {
 		fmt.Println("play err = ", err)
 	}
@@ -153,14 +153,14 @@ func main0() (ret ffcommon.FInt) {
 func main() {
 
 	os.Setenv("Path", os.Getenv("Path")+";./lib")
-	ffcommon.SetAvutilPath("./lib/avutil-56.dll")
-	ffcommon.SetAvcodecPath("./lib/avcodec-58.dll")
-	ffcommon.SetAvdevicePath("./lib/avdevice-58.dll")
-	ffcommon.SetAvfilterPath("./lib/avfilter-56.dll")
-	ffcommon.SetAvformatPath("./lib/avformat-58.dll")
-	ffcommon.SetAvpostprocPath("./lib/postproc-55.dll")
-	ffcommon.SetAvswresamplePath("./lib/swresample-3.dll")
-	ffcommon.SetAvswscalePath("./lib/swscale-5.dll")
+	ffcommon.SetAvutilPath("avutil-56.dll")
+	ffcommon.SetAvcodecPath("avcodec-58.dll")
+	ffcommon.SetAvdevicePath("avdevice-58.dll")
+	ffcommon.SetAvfilterPath("avfilter-56.dll")
+	ffcommon.SetAvformatPath("avformat-58.dll")
+	ffcommon.SetAvpostprocPath("postproc-55.dll")
+	ffcommon.SetAvswresamplePath("swresample-3.dll")
+	ffcommon.SetAvswscalePath("swscale-5.dll")
 
 	genDir := "./out"
 	_, err := os.Stat(genDir)
@@ -172,7 +172,7 @@ func main() {
 
 	// go func() {
 	// 	time.Sleep(1000)
-	// 	exec.Command("./lib/ffplay.exe", "rtmp://localhost/publishlive/livestream").Output()
+	// 	exec.Command("ffplay", "rtmp://localhost/publishlive/livestream").Output()
 	// 	if err != nil {
 	// 		fmt.Println("play err = ", err)
 	// 	}

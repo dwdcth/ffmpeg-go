@@ -12,10 +12,7 @@ import (
 //go run main.go  -file
 
 func main() {
-	// os.Setenv("Path", os.Getenv("Path")+";./lib")
 
-	//flags
-	// libPath := flag.String("lib", "", "avformatpath")
 	fileName := flag.String("file", "", "video file to open")
 	flag.Parse()
 	if *fileName == "" {

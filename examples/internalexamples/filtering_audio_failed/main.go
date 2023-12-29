@@ -293,14 +293,14 @@ func print_frame(frame *libavutil.AVFrame) {
 
 func main() {
 	os.Setenv("Path", os.Getenv("Path")+";./lib")
-	ffcommon.SetAvutilPath("./lib/avutil-56.dll")
-	ffcommon.SetAvcodecPath("./lib/avcodec-58.dll")
-	ffcommon.SetAvdevicePath("./lib/avdevice-58.dll")
-	ffcommon.SetAvfilterPath("./lib/avfilter-7.dll")
-	ffcommon.SetAvformatPath("./lib/avformat-58.dll")
-	ffcommon.SetAvpostprocPath("./lib/postproc-55.dll")
-	ffcommon.SetAvswresamplePath("./lib/swresample-3.dll")
-	ffcommon.SetAvswscalePath("./lib/swscale-5.dll")
+	ffcommon.SetAvutilPath("avutil-56.dll")
+	ffcommon.SetAvcodecPath("avcodec-58.dll")
+	ffcommon.SetAvdevicePath("avdevice-58.dll")
+	ffcommon.SetAvfilterPath("avfilter-7.dll")
+	ffcommon.SetAvformatPath("avformat-58.dll")
+	ffcommon.SetAvpostprocPath("postproc-55.dll")
+	ffcommon.SetAvswresamplePath("swresample-3.dll")
+	ffcommon.SetAvswscalePath("swscale-5.dll")
 
 	genDir := "./out"
 	_, err := os.Stat(genDir)

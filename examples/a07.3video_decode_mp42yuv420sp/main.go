@@ -2,38 +2,22 @@ package main
 
 import (
 	"fmt"
+	"github.com/dwdcth/ffmpeg-go/examples"
 	"os"
 	"os/exec"
 	"unsafe"
 
-	"github.com/dwdcth/ffmpeg-go/ffcommon"
 	"github.com/dwdcth/ffmpeg-go/libavcodec"
 	"github.com/dwdcth/ffmpeg-go/libavformat"
 	"github.com/dwdcth/ffmpeg-go/libavutil"
 )
 
 func main() {
-	os.Setenv("Path", os.Getenv("Path")+";./lib")
-	ffcommon.SetAvutilPath("./lib/avutil-56.dll")
-	ffcommon.SetAvcodecPath("./lib/avcodec-58.dll")
-	ffcommon.SetAvdevicePath("./lib/avdevice-56.dll")
-	ffcommon.SetAvfilterPath("./lib/avfilter-56.dll")
-	ffcommon.SetAvformatPath("./lib/avformat-58.dll")
-	ffcommon.SetAvpostprocPath("./lib/postproc-55.dll")
-	ffcommon.SetAvswresamplePath("./lib/swresample-3.dll")
-	ffcommon.SetAvswscalePath("./lib/swscale-5.dll")
+	fileName := examples.Setup()
 
-	genDir := "./out"
-	_, err := os.Stat(genDir)
-	if err != nil {
-		if os.IsNotExist(err) {
-			os.Mkdir(genDir, 0777) //  Everyone can read write and execute
-		}
-	}
-
-	filePath := "./resources/big_buck_bunny.mp4" //文件地址
-	videoStreamIndex := -1                       //视频流所在流序列中的索引
-	ret := int32(0)                              //默认返回值
+	filePath := *fileName  //文件地址
+	videoStreamIndex := -1 //视频流所在流序列中的索引
+	ret := int32(0)        //默认返回值
 
 	//需要的变量名并初始化
 	var fmtCtx *libavformat.AVFormatContext
@@ -156,7 +140,7 @@ func main() {
 	fmtCtx.AvformatFreeContext()
 	libavutil.AvFrameFree(&yuvFrame)
 
-	_, err = exec.Command("./lib/ffplay.exe", "-pixel_format", "nv12", "-video_size", "640x360", "./out/result.yuv").Output()
+	_, err := exec.Command("ffplay", "-pixel_format", "nv12", "-video_size", "640x360", "./out/result.yuv").Output()
 	if err != nil {
 		fmt.Println("play err = ", err)
 	}

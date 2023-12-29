@@ -2,25 +2,17 @@ package main
 
 import (
 	"fmt"
+	"github.com/dwdcth/ffmpeg-go/examples"
 	"os"
 	"os/exec"
 
-	"github.com/dwdcth/ffmpeg-go/ffcommon"
 	"github.com/dwdcth/ffmpeg-go/libavcodec"
 	"github.com/dwdcth/ffmpeg-go/libavformat"
 	"github.com/dwdcth/ffmpeg-go/libavutil"
 )
 
 func main() {
-	os.Setenv("Path", os.Getenv("Path")+";./lib")
-	ffcommon.SetAvutilPath("./lib/avutil-56.dll")
-	ffcommon.SetAvcodecPath("./lib/avcodec-58.dll")
-	ffcommon.SetAvdevicePath("./lib/avdevice-56.dll")
-	ffcommon.SetAvfilterPath("./lib/avfilter-56.dll")
-	ffcommon.SetAvformatPath("./lib/avformat-58.dll")
-	ffcommon.SetAvpostprocPath("./lib/postproc-55.dll")
-	ffcommon.SetAvswresamplePath("./lib/swresample-3.dll")
-	ffcommon.SetAvswscalePath("./lib/swscale-5.dll")
+	fileName := examples.Setup()
 
 	genDir := "./out"
 	_, err := os.Stat(genDir)
@@ -41,7 +33,7 @@ func main() {
 	if err != nil {
 		if os.IsNotExist(err) {
 			fmt.Println("create h264 file")
-			exec.Command("./lib/ffmpeg", "-i", "./resources/big_buck_bunny.mp4", "-vcodec", "copy", "-an", inVFileName, "-y").CombinedOutput()
+			exec.Command("ffmpeg", "-i", *fileName, "-vcodec", "copy", "-an", inVFileName, "-y").CombinedOutput()
 		}
 	}
 
@@ -193,7 +185,7 @@ func main() {
 	// outFmtCtx.Pb.AvioClose()//案例里面有，但个人感觉不对
 
 	fmt.Println("-----------------------------------------")
-	_, err = exec.Command("./lib/ffplay.exe", "./out/result.mp4").Output()
+	_, err = exec.Command("ffplay", "./out/result.mp4").Output()
 	if err != nil {
 		fmt.Println("play err = ", err)
 	}

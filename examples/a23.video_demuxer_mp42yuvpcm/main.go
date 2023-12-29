@@ -3,6 +3,7 @@ package main
 
 import (
 	"fmt"
+	"github.com/dwdcth/ffmpeg-go/examples"
 	"os"
 	"os/exec"
 	"unsafe"
@@ -223,15 +224,7 @@ func avcodec_save_video_file(pFormatCtx *libavformat.AVFormatContext, streamInde
 }
 
 func main() {
-	os.Setenv("Path", os.Getenv("Path")+";./lib")
-	ffcommon.SetAvutilPath("./lib/avutil-56.dll")
-	ffcommon.SetAvcodecPath("./lib/avcodec-58.dll")
-	ffcommon.SetAvdevicePath("./lib/avdevice-58.dll")
-	ffcommon.SetAvfilterPath("./lib/avfilter-56.dll")
-	ffcommon.SetAvformatPath("./lib/avformat-58.dll")
-	ffcommon.SetAvpostprocPath("./lib/postproc-55.dll")
-	ffcommon.SetAvswresamplePath("./lib/swresample-3.dll")
-	ffcommon.SetAvswscalePath("./lib/swscale-5.dll")
+	fileName := examples.Setup()
 
 	genDir := "./out"
 	_, err := os.Stat(genDir)
@@ -241,7 +234,7 @@ func main() {
 		}
 	}
 
-	inputFile := "./resources/big_buck_bunny.mp4"
+	inputFile := *fileName
 	outAudioFile := "./out/a23.pcm"
 	outVideoFile := "./out/a23.yuv"
 
@@ -305,12 +298,12 @@ func main() {
 
 	fmt.Println("-----------------------------------------")
 	go func() {
-		_, err = exec.Command("./lib/ffplay.exe", "-ar", "22050", "-ac", "1", "-f", "s16le", "-i", outAudioFile).Output()
+		_, err = exec.Command("ffplay", "-ar", "22050", "-ac", "1", "-f", "s16le", "-i", outAudioFile).Output()
 		if err != nil {
 			fmt.Println("play err = ", err)
 		}
 	}()
-	_, err = exec.Command("./lib/ffplay.exe", "-video_size", "640*360", "-i", outVideoFile).Output()
+	_, err = exec.Command("ffplay", "-video_size", "640*360", "-i", outVideoFile).Output()
 	if err != nil {
 		fmt.Println("play err = ", err)
 	}

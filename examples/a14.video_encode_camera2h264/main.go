@@ -16,17 +16,9 @@ import (
 )
 
 func main() {
-	// ./lib/ffmpeg -list_devices true -f dshow -i dummy
-	// ./lib/ffplay -f dshow -i video="Full HD webcam"
-	os.Setenv("Path", os.Getenv("Path")+";./lib")
-	ffcommon.SetAvutilPath("./lib/avutil-56.dll")
-	ffcommon.SetAvcodecPath("./lib/avcodec-58.dll")
-	ffcommon.SetAvdevicePath("./lib/avdevice-58.dll")
-	ffcommon.SetAvfilterPath("./lib/avfilter-56.dll")
-	ffcommon.SetAvformatPath("./lib/avformat-58.dll")
-	ffcommon.SetAvpostprocPath("./lib/postproc-55.dll")
-	ffcommon.SetAvswresamplePath("./lib/swresample-3.dll")
-	ffcommon.SetAvswscalePath("./lib/swscale-5.dll")
+	// ffmpeg -list_devices true -f dshow -i dummy
+	// ffplay -f dshow -i video="Full HD webcam"
+	ffcommon.AutoSetAvLib("")
 
 	genDir := "./out"
 	_, err := os.Stat(genDir)
@@ -47,7 +39,7 @@ func main() {
 	// if err != nil {
 	// 	if os.IsNotExist(err) {
 	// 		fmt.Println("create h264 file")
-	// 		exec.Command("./lib/ffmpeg", "-i", "./resources/big_buck_bunny.mp4", "-vcodec", "copy", "-an", inVFileName, "-y").CombinedOutput()
+	// 		exec.Command("ffmpeg", "-i", "./resources/big_buck_bunny.mp4", "-vcodec", "copy", "-an", inVFileName, "-y").CombinedOutput()
 	// 	}
 	// }
 	ret := int32(0)
@@ -284,7 +276,7 @@ func main() {
 	libavformat.AvformatCloseInput(&outFmtCtx)
 
 	fmt.Println("-----------------------------------------")
-	_, err = exec.Command("./lib/ffplay.exe", "./out/result14.h264").Output()
+	_, err = exec.Command("ffplay", "./out/result14.h264").Output()
 	if err != nil {
 		fmt.Println("play err = ", err)
 	}

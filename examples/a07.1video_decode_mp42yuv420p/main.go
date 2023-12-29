@@ -1,12 +1,10 @@
 package main
 
 import (
-	"flag"
 	"fmt"
-	"github.com/dwdcth/ffmpeg-go/ffcommon"
+	"github.com/dwdcth/ffmpeg-go/examples"
 	"os"
 	"os/exec"
-	"runtime"
 	"unsafe"
 
 	"github.com/dwdcth/ffmpeg-go/libavcodec"
@@ -15,30 +13,10 @@ import (
 )
 
 func main() {
-	//os.Setenv("Path", os.Getenv("Path")+";./lib")
-	//ffcommon.SetAvutilPath("avutil-56.dll")
-	//ffcommon.SetAvcodecPath("avcodec-58.dll")
-	//ffcommon.SetAvdevicePath("avdevice-56.dll")
-	//ffcommon.SetAvfilterPath("avfilter-56.dll")
-	//ffcommon.SetAvformatPath("avformat-58.dll")
-	//ffcommon.SetAvpostprocPath("postproc-55.dll")
-	//ffcommon.SetAvswresamplePath("swresample-3.dll")
-	//ffcommon.SetAvswscalePath("swscale-5.dll")
-
-	err := ffcommon.AutoSetAvLib("")
-	if err != nil {
-		fmt.Println("AutoSetAvLib err = ", err)
-		return
-	}
-	fileName := flag.String("file", "", "video file to open")
-	flag.Parse()
-	if *fileName == "" {
-		fmt.Println("usage: -file 视频文件")
-		return
-	}
+	fileName := examples.Setup()
 
 	genDir := "./out"
-	_, err = os.Stat(genDir)
+	_, err := os.Stat(genDir)
 	if err != nil {
 		if os.IsNotExist(err) {
 			os.Mkdir(genDir, 0777) //  Everyone can read write and execute
@@ -172,11 +150,7 @@ func main() {
 	libavformat.AvformatCloseInput(&fmtCtx)
 	fmtCtx.AvformatFreeContext()
 	libavutil.AvFrameFree(&yuvFrame)
-	ffplay := "ffplay.exe"
-	if runtime.GOOS != "windows" {
-		ffplay = "ffplay"
-	}
-	_, err = exec.Command(ffplay, "-pixel_format", "yuv420p", "-video_size", "640x360", "./out/result.yuv").Output()
+	_, err = exec.Command("ffplay", "-pixel_format", "yuv420p", "-video_size", "640x360", "./out/result.yuv").Output()
 	if err != nil {
 		fmt.Println("play err = ", err)
 	}

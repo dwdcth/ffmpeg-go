@@ -2701,7 +2701,7 @@ func (s *AVFormatContext) AvNewProgram(id ffcommon.FInt) (res *AVProgram) {
  */
 //int avformat_alloc_output_context2(AVFormatContext **ctx, ff_const59 AVOutputFormat *oformat,
 //const char *format_name, const char *filename);
-var avformat_alloc_output_context2 func(ctx **AVFormatContext, oformat *AVOutputFormat, format_name, filename ffcommon.FConstCharP) ffcommon.FInt
+var avformat_alloc_output_context2 func(ctx, oformat, format_name, filename uintptr) ffcommon.FInt
 var avformat_alloc_output_context2_once sync.Once
 
 func AvformatAllocOutputContext2(ctx **AVFormatContext, oformat *AVOutputFormat, format_name, filename ffcommon.FConstCharP) (res ffcommon.FInt) {
@@ -2709,7 +2709,11 @@ func AvformatAllocOutputContext2(ctx **AVFormatContext, oformat *AVOutputFormat,
 		purego.RegisterLibFunc(&avformat_alloc_output_context2, ffcommon.GetAvformatDll(), "avformat_alloc_output_context2")
 	})
 
-	res = avformat_alloc_output_context2(ctx, oformat, format_name, filename)
+	res = avformat_alloc_output_context2(
+		uintptr(unsafe.Pointer(ctx)),
+		uintptr(unsafe.Pointer(oformat)),
+		ffcommon.UintPtrFromString(format_name),
+		ffcommon.UintPtrFromString(filename))
 	return
 }
 

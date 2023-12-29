@@ -2,6 +2,7 @@ package libavcodec
 
 import (
 	"sync"
+	"unsafe"
 
 	"github.com/dwdcth/ffmpeg-go/ffcommon"
 	"github.com/dwdcth/ffmpeg-go/libavutil"
@@ -1045,14 +1046,18 @@ func (pkt *AVPacket) AvPacketMakeWritable() ffcommon.FInt {
  *               converted
  */
 //void av_packet_rescale_ts(AVPacket *pkt, AVRational tb_src, AVRational tb_dst);
-var avPacketRescaleTs func(pkt *AVPacket, tb_src, tb_dst AVRational)
+var avPacketRescaleTs func(pkt uintptr, tb_src, tb_dst uintptr)
 var avPacketRescaleTsOnce sync.Once
 
 func (pkt *AVPacket) AvPacketRescaleTs(tb_src, tb_dst AVRational) {
 	avPacketRescaleTsOnce.Do(func() {
 		purego.RegisterLibFunc(&avPacketRescaleTs, ffcommon.GetAvcodecDll(), "av_packet_rescale_ts")
 	})
-	avPacketRescaleTs(pkt, tb_src, tb_dst)
+	avPacketRescaleTs(
+		uintptr(unsafe.Pointer(pkt)),
+		uintptr(unsafe.Pointer(&tb_src)),
+		uintptr(unsafe.Pointer(&tb_dst)),
+	)
 }
 
 /**

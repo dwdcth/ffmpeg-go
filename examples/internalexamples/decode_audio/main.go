@@ -2,7 +2,9 @@ package main
 
 import (
 	"fmt"
+	"github.com/dwdcth/ffmpeg-go/examples"
 	"os"
+	"os/exec"
 	"unsafe"
 
 	"github.com/dwdcth/ffmpeg-go/ffcommon"
@@ -10,12 +12,11 @@ import (
 	"github.com/dwdcth/ffmpeg-go/libavutil"
 )
 
-func main0() (ret ffcommon.FInt) {
-	// ./lib/ffmpeg -i ./resources/big_buck_bunny.mp4 -c:a mp2 ./out/big_buck_bunny.mp2
+func main0(filename, outfilename string) (ret ffcommon.FInt) {
+	// ffmpeg -i ./resources/big_buck_bunny.mp4 -c:a mp2 ./out/big_buck_bunny.mp2
 	// go run ./examples/internalexamples/decode_audio/main.go ./out/big_buck_bunny.mp2 ./out/big_buck_bunny.pcm
-	// ./lib/ffplay -f s16le -ac 2 -ar 22050 ./out/big_buck_bunny.pcm
+	// ffplay -f s16le -ac 2 -ar 22050 ./out/big_buck_bunny.pcm
 
-	var outfilename, filename string
 	var codec *libavcodec.AVCodec
 	var c *libavcodec.AVCodecContext
 	var parser *libavcodec.AVCodecParserContext
@@ -29,13 +30,6 @@ func main0() (ret ffcommon.FInt) {
 	var sfmt libavutil.AVSampleFormat
 	var n_channels ffcommon.FInt = 0
 	var fmt0 string
-
-	if len(os.Args) <= 2 {
-		fmt.Printf("Usage: %s <input file> <output file>\n", os.Args[0])
-		os.Exit(0)
-	}
-	filename = os.Args[1]
-	outfilename = os.Args[2]
 
 	pkt = libavcodec.AvPacketAlloc()
 
@@ -227,15 +221,7 @@ func decode(dec_ctx *libavcodec.AVCodecContext, pkt *libavcodec.AVPacket, frame 
 }
 
 func main() {
-	os.Setenv("Path", os.Getenv("Path")+";./lib")
-	ffcommon.SetAvutilPath("./lib/avutil-56.dll")
-	ffcommon.SetAvcodecPath("./lib/avcodec-58.dll")
-	ffcommon.SetAvdevicePath("./lib/avdevice-58.dll")
-	ffcommon.SetAvfilterPath("./lib/avfilter-56.dll")
-	ffcommon.SetAvformatPath("./lib/avformat-58.dll")
-	ffcommon.SetAvpostprocPath("./lib/postproc-55.dll")
-	ffcommon.SetAvswresamplePath("./lib/swresample-3.dll")
-	ffcommon.SetAvswscalePath("./lib/swscale-5.dll")
+	fileName := examples.Setup()
 
 	genDir := "./out"
 	_, err := os.Stat(genDir)
@@ -244,6 +230,19 @@ func main() {
 			os.Mkdir(genDir, 0777) //  Everyone can read write and execute
 		}
 	}
-
-	main0()
+	infile := "./out/big_buck_bunny.mp2"
+	if _, err := os.Stat(infile); err != nil {
+		if os.IsNotExist(err) {
+			exec.Command("ffmpeg", "-i", *fileName, "-c:a", "mp2", infile).Output()
+		}
+	}
+	outfile := "./out/big_buck_bunny.pcm"
+	main0(infile, outfile)
+	if _, err := os.Stat(outfile); err != nil {
+		if os.IsNotExist(err) {
+			fmt.Println("error pcm file not generated")
+			return
+		}
+	}
+	exec.Command("ffplay", "-f", "s16le", "-ac", "2", "-ar", "48000", outfile).Output()
 }

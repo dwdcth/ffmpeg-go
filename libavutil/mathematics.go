@@ -2,6 +2,7 @@ package libavutil
 
 import (
 	"sync"
+	"unsafe"
 
 	"github.com/dwdcth/ffmpeg-go/ffcommon"
 	"github.com/ebitengine/purego"
@@ -192,14 +193,18 @@ func AvRescaleRnd(a, b, c ffcommon.FInt64T, rnd AVRounding) (res ffcommon.FInt64
  */
 //int64_t av_rescale_q(int64_t a, AVRational bq, AVRational cq) av_const;
 // purego func
-var avRescaleQ func(a ffcommon.FInt64T, bq, cq AVRational) ffcommon.FInt64T
+var avRescaleQ func(a, bq, cq uintptr) ffcommon.FInt64T
 var avRescaleQOnce sync.Once
 
 func AvRescaleQ(a ffcommon.FInt64T, bq, cq AVRational) (res ffcommon.FInt64T) {
 	avRescaleQOnce.Do(func() {
 		purego.RegisterLibFunc(&avRescaleQ, ffcommon.GetAvutilDll(), "av_rescale_q")
 	})
-	return avRescaleQ(a, bq, cq)
+	return avRescaleQ(
+		uintptr(a),
+		*(*uintptr)(unsafe.Pointer(&bq)), // 特殊处理，不然返回结果是错误的
+		*(*uintptr)(unsafe.Pointer(&cq)), // 特殊处理，不然返回结果是错误的
+	)
 }
 
 /**
@@ -212,14 +217,20 @@ func AvRescaleQ(a ffcommon.FInt64T, bq, cq AVRational) (res ffcommon.FInt64T) {
 //int64_t av_rescale_q_rnd(int64_t a, AVRational bq, AVRational cq,
 //enum AVRounding rnd) av_const;
 // purego func
-var avRescaleQRnd func(a ffcommon.FInt64T, bq, cq AVRational, rnd AVRounding) ffcommon.FInt64T
+var avRescaleQRnd func(a, bq, cq, rnd uintptr) ffcommon.FInt64T
 var avRescaleQRndOnce sync.Once
 
 func AvRescaleQRnd(a ffcommon.FInt64T, bq, cq AVRational, rnd AVRounding) (res ffcommon.FInt64T) {
 	avRescaleQRndOnce.Do(func() {
 		purego.RegisterLibFunc(&avRescaleQRnd, ffcommon.GetAvutilDll(), "av_rescale_q_rnd")
 	})
-	return avRescaleQRnd(a, bq, cq, rnd)
+	res = avRescaleQRnd(
+		uintptr(a),
+		*(*uintptr)(unsafe.Pointer(&bq)), // 特殊处理，不然返回结果是错误的
+		*(*uintptr)(unsafe.Pointer(&cq)), // 特殊处理，不然返回结果是错误的
+		uintptr(rnd),
+	)
+	return
 }
 
 /**
@@ -236,14 +247,18 @@ func AvRescaleQRnd(a ffcommon.FInt64T, bq, cq AVRational, rnd AVRounding) (res f
  */
 //int av_compare_ts(int64_t ts_a, AVRational tb_a, int64_t ts_b, AVRational tb_b);
 // purego func
-var avCompareTs func(tsA ffcommon.FInt64T, tbA AVRational, tsB ffcommon.FInt64T, tbB AVRational) ffcommon.FInt
+var avCompareTs func(ts_a , tb_a , ts_b , tb_b uintptr) ffcommon.FInt
 var avCompareTsOnce sync.Once
 
-func AvCompareTs(tsA ffcommon.FInt64T, tbA AVRational, tsB ffcommon.FInt64T, tbB AVRational) (res ffcommon.FInt) {
+func AvCompareTs(ts_a ffcommon.FInt64T, tb_a AVRational, ts_b ffcommon.FInt64T, tb_b AVRational) (res ffcommon.FInt) {
 	avCompareTsOnce.Do(func() {
 		purego.RegisterLibFunc(&avCompareTs, ffcommon.GetAvutilDll(), "av_compare_ts")
 	})
-	return avCompareTs(tsA, tbA, tsB, tbB)
+	return avCompareTs(uintptr(ts_a),
+		*(*uintptr)(unsafe.Pointer(&tb_a)),
+		uintptr(ts_b),
+		*(*uintptr)(unsafe.Pointer(&tb_b)),
+		)
 }
 
 /**

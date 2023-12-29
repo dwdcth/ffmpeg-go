@@ -1,13 +1,12 @@
 package main
 
 import (
-	"flag"
 	"fmt"
+	"github.com/dwdcth/ffmpeg-go/examples"
 	"os"
 	"os/exec"
 	"unsafe"
 
-	"github.com/dwdcth/ffmpeg-go/ffcommon"
 	"github.com/dwdcth/ffmpeg-go/libavcodec"
 	"github.com/dwdcth/ffmpeg-go/libavformat"
 	"github.com/dwdcth/ffmpeg-go/libavutil"
@@ -15,28 +14,8 @@ import (
 )
 
 func main() {
-	// os.Setenv("Path", os.Getenv("Path")+";./lib")
-	// ffcommon.SetAvutilPath("avutil-56.dll")
-	// ffcommon.SetAvcodecPath("avcodec-58.dll")
-	// ffcommon.SetAvdevicePath("avdevice-56.dll")
-	// ffcommon.SetAvfilterPath("avfilter-56.dll")
-	// ffcommon.SetAvformatPath("avformat-58.dll")
-	// ffcommon.SetAvpostprocPath("postproc-55.dll")
-	// ffcommon.SetAvswresamplePath("swresample-3.dll")
-	// ffcommon.SetAvswscalePath("swscale-5.dll")
-	// filePath := "./resources/big_buck_bunny.mp4" //文件地址
 
-	err := ffcommon.AutoSetAvLib("")
-	if err != nil {
-		fmt.Println("AutoSetAvLib err = ", err)
-		return
-	}
-	fileName := flag.String("file", "", "video file to open")
-	flag.Parse()
-	if *fileName == "" {
-		fmt.Println("usage: -file 视频文件")
-		return
-	}
+	fileName := examples.Setup()
 
 	videoStreamIndex := -1 //视频流所在流序列中的索引
 	ret := int32(0)        //默认返回值

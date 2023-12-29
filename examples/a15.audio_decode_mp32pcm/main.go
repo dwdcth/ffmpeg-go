@@ -3,26 +3,18 @@ package main
 
 import (
 	"fmt"
+	"github.com/dwdcth/ffmpeg-go/examples"
 	"os"
 	"os/exec"
 	"unsafe"
 
-	"github.com/dwdcth/ffmpeg-go/ffcommon"
 	"github.com/dwdcth/ffmpeg-go/libavcodec"
 	"github.com/dwdcth/ffmpeg-go/libavformat"
 	"github.com/dwdcth/ffmpeg-go/libavutil"
 )
 
 func main() {
-	os.Setenv("Path", os.Getenv("Path")+";./lib")
-	ffcommon.SetAvutilPath("./lib/avutil-56.dll")
-	ffcommon.SetAvcodecPath("./lib/avcodec-58.dll")
-	ffcommon.SetAvdevicePath("./lib/avdevice-58.dll")
-	ffcommon.SetAvfilterPath("./lib/avfilter-56.dll")
-	ffcommon.SetAvformatPath("./lib/avformat-58.dll")
-	ffcommon.SetAvpostprocPath("./lib/postproc-55.dll")
-	ffcommon.SetAvswresamplePath("./lib/swresample-3.dll")
-	ffcommon.SetAvswscalePath("./lib/swscale-5.dll")
+	fileName := examples.Setup()
 
 	genDir := "./out"
 	_, err := os.Stat(genDir)
@@ -35,13 +27,13 @@ func main() {
 	inVFileName := "./out/test.mp3"
 	outFileName := "./out/test.pcm"
 
-	// ./lib/ffmpeg -i ./resources/big_buck_bunny.mp4 -acodec libmp3lame -vn ./out/test.mp3
+	// ffmpeg -i ./resources/big_buck_bunny.mp4 -acodec libmp3lame -vn ./out/test.mp3
 	//是否存在mp3文件
 	_, err = os.Stat(inVFileName)
 	if err != nil {
 		if os.IsNotExist(err) {
 			fmt.Println("create mp3 file")
-			exec.Command("./lib/ffmpeg", "-i", "./resources/big_buck_bunny.mp4", "-acodec", "libmp3lame", "-vn", inVFileName, "-y").CombinedOutput()
+			exec.Command("ffmpeg", "-i", *fileName, "-acodec", "libmp3lame", "-vn", inVFileName, "-y").CombinedOutput()
 		}
 	}
 
@@ -149,8 +141,8 @@ func main() {
 	f.Close()
 
 	fmt.Println("-----------------------------------------")
-	// ./lib/ffplay -ar 22050 -ac 2 -f f32le -i ./out/test.pcm
-	_, err = exec.Command("./lib/ffplay.exe", "-ar", "22050", "-ac", "2", "-f", "f32le", "-i", "./out/test.pcm").Output()
+	// ffplay -ar 22050 -ac 2 -f f32le -i ./out/test.pcm
+	_, err = exec.Command("ffplay", "-ar", "22050", "-ac", "2", "-f", "f32le", "-i", "./out/test.pcm").Output()
 	if err != nil {
 		fmt.Println("play err = ", err)
 	}
