@@ -9,7 +9,7 @@ import (
 	"github.com/dwdcth/ffmpeg-go/libavutil"
 )
 
-// go run main.go -util -codec
+// go run main.go
 func main() {
 	//flags
 	// utilPath := flag.String("util", "", "avutilpath")

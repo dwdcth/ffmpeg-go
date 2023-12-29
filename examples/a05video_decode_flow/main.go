@@ -1,8 +1,8 @@
 package main
 
 import (
+	"flag"
 	"fmt"
-	"os"
 
 	"github.com/dwdcth/ffmpeg-go/ffcommon"
 	"github.com/dwdcth/ffmpeg-go/libavcodec"
@@ -10,19 +10,33 @@ import (
 	"github.com/dwdcth/ffmpeg-go/libavutil"
 )
 
+//go run main.go  -file
+
 func main() {
-	os.Setenv("Path", os.Getenv("Path")+";./lib")
-	ffcommon.SetAvutilPath("./lib/avutil-56.dll")
-	ffcommon.SetAvcodecPath("./lib/avcodec-58.dll")
-	ffcommon.SetAvdevicePath("./lib/avdevice-56.dll")
-	ffcommon.SetAvfilterPath("./lib/avfilter-56.dll")
-	ffcommon.SetAvformatPath("./lib/avformat-58.dll")
-	ffcommon.SetAvpostprocPath("./lib/postproc-55.dll")
-	ffcommon.SetAvswresamplePath("./lib/swresample-3.dll")
-	ffcommon.SetAvswscalePath("./lib/swscale-5.dll")
-	filePath := "./resources/big_buck_bunny.mp4" //文件地址
-	videoStreamIndex := -1                       //视频流所在流序列中的索引
-	ret := int32(0)                              //默认返回值
+	// os.Setenv("Path", os.Getenv("Path")+";./lib")
+	// ffcommon.SetAvutilPath("./lib/avutil-56.dll")
+	// ffcommon.SetAvcodecPath("./lib/avcodec-58.dll")
+	// ffcommon.SetAvdevicePath("./lib/avdevice-56.dll")
+	// ffcommon.SetAvfilterPath("./lib/avfilter-56.dll")
+	// ffcommon.SetAvformatPath("./lib/avformat-58.dll")
+	// ffcommon.SetAvpostprocPath("./lib/postproc-55.dll")
+	// ffcommon.SetAvswresamplePath("./lib/swresample-3.dll")
+	// ffcommon.SetAvswscalePath("./lib/swscale-5.dll")
+	// filePath := "./resources/big_buck_bunny.mp4" //文件地址
+	err := ffcommon.AutoSetAvLib("")
+	if err != nil {
+		fmt.Println("AutoSetAvLib err = ", err)
+		return
+	}
+	fileName := flag.String("file", "", "video file to open")
+	flag.Parse()
+	if *fileName == "" {
+		fmt.Println("usage: -file 视频文件")
+		return
+	}
+
+	videoStreamIndex := -1 //视频流所在流序列中的索引
+	ret := int32(0)        //默认返回值
 
 	//需要的变量名并初始化
 	var fmtCtx *libavformat.AVFormatContext
@@ -37,7 +51,7 @@ func main() {
 		//分配一个AVFormatContext，FFMPEG所有的操作都要通过这个AVFormatContext来进行
 		fmtCtx = libavformat.AvformatAllocContext()
 		//==================================== 打开文件 ======================================//
-		ret = libavformat.AvformatOpenInput(&fmtCtx, filePath, nil, nil)
+		ret = libavformat.AvformatOpenInput(&fmtCtx, *fileName, nil, nil)
 		if ret != 0 {
 			fmt.Printf("cannot open video file\n")
 			break
@@ -65,7 +79,7 @@ func main() {
 		}
 
 		//打印输入和输出信息：长度 比特率 流格式等
-		fmtCtx.AvDumpFormat(0, filePath, 0)
+		fmtCtx.AvDumpFormat(0, *fileName, 0)
 
 		//=================================  查找解码器 ===================================//
 		avCodecPara = fmtCtx.GetStream(uint32(videoStreamIndex)).Codecpar

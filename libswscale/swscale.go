@@ -2,6 +2,7 @@ package libswscale
 
 import (
 	"sync"
+	"unsafe"
 
 	"github.com/dwdcth/ffmpeg-go/ffcommon"
 	"github.com/dwdcth/ffmpeg-go/libavutil"
@@ -326,9 +327,12 @@ func (swsContext *SwsContext) SwsFreeContext() {
 //int dstW, int dstH, enum AVPixelFormat dstFormat,
 //int flags, SwsFilter *srcFilter,
 //SwsFilter *dstFilter, const double *param);
-var swsGetContext func(srcW, srcH ffcommon.FInt, srcFormat AVPixelFormat,
-	dstW, dstH ffcommon.FInt, dstFormat AVPixelFormat,
-	flags ffcommon.FInt, srcFilter, dstFilter *SwsFilter, param *ffcommon.FDouble) *SwsContext
+//var swsGetContext func(srcW, srcH ffcommon.FInt, srcFormat AVPixelFormat,
+//	dstW, dstH ffcommon.FInt, dstFormat AVPixelFormat,
+//	flags ffcommon.FInt, srcFilter, dstFilter *SwsFilter, param *ffcommon.FDouble) *SwsContext
+var swsGetContext func(srcW, srcH, srcFormat,
+	dstW, dstH, dstFormat,
+	flags, srcFilter, dstFilter, param uintptr) *SwsContext
 var swsGetContextOnce sync.Once
 
 func SwsGetContext(srcW, srcH ffcommon.FInt, srcFormat AVPixelFormat,
@@ -338,7 +342,13 @@ func SwsGetContext(srcW, srcH ffcommon.FInt, srcFormat AVPixelFormat,
 		purego.RegisterLibFunc(&swsGetContext, ffcommon.GetAvswscaleDll(), "sws_getContext")
 	})
 
-	return swsGetContext(srcW, srcH, srcFormat, dstW, dstH, dstFormat, flags, srcFilter, dstFilter, param)
+	return swsGetContext(uintptr(srcW), uintptr(srcH), uintptr(srcFormat),
+		uintptr(dstW), uintptr(dstH), uintptr(dstFormat),
+		uintptr(flags),
+		uintptr(unsafe.Pointer(srcFilter)),
+		uintptr(unsafe.Pointer(dstFilter)),
+		uintptr(unsafe.Pointer(param)))
+	//return swsGetContext(srcW, srcH, srcFormat, dstW, dstH, dstFormat, flags, srcFilter, dstFilter, param)
 
 }
 

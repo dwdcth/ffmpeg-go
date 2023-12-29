@@ -9,14 +9,14 @@ import (
 	"github.com/dwdcth/ffmpeg-go/libavformat"
 )
 
-//go run main.go -lib -file
+//go run main.go  -file
 
 func main() {
 	// os.Setenv("Path", os.Getenv("Path")+";./lib")
 
 	//flags
-	fileName := flag.String("file", "", "video file to open")
 	// libPath := flag.String("lib", "", "avformatpath")
+	fileName := flag.String("file", "", "video file to open")
 	flag.Parse()
 	if *fileName == "" {
 		fmt.Println("usage: -file 视频文件")
