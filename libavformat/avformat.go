@@ -2867,18 +2867,21 @@ func (pb *AVIOContext) AvProbeInputBuffer(fmt0 AVInputFormat, url ffcommon.FCons
  * @note If you want to use custom IO, preallocate the format context and set its pb field.
  */
 //int avformat_open_input(AVFormatContext **ps, const char *url, ff_const59 AVInputFormat *fmt, AVDictionary **options);
-var avformat_open_input func(ps **AVFormatContext, url ffcommon.FConstCharP, fmt0 *AVInputFormat, options **AVDictionary) ffcommon.FInt
+var avformat_open_input func(ps, url, fmt0, options uintptr) ffcommon.FInt
 var avformat_open_input_once sync.Once
 
 func AvformatOpenInput(ps **AVFormatContext, url ffcommon.FConstCharP, fmt0 *AVInputFormat, options **AVDictionary) (res ffcommon.FInt) {
 	avformat_open_input_once.Do(func() {
 		purego.RegisterLibFunc(&avformat_open_input, ffcommon.GetAvformatDll(), "avformat_open_input")
 	})
-	// urlptr := uintptr(0)
-	// if url != "" {
-	// 	urlptr = ffcommon.UintPtrFromString(url)
-	// }
-	res = avformat_open_input(ps, url, fmt0, options)
+	urlptr := uintptr(0)
+	if url != "" {
+		urlptr = ffcommon.UintPtrFromString(url)
+	}
+	res = avformat_open_input(uintptr(unsafe.Pointer(ps)),
+		urlptr,
+		uintptr(unsafe.Pointer(fmt0)),
+		uintptr(unsafe.Pointer(options)))
 	return
 }
 
@@ -2924,14 +2927,15 @@ func AvDemuxerOpen() (res ffcommon.FCharP) {
  *       we do not waste time getting stuff the user does not need.
  */
 //int avformat_find_stream_info(AVFormatContext *ic, AVDictionary **options);
-var avformat_find_stream_info func(ic *AVFormatContext, options **AVDictionary) ffcommon.FInt
+var avformat_find_stream_info func(ic, options uintptr) ffcommon.FInt
 var avformat_find_stream_info_once sync.Once
 
 func (ic *AVFormatContext) AvformatFindStreamInfo(options **AVDictionary) (res ffcommon.FInt) {
 	avformat_find_stream_info_once.Do(func() {
 		purego.RegisterLibFunc(&avformat_find_stream_info, ffcommon.GetAvformatDll(), "avformat_find_stream_info")
 	})
-	res = avformat_find_stream_info(ic, options)
+	res = avformat_find_stream_info(uintptr(unsafe.Pointer(ic)),
+		uintptr(unsafe.Pointer(options)))
 	return
 }
 
@@ -4137,7 +4141,7 @@ const (
 	//#if FF_API_R_FRAME_RATE
 	AVFMT_TBCF_R_FRAMERATE
 
-// #endif
+	// #endif
 )
 
 /**
