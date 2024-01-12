@@ -7,8 +7,6 @@ import (
 	"regexp"
 	"runtime"
 	"sync"
-
-	"github.com/ebitengine/purego"
 )
 
 var (
@@ -60,7 +58,7 @@ var avUtilLibOnce sync.Once
 func GetAvutilDll() uintptr {
 	avUtilLibOnce.Do(func() {
 		var err error
-		avUtilLib, err = purego.Dlopen(avutilPath, purego.RTLD_LAZY|purego.RTLD_GLOBAL)
+		avUtilLib, err = openLibrary(avutilPath)
 		if err != nil {
 			panic(err) // Hanpuregoe error appropriately
 		}
@@ -74,7 +72,7 @@ var avcodecLibOnce sync.Once
 func GetAvcodecDll() uintptr {
 	avcodecLibOnce.Do(func() {
 		var err error
-		avcodecLib, err = purego.Dlopen(avcodecPath, purego.RTLD_LAZY|purego.RTLD_GLOBAL)
+		avcodecLib, err = openLibrary(avcodecPath)
 		if err != nil {
 			panic(err) // Hanpuregoe error appropriately
 		}
@@ -88,7 +86,7 @@ var avdeviceLibOnce sync.Once
 func GetAvdeviceDll() uintptr {
 	avdeviceLibOnce.Do(func() {
 		var err error
-		avdeviceLib, err = purego.Dlopen(avdevicePath, purego.RTLD_LAZY|purego.RTLD_GLOBAL)
+		avdeviceLib, err = openLibrary(avdevicePath)
 		if err != nil {
 			panic(err) // Hanpuregoe error appropriately
 		}
@@ -102,7 +100,7 @@ var avfilterLibOnce sync.Once
 func GetAvfilterDll() uintptr {
 	avfilterLibOnce.Do(func() {
 		var err error
-		avfilterLib, err = purego.Dlopen(avfilterPath, purego.RTLD_LAZY|purego.RTLD_GLOBAL)
+		avfilterLib, err = openLibrary(avfilterPath)
 		if err != nil {
 			panic(err) // Handle error appropriately
 		}
@@ -116,7 +114,7 @@ var avformatLibOnce sync.Once
 func GetAvformatDll() uintptr {
 	avformatLibOnce.Do(func() {
 		var err error
-		avformatLib, err = purego.Dlopen(avformatPath, purego.RTLD_LAZY|purego.RTLD_GLOBAL)
+		avformatLib, err = openLibrary(avformatPath)
 		if err != nil {
 			panic(err) // Handle error appropriately
 		}
@@ -130,7 +128,7 @@ var avpostprocLibOnce sync.Once
 func GetAvpostprocDll() uintptr {
 	avpostprocLibOnce.Do(func() {
 		var err error
-		avpostprocLib, err = purego.Dlopen(avpostprocPath, purego.RTLD_LAZY|purego.RTLD_GLOBAL)
+		avpostprocLib, err = openLibrary(avpostprocPath)
 		if err != nil {
 			panic(err) // Handle error appropriately
 		}
@@ -144,7 +142,7 @@ var avswresampleLibOnce sync.Once
 func GetAvswresampleDll() uintptr {
 	avswresampleLibOnce.Do(func() {
 		var err error
-		avswresampleLib, err = purego.Dlopen(avswresamplePath, purego.RTLD_LAZY|purego.RTLD_GLOBAL)
+		avswresampleLib, err = openLibrary(avswresamplePath)
 		if err != nil {
 			panic(err) // Handle error appropriately
 		}
@@ -158,7 +156,7 @@ var avswscaleLibOnce sync.Once
 func GetAvswscaleDll() uintptr {
 	avswscaleLibOnce.Do(func() {
 		var err error
-		avswscaleLib, err = purego.Dlopen(avswscalePath, purego.RTLD_LAZY|purego.RTLD_GLOBAL)
+		avswscaleLib, err = openLibrary(avswscalePath)
 		if err != nil {
 			panic(err) // Handle error appropriately
 		}
@@ -173,7 +171,7 @@ func CloseDll() {
 		avswresampleLib, avswscaleLib}
 	for i := 0; i < len(libs); i++ {
 		if libs[i] != 0 {
-			purego.Dlclose(libs[i])
+			closeLibrary(libs[i])
 		}
 	}
 }
