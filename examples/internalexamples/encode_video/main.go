@@ -5,9 +5,9 @@ import (
 	"os"
 	"unsafe"
 
-	"github.com/dwdcth/ffmpeg-go/ffcommon"
-	"github.com/dwdcth/ffmpeg-go/libavcodec"
-	"github.com/dwdcth/ffmpeg-go/libavutil"
+	"github.com/dwdcth/ffmpeg-go/v6/ffcommon"
+	"github.com/dwdcth/ffmpeg-go/v6/libavcodec"
+	"github.com/dwdcth/ffmpeg-go/v6/libavutil"
 )
 
 // go run ./examples/internalexamples/encode_video/main.go ./out/encode_video.mp4 mpeg2video

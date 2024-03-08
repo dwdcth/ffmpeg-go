@@ -2,16 +2,16 @@ package main
 
 import (
 	"fmt"
-	"github.com/dwdcth/ffmpeg-go/examples"
+	"github.com/dwdcth/ffmpeg-go/v6/examples"
 	"os"
 	"os/exec"
 	"strings"
 	"unsafe"
 
-	"github.com/dwdcth/ffmpeg-go/ffcommon"
-	"github.com/dwdcth/ffmpeg-go/libavcodec"
-	"github.com/dwdcth/ffmpeg-go/libavformat"
-	"github.com/dwdcth/ffmpeg-go/libavutil"
+	"github.com/dwdcth/ffmpeg-go/v6/ffcommon"
+	"github.com/dwdcth/ffmpeg-go/v6/libavcodec"
+	"github.com/dwdcth/ffmpeg-go/v6/libavformat"
+	"github.com/dwdcth/ffmpeg-go/v6/libavutil"
 )
 
 // go run ./examples/internalexamples/demuxing_decoding/main.go ./resources/big_buck_bunny.mp4 ./out/big_buck_bunny.yuv ./out/big_buck_bunny.pcm

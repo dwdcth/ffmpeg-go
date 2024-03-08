@@ -3,7 +3,7 @@ package libavutil
 import (
 	"sync"
 
-	"github.com/dwdcth/ffmpeg-go/ffcommon"
+	"github.com/dwdcth/ffmpeg-go/v6/ffcommon"
 	"github.com/ebitengine/purego"
 )
 

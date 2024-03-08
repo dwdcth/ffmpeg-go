@@ -6,12 +6,12 @@ import (
 	"os"
 	"unsafe"
 
-	"github.com/dwdcth/ffmpeg-go/ffcommon"
-	"github.com/dwdcth/ffmpeg-go/libavcodec"
-	"github.com/dwdcth/ffmpeg-go/libavformat"
-	"github.com/dwdcth/ffmpeg-go/libavutil"
-	"github.com/dwdcth/ffmpeg-go/libswresample"
-	"github.com/dwdcth/ffmpeg-go/libswscale"
+	"github.com/dwdcth/ffmpeg-go/v6/ffcommon"
+	"github.com/dwdcth/ffmpeg-go/v6/libavcodec"
+	"github.com/dwdcth/ffmpeg-go/v6/libavformat"
+	"github.com/dwdcth/ffmpeg-go/v6/libavutil"
+	"github.com/dwdcth/ffmpeg-go/v6/libswresample"
+	"github.com/dwdcth/ffmpeg-go/v6/libswscale"
 )
 
 func main() {

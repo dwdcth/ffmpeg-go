@@ -2,14 +2,14 @@ package main
 
 import (
 	"fmt"
-	"github.com/dwdcth/ffmpeg-go/examples"
+	"github.com/dwdcth/ffmpeg-go/v6/examples"
 	"os"
 	"os/exec"
 	"unsafe"
 
-	"github.com/dwdcth/ffmpeg-go/ffcommon"
-	"github.com/dwdcth/ffmpeg-go/libavcodec"
-	"github.com/dwdcth/ffmpeg-go/libavutil"
+	"github.com/dwdcth/ffmpeg-go/v6/ffcommon"
+	"github.com/dwdcth/ffmpeg-go/v6/libavcodec"
+	"github.com/dwdcth/ffmpeg-go/v6/libavutil"
 )
 
 func main0(filename, outfilename string) (ret ffcommon.FInt) {

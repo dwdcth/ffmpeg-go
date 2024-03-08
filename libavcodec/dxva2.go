@@ -1,6 +1,6 @@
 package libavcodec
 
-import "github.com/dwdcth/ffmpeg-go/ffcommon"
+import "github.com/dwdcth/ffmpeg-go/v6/ffcommon"
 
 /*
  * DXVA2 HW acceleration

@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"sync"
 
-	"github.com/dwdcth/ffmpeg-go/ffcommon"
+	"github.com/dwdcth/ffmpeg-go/v6/ffcommon"
 
-	// "github.com/dwdcth/ffmpeg-go/libavcodec"
+	// "github.com/dwdcth/ffmpeg-go/v6/libavcodec"
 	"github.com/ebitengine/purego"
 )
 

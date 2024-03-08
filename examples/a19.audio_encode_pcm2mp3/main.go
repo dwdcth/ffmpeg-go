@@ -2,15 +2,15 @@ package main
 
 import (
 	"fmt"
-	"github.com/dwdcth/ffmpeg-go/examples"
+	"github.com/dwdcth/ffmpeg-go/v6/examples"
 	"os"
 	"os/exec"
 	"unsafe"
 
-	"github.com/dwdcth/ffmpeg-go/libavcodec"
-	"github.com/dwdcth/ffmpeg-go/libavformat"
-	"github.com/dwdcth/ffmpeg-go/libavutil"
-	"github.com/dwdcth/ffmpeg-go/libswresample"
+	"github.com/dwdcth/ffmpeg-go/v6/libavcodec"
+	"github.com/dwdcth/ffmpeg-go/v6/libavformat"
+	"github.com/dwdcth/ffmpeg-go/v6/libavutil"
+	"github.com/dwdcth/ffmpeg-go/v6/libswresample"
 )
 
 func main() {

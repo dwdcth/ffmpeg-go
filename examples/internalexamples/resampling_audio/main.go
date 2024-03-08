@@ -6,9 +6,9 @@ import (
 	"os"
 	"unsafe"
 
-	"github.com/dwdcth/ffmpeg-go/ffcommon"
-	"github.com/dwdcth/ffmpeg-go/libavutil"
-	"github.com/dwdcth/ffmpeg-go/libswresample"
+	"github.com/dwdcth/ffmpeg-go/v6/ffcommon"
+	"github.com/dwdcth/ffmpeg-go/v6/libavutil"
+	"github.com/dwdcth/ffmpeg-go/v6/libswresample"
 )
 
 func main0() (ret ffcommon.FInt) {

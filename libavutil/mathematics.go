@@ -4,7 +4,7 @@ import (
 	"sync"
 	"unsafe"
 
-	"github.com/dwdcth/ffmpeg-go/ffcommon"
+	"github.com/dwdcth/ffmpeg-go/v6/ffcommon"
 	"github.com/ebitengine/purego"
 )
 
@@ -247,7 +247,7 @@ func AvRescaleQRnd(a ffcommon.FInt64T, bq, cq AVRational, rnd AVRounding) (res f
  */
 //int av_compare_ts(int64_t ts_a, AVRational tb_a, int64_t ts_b, AVRational tb_b);
 // purego func
-var avCompareTs func(ts_a , tb_a , ts_b , tb_b uintptr) ffcommon.FInt
+var avCompareTs func(ts_a, tb_a, ts_b, tb_b uintptr) ffcommon.FInt
 var avCompareTsOnce sync.Once
 
 func AvCompareTs(ts_a ffcommon.FInt64T, tb_a AVRational, ts_b ffcommon.FInt64T, tb_b AVRational) (res ffcommon.FInt) {
@@ -258,7 +258,7 @@ func AvCompareTs(ts_a ffcommon.FInt64T, tb_a AVRational, ts_b ffcommon.FInt64T, 
 		*(*uintptr)(unsafe.Pointer(&tb_a)),
 		uintptr(ts_b),
 		*(*uintptr)(unsafe.Pointer(&tb_b)),
-		)
+	)
 }
 
 /**
