@@ -181,15 +181,13 @@ func AvStrerror(errnum ffcommon.FInt, errbuf ffcommon.FBuf, errbuf_size ffcommon
 //    av_strerror(errnum, errbuf, errbuf_size);
 //    return errbuf;
 //}
-//var avMakeErrorString func(errbuf ffcommon.FBuf, errbuf_size ffcommon.FSizeT, errnum ffcommon.FInt) ffcommon.FCharP
-//var avMakeErrorStringOnce sync.Once
-//
-//func AvMakeErrorString(errbuf ffcommon.FBuf, errbuf_size ffcommon.FSizeT, errnum ffcommon.FInt) ffcommon.FCharP {
-//	avMakeErrorStringOnce.Do(func() {
-//		purego.RegisterLibFunc(&avMakeErrorString, ffcommon.GetAvutilDll(), "av_make_error_string")
-//	})
-//	return avMakeErrorString(errbuf, errbuf_size, errnum)
-//}
+var avMakeErrorString func(errbuf ffcommon.FBuf, errbuf_size ffcommon.FSizeT, errnum ffcommon.FInt) ffcommon.FCharP
+var avMakeErrorStringOnce sync.Once
+
+func AvMakeErrorString(errbuf ffcommon.FBuf, errbuf_size ffcommon.FSizeT, errnum ffcommon.FInt) ffcommon.FCharP {
+	AvStrerror(errnum, errbuf, errbuf_size)
+	return ffcommon.StringFromPtr(uintptr(unsafe.Pointer(&errbuf)))
+}
 
 /**
  * Convenience macro, the return value should be used only directly in
@@ -205,7 +203,7 @@ func AvErr2str(errnum ffcommon.FInt) (res ffcommon.FCharP) {
 	// t, _, _ := ffcommon.GetAvutilDll().NewProc("av_err2str").Call()
 	// res = ffcommon.StringFromPtr(t)
 
-	AvStrerror(errnum,(*byte)(unsafe.Pointer(&b[0])), AV_ERROR_MAX_STRING_SIZE)
+	AvStrerror(errnum, (*byte)(unsafe.Pointer(&b[0])), AV_ERROR_MAX_STRING_SIZE)
 	res = ffcommon.StringFromPtr(uintptr(unsafe.Pointer(&b[0])))
 	return
 }
