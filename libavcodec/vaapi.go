@@ -1,6 +1,6 @@
 package libavcodec
 
-import "github.com/dwdcth/ffmpeg-go/v6/ffcommon"
+import "github.com/dwdcth/ffmpeg-go/v7/ffcommon"
 
 /*
  * Video Acceleration API (shared data between FFmpeg and the video player)

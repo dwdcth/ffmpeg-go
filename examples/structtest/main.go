@@ -3,12 +3,12 @@ package main
 import "C"
 import (
 	"fmt"
-	"github.com/dwdcth/ffmpeg-go/v6/libavcodec"
-	"github.com/dwdcth/ffmpeg-go/v6/libavdevice"
-	"github.com/dwdcth/ffmpeg-go/v6/libavfilter"
-	"github.com/dwdcth/ffmpeg-go/v6/libavformat"
-	"github.com/dwdcth/ffmpeg-go/v6/libavutil"
-	"github.com/dwdcth/ffmpeg-go/v6/libswscale"
+	"github.com/dwdcth/ffmpeg-go/v7/libavcodec"
+	"github.com/dwdcth/ffmpeg-go/v7/libavdevice"
+	"github.com/dwdcth/ffmpeg-go/v7/libavfilter"
+	"github.com/dwdcth/ffmpeg-go/v7/libavformat"
+	"github.com/dwdcth/ffmpeg-go/v7/libavutil"
+	"github.com/dwdcth/ffmpeg-go/v7/libswscale"
 	"reflect"
 	"unsafe"
 )

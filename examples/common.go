@@ -3,7 +3,7 @@ package examples
 import (
 	"flag"
 	"fmt"
-	"github.com/dwdcth/ffmpeg-go/v6/ffcommon"
+	"github.com/dwdcth/ffmpeg-go/v7/ffcommon"
 	"os"
 )
 

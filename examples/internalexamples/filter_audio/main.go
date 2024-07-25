@@ -7,9 +7,9 @@ import (
 	"strconv"
 	"unsafe"
 
-	"github.com/dwdcth/ffmpeg-go/v6/ffcommon"
-	"github.com/dwdcth/ffmpeg-go/v6/libavfilter"
-	"github.com/dwdcth/ffmpeg-go/v6/libavutil"
+	"github.com/dwdcth/ffmpeg-go/v7/ffcommon"
+	"github.com/dwdcth/ffmpeg-go/v7/libavfilter"
+	"github.com/dwdcth/ffmpeg-go/v7/libavutil"
 )
 
 func main0() (ret ffcommon.FInt) {

@@ -3,8 +3,8 @@ package libavfilter
 import (
 	"sync"
 
-	"github.com/dwdcth/ffmpeg-go/v6/ffcommon"
-	"github.com/dwdcth/ffmpeg-go/v6/libavutil"
+	"github.com/dwdcth/ffmpeg-go/v7/ffcommon"
+	"github.com/dwdcth/ffmpeg-go/v7/libavutil"
 	"github.com/ebitengine/purego"
 )
 

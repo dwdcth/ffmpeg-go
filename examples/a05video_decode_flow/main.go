@@ -2,11 +2,11 @@ package main
 
 import (
 	"fmt"
-	"github.com/dwdcth/ffmpeg-go/v6/examples"
+	"github.com/dwdcth/ffmpeg-go/v7/examples"
 
-	"github.com/dwdcth/ffmpeg-go/v6/libavcodec"
-	"github.com/dwdcth/ffmpeg-go/v6/libavformat"
-	"github.com/dwdcth/ffmpeg-go/v6/libavutil"
+	"github.com/dwdcth/ffmpeg-go/v7/libavcodec"
+	"github.com/dwdcth/ffmpeg-go/v7/libavformat"
+	"github.com/dwdcth/ffmpeg-go/v7/libavutil"
 )
 
 //go run main.go  -file

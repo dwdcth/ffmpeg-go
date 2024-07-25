@@ -6,10 +6,10 @@ import (
 	"os"
 	"unsafe"
 
-	"github.com/dwdcth/ffmpeg-go/v6/ffcommon"
-	"github.com/dwdcth/ffmpeg-go/v6/libavcodec"
-	"github.com/dwdcth/ffmpeg-go/v6/libavformat"
-	"github.com/dwdcth/ffmpeg-go/v6/libavutil"
+	"github.com/dwdcth/ffmpeg-go/v7/ffcommon"
+	"github.com/dwdcth/ffmpeg-go/v7/libavcodec"
+	"github.com/dwdcth/ffmpeg-go/v7/libavformat"
+	"github.com/dwdcth/ffmpeg-go/v7/libavutil"
 )
 
 // '1': Use H.264 Bitstream Filter

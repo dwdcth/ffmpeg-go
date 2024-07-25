@@ -3,15 +3,15 @@ package main
 
 import (
 	"fmt"
-	"github.com/dwdcth/ffmpeg-go/v6/examples"
+	"github.com/dwdcth/ffmpeg-go/v7/examples"
 	"os"
 	"os/exec"
 	"unsafe"
 
-	"github.com/dwdcth/ffmpeg-go/v6/ffcommon"
-	"github.com/dwdcth/ffmpeg-go/v6/libavcodec"
-	"github.com/dwdcth/ffmpeg-go/v6/libavformat"
-	"github.com/dwdcth/ffmpeg-go/v6/libavutil"
+	"github.com/dwdcth/ffmpeg-go/v7/ffcommon"
+	"github.com/dwdcth/ffmpeg-go/v7/libavcodec"
+	"github.com/dwdcth/ffmpeg-go/v7/libavformat"
+	"github.com/dwdcth/ffmpeg-go/v7/libavutil"
 )
 
 /*

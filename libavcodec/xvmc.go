@@ -1,6 +1,6 @@
 package libavcodec
 
-import "github.com/dwdcth/ffmpeg-go/v6/ffcommon"
+import "github.com/dwdcth/ffmpeg-go/v7/ffcommon"
 
 /*
  * Copyright (C) 2003 Ivan Kalvachev

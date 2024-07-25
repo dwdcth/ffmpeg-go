@@ -1,4 +1,4 @@
-module github.com/dwdcth/ffmpeg-go/v6
+module github.com/dwdcth/ffmpeg-go/v7
 
 go 1.20
 
