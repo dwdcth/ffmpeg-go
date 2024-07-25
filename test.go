@@ -70,6 +70,7 @@ func main() {
 	res := AvVersionInfo()
 	res = AvVersionInfo()
 	res = AvVersionInfo()
+
 	fmt.Println(res)
 }
 
